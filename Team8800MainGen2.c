@@ -76,15 +76,15 @@ void selectTeamAlliance();
 // Robot Action
 
 //Functions
-void moveLiftDown();
-
+void moveLiftDown(int speed, int distance);
 void moveArmOut();
 void moveArmIn();
 void moveArm(bool forward);
+void moveLiftUp(int speed, int distance);
 void moveLiftUp4(int height);
 void moveLiftUp5(int height);
 void rollerIntake(int speed);
-void rollerOutake(int speed);
+void rollerOutake(int speed, int distance);
 
 void checkPositions();
 
@@ -95,6 +95,7 @@ void autoLiftControl (int height);
 void drive(int left, int right);
 void driveForward(int speed, int distance);
 void driveBackward(int speed, int distance);
+void turnLeft(int speed, int speed2, int distance);
 void clearDriveEnc();
 void moveMobileGoalOut();
 void moveMobileGoalIn();
@@ -110,7 +111,7 @@ const byte LEFT = 1;
 const byte RIGHT = 2;
 byte allianceSide = RIGHT;
 
-const byte AUTONOMOUS_MODE_CUBE = 1;
+const byte AUTONOMOUS_MODE_MOBILE_GOAL_20 = 1;
 const byte AUTONOMOUS_MODE_CUBE_BACK_STAR = 2;
 const byte AUTONOMOUS_MODE_FENCE = 3;
 const byte AUTONOMOUS_MODE_SKILLS = 4;
@@ -118,7 +119,7 @@ const byte AUTONOMOUS_MODE_STACK_DRIVE = 5;
 const byte AUTONOMOUS_MODE_STACK_PIPE = 6;
 const byte AUTONOMOUS_MODE_STACK_BACK = 7;
 const byte AUTONOMOUS_MODE_DRIVE_BLOCK = 8;
-byte autonomousMode = AUTONOMOUS_MODE_CUBE;
+byte autonomousMode = AUTONOMOUS_MODE_MOBILE_GOAL_20;
 
 const byte PRESET_LEVEL_ONE = 1;
 const byte PRESET_LEVEL_TWO = 2;
@@ -234,7 +235,58 @@ void pre_auton()
 task autonomousRoutines()
 {
 	switch (autonomousMode) {
-	case AUTONOMOUS_MODE_CUBE:
+	case AUTONOMOUS_MODE_MOBILE_GOAL_20:
+		if (allianceSide == LEFT && allianceColor == RED_ALLIANCE) {
+			motor [roller] = 40;
+
+			//move lift up
+			moveLiftUp(100, 1900);
+
+			waitInMilliseconds(300);
+
+			//mobile goal out
+			moveMobileGoalOut();
+
+			clearDriveEnc();
+
+			//drive forward
+			driveForward (70, 1200);
+
+			waitInMilliseconds(500);
+
+			//intake the mobile goal
+			moveMobileGoalIn();
+
+			waitInMilliseconds(300);
+
+			//move lift down
+			moveLiftDown(100, 2050);
+
+			waitInMilliseconds(500);
+
+			SensorValue[rollerEnc] = 0;
+
+			rollerOutake(-100, 3000);
+
+			waitInMilliseconds(500);
+
+			clearDriveEnc();
+
+			//drive backward
+			driveBackward(-100, -500);
+
+			waitInMilliseconds(500);
+
+			clearDriveEnc();
+
+			turnLeft(-100, 100, 200);
+
+
+
+
+		} else if (allianceSide == RIGHT && allianceColor == RED_ALLIANCE) {
+
+	}
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -377,6 +429,11 @@ task ProcessController() {
 			} else {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
+
+			writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
+			writeDebugStreamLine("lift Right, %d", SensorValue[liftRightPot]);
+			//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
+			//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
 		}
 
 		if (isButtonClick(Btn8UXmtr2)) {
@@ -398,7 +455,7 @@ task ProcessController() {
 			selectTeamAlliance();
 		}
 
-		writeDebugStreamLine("value Arm pot %d", SensorValue[armPot]);
+		//writeDebugStreamLine("value Arm pot %d", SensorValue[armPot]);
 
 		wait1Msec(15);
 	}
@@ -447,7 +504,7 @@ void selectTeamAlliance()
 	// Defaults
 	allianceColor = BLUE_ALLIANCE;
 	allianceSide = RIGHT;
-	autonomousMode = AUTONOMOUS_MODE_CUBE;
+	autonomousMode = AUTONOMOUS_MODE_MOBILE_GOAL_20;
 	//return;
 
 	//SensorValue[ledGreen] = 0;
@@ -521,7 +578,7 @@ void selectTeamAlliance()
 
 	bool autonomousSelected = false;
 	int scrollCount = 1;
-	byte scrolledAuto = AUTONOMOUS_MODE_CUBE;
+	byte scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
 	while (!autonomousSelected) {
 		// Wait for button press
 		if(nLCDButtons == 1) {
@@ -537,7 +594,7 @@ void selectTeamAlliance()
 
 		switch (scrollCount) {
 		case 1:
-			scrolledAuto = AUTONOMOUS_MODE_CUBE;
+			scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
 			displayLCDString(1, 0, "[1]2 3 4 5 6 7 8 ");
 			wait1Msec(200);
 			break;
@@ -625,13 +682,16 @@ void rollerIntake(int speed) {
 	//	writeDebugStreamLine("Set speed %d", rollerSpeed);
 }
 
-void rollerOutake(int speed) {
+void rollerOutake(int speed, int distance) {
+	while (distance > SensorValue[rollerEnc]) {
 	motor[roller] = speed;
 	if (speed >= 0) {
 		rollerOutaking = false;
 		} else if (speed < 0) {
 		rollerOutaking = true;
 	}
+	}
+	motor [roller] = 0;
 }
 
 //Drive function for auto
@@ -644,8 +704,8 @@ void drive(int left, int right) {
 //Drive function with encoders for auto
 void driveForward(int speed, int distance) {
 	while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
-		writeDebugStreamLine("Front Left Encoder: %d", SensorValue[leftDriveEnc]);
-		writeDebugStreamLine("Front Right Encoder: %d", SensorValue[rightDriveEnc]);
+		writeDebugStreamLine(" Left Encoder: %d", SensorValue[leftDriveEnc]);
+		writeDebugStreamLine(" Right Encoder: %d", SensorValue[rightDriveEnc]);
 		writeDebugStreamLine("Moving forward");
 		drive(speed, speed);
 	}
@@ -667,23 +727,52 @@ void driveBackward(int speed, int distance) {
 	SensorValue[leftDriveEnc] = 0;
 }
 
+void turnLeft(int speed, int speed2, int distance) {
+	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] < distance) {
+		drive(-speed, speed2);
+	}
+	drive(0, 0);
+
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
+
+
 void clearDriveEnc() {
 	SensorValue[rightDriveEnc] = 0;
 	SensorValue[leftDriveEnc] = 0;
 }
 
-void moveMobileGoalOut() {
-	while (SensorValue[mobilePot] > 20) {
+void moveMobileGoalIn() {
+	while (SensorValue[mobilePot] > 120) {
 		motor[mobileGoal] = 127;
 	}
 	motor[mobileGoal] = 0;
 }
 
-void moveMobileGoalIn() {
-	while (SensorValue[mobilePot] < 3900) {
+void moveMobileGoalOut() {
+	while (SensorValue[mobilePot] < 2170) {
 		motor[mobileGoal] = -127;
 	}
 	motor[mobileGoal] = 0;
+}
+
+void moveLiftUp(int speed, int distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
+		motor [liftL] = speed;
+		motor [liftR] = speed;
+	}
+	motor [liftL] = 0;
+	motor [liftR] = 0;
+}
+
+void moveLiftDown(int speed, int distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
+		motor [liftL] = -speed;
+		motor [liftR] = -speed;
+	}
+	motor [liftL] = 0;
+	motor [liftR] = 0;
 }
 
 bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
