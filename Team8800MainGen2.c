@@ -89,13 +89,15 @@ void rollerOutake(int speed, int distance);
 void checkPositions();
 
 bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName);
+void checkButtonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName);
 
 //Auto Functions
+void moveMobileGoalOutAndDrive(int speed, int distance);
 void autoLiftControl (int height);
 void drive(int left, int right);
 void driveForward(int speed, int distance);
 void driveBackward(int speed, int distance);
-void turnLeft(int speed, int speed2, int distance);
+void turnLeft(int speed, int distance);
 void clearDriveEnc();
 void moveMobileGoalOut();
 void moveMobileGoalIn();
@@ -242,45 +244,92 @@ task autonomousRoutines()
 			//move lift up
 			moveLiftUp(100, 1900);
 
-			waitInMilliseconds(300);
-
-			//mobile goal out
-			moveMobileGoalOut();
+			waitInMilliseconds(200);
 
 			clearDriveEnc();
 
-			//drive forward
-			driveForward (70, 1200);
+			//mobile goal out
+			moveMobileGoalOutAndDrive(50, 1100);
 
-			waitInMilliseconds(500);
+			//drive forward
+			//driveForward (90, 1100);
+
+			waitInMilliseconds(200);
 
 			//intake the mobile goal
 			moveMobileGoalIn();
 
-			waitInMilliseconds(300);
+			waitInMilliseconds(150);
 
 			//move lift down
-			moveLiftDown(100, 2050);
+			moveLiftDown(50, 2400);
 
-			waitInMilliseconds(500);
+			waitInMilliseconds(200);
 
 			SensorValue[rollerEnc] = 0;
 
-			rollerOutake(-100, 3000);
+			rollerOutake(-100, 300);
 
-			waitInMilliseconds(500);
+			waitInMilliseconds(200);
 
 			clearDriveEnc();
 
 			//drive backward
-			driveBackward(-100, -500);
+			driveBackward(-110, -500);
 
-			waitInMilliseconds(500);
+			waitInMilliseconds(300);
 
 			clearDriveEnc();
 
-			turnLeft(-100, 100, 200);
+			turnLeft(127, 150);
 
+			waitInMilliseconds(200);
+
+			clearDriveEnc();
+
+			driveBackward(-100, -750);
+
+			waitInMilliseconds(200);
+
+			clearDriveEnc();
+
+			turnLeft(100, 340);
+
+			waitInMilliseconds(300);
+
+			clearDriveEnc();
+
+			driveBackward(-120, -40);
+
+			waitInMilliseconds(200);
+
+			moveLiftUp(100, 1500);
+
+			clearDriveEnc();
+
+			driveForward(127, 600);
+
+			waitInMilliseconds(200);
+
+			drive(70, 70);
+			waitInMilliseconds(500);
+			drive(0, 0);
+
+			waitInMilliseconds(400);
+
+			moveMobileGoalOut();
+
+			waitInMilliseconds(200);
+
+			drive(-50, -50);
+			waitInMilliseconds(700);
+			drive(0, 0);
+
+			waitInMilliseconds(200);
+
+			moveMobileGoalIn();
+
+			driveBackward(-100, -500);
 
 
 
@@ -392,11 +441,19 @@ task ProcessController() {
 			motorReq[driveBL] = 0;
 		}
 
+		/*checkButtonToggle(Btn8LXmtr2, Btn8RXmtr2);
 		//Arm controls on bumpers
 		if (buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
 			moveArm(true);
 		} else if (!buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
 			moveArm(false);
+		} else {
+			motor[swingingArm] = 0;
+		}*/
+		if (isButtonPressed(Btn8LXmtr2)) {
+			motor[swingingArm] = 127;
+		} else if (isButtonPressed(Btn8RXmtr2)) {
+			motor[swingingArm] = -127;
 		} else {
 			motor[swingingArm] = 0;
 		}
@@ -430,10 +487,11 @@ task ProcessController() {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
 
-			writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
-			writeDebugStreamLine("lift Right, %d", SensorValue[liftRightPot]);
+			//writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
+			//writeDebugStreamLine("lift Right, %d", SensorValue[liftRightPot]);
 			//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
 			//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
+			writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
 		}
 
 		if (isButtonClick(Btn8UXmtr2)) {
@@ -684,12 +742,8 @@ void rollerIntake(int speed) {
 
 void rollerOutake(int speed, int distance) {
 	while (distance > SensorValue[rollerEnc]) {
-	motor[roller] = speed;
-	if (speed >= 0) {
-		rollerOutaking = false;
-		} else if (speed < 0) {
-		rollerOutaking = true;
-	}
+	 motor[roller] = speed;
+	 writeDebugStreamLine("Roller Enc %d", SensorValue[rollerEnc]);
 	}
 	motor [roller] = 0;
 }
@@ -727,9 +781,9 @@ void driveBackward(int speed, int distance) {
 	SensorValue[leftDriveEnc] = 0;
 }
 
-void turnLeft(int speed, int speed2, int distance) {
-	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] < distance) {
-		drive(-speed, speed2);
+void turnLeft(int speed, int distance) {
+	while (SensorValue[leftDriveEnc] < distance && SensorValue[rightDriveEnc] > (-distance)) {
+		drive(-speed, speed);
 	}
 	drive(0, 0);
 
@@ -744,7 +798,7 @@ void clearDriveEnc() {
 }
 
 void moveMobileGoalIn() {
-	while (SensorValue[mobilePot] > 120) {
+	while (SensorValue[mobilePot] > 180) {
 		motor[mobileGoal] = 127;
 	}
 	motor[mobileGoal] = 0;
@@ -756,6 +810,23 @@ void moveMobileGoalOut() {
 	}
 	motor[mobileGoal] = 0;
 }
+
+void moveMobileGoalOutAndDrive(int speed, int distance) {
+		while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
+		drive(speed, speed);
+			while (SensorValue[mobilePot] < 2170) {
+			motor[mobileGoal] = -127;
+	}
+	motor[mobileGoal] = 0;
+
+	}
+	drive(0, 0);
+
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
+
+
 
 void moveLiftUp(int speed, int distance) {
 	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
@@ -783,4 +854,8 @@ bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
 		position = false;
 	}
 	return position;
+}
+
+void checkButtonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
+	buttonToggle(buttonOneName, buttonTwoName);
 }
