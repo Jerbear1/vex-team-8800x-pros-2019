@@ -78,14 +78,17 @@ void selectTeamAlliance();
 //Functions
 void moveLiftDown();
 
-void moveArmBack();
-void moveArmForward();
+void moveArmOut();
+void moveArmIn();
+void moveArm(bool forward);
 void moveLiftUp4(int height);
 void moveLiftUp5(int height);
 void rollerIntake(int speed);
 void rollerOutake(int speed);
 
 void checkPositions();
+
+bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName);
 
 //Auto Functions
 void autoLiftControl (int height);
@@ -338,11 +341,11 @@ task ProcessController() {
 		}
 
 		//Arm controls on bumpers
-		if (isButtonPressed(Btn6UXmtr2)) {
-			motor[swingingArm] = -127;
-			} else if (isButtonPressed(Btn6DXmtr2)) {
-			motor[swingingArm] = 127;
-			} else {
+		if (buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
+			moveArm(true);
+		} else if (!buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
+			moveArm(false);
+		} else {
 			motor[swingingArm] = 0;
 		}
 
@@ -356,12 +359,12 @@ task ProcessController() {
 		}
 
 		//Roller control
-		if (isButtonPressed(Btn8UXmtr2)) {
-			motor[roller] = -100;
-			} else if (isButtonPressed(Btn8DXmtr2)) {
-			motor[roller] = 100;
+		if (isButtonPressed(Btn6DXmtr2)) {
+			motor[roller] = -127;
+			} else if (isButtonPressed(Btn6UXmtr2)) {
+			motor[roller] = 127;
 			} else {
-			motor[roller] = 25;
+			motor[roller] = 30;
 		}
 
 		//Move lift
@@ -592,11 +595,27 @@ void selectTeamAlliance()
 	clearLCDLine(1);
 }
 
-void moveArmForward () {
-	if (SensorValue[armPot] > 80) {
-		motor[swingingArm] = 120;
-		} else if (SensorValue[armPot] <= 80) {
+void moveArmOut () {
+	if (SensorValue[armPot] > 25) {
+		motor[swingingArm] = 115;
+	} else if (SensorValue[armPot] <= 25) {
 		motor[swingingArm] = 0;
+	}
+}
+
+void moveArmIn () {
+	if (SensorValue[armPot] < 2115) {
+		motor[swingingArm] = -125;
+	} else if (SensorValue[armPot] >= 2115) {
+		motor[swingingArm] = 0;
+	}
+}
+
+void moveArm (bool forward) {
+	if (forward) {
+		moveArmOut();
+	} else {
+		moveArmIn();
 	}
 }
 
@@ -665,4 +684,14 @@ void moveMobileGoalIn() {
 		motor[mobileGoal] = -127;
 	}
 	motor[mobileGoal] = 0;
+}
+
+bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
+	bool position;
+	if (isButtonPressed(buttonOneName)) {
+		position = true;
+	} else if (isButtonPressed(buttonTwoName)) {
+		position = false;
+	}
+	return position;
 }
