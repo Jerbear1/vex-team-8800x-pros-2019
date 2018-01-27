@@ -93,6 +93,7 @@ void checkButtonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName)
 
 //Auto Functions
 void moveMobileGoalOutAndDrive(int speed, int distance);
+void moveMobileGoalInAndDrive(int speed, int distance);
 void autoLiftControl (int height);
 void drive(int left, int right);
 void driveForward(int speed, int distance);
@@ -101,6 +102,7 @@ void turnLeft(int speed, int distance);
 void clearDriveEnc();
 void moveMobileGoalOut();
 void moveMobileGoalIn();
+void moveMobileGoalInDistance(int distance);
 
 // Constants and global vars
 const byte MIN_JOYSTICK_THRESHOLD = 30;
@@ -156,7 +158,7 @@ bool boingyPointOn = true;
 bool armBack = false;
 bool armFront = true;
 
-bool armIsBack;
+bool armIsBack = false;
 bool armIsBackLvl1and2;
 bool armIsForward;
 bool liftLeftIsPosition4;
@@ -249,7 +251,7 @@ task autonomousRoutines()
 			clearDriveEnc();
 
 			//mobile goal out
-			moveMobileGoalOutAndDrive(50, 1100);
+			moveMobileGoalOutAndDrive(45, 1100);
 
 			//drive forward
 			//driveForward (90, 1100);
@@ -257,8 +259,12 @@ task autonomousRoutines()
 			waitInMilliseconds(200);
 
 			//intake the mobile goal
-			moveMobileGoalIn();
+			//moveMobileGoalIn();
+			moveMobileGoalInDistance(1000);
+			moveMobileGoalInAndDrive(-110, -380);
+			driveBackward(-110, -380);
 
+			motor[mobileGoal] = 5;
 			waitInMilliseconds(150);
 
 			//move lift down
@@ -268,32 +274,32 @@ task autonomousRoutines()
 
 			SensorValue[rollerEnc] = 0;
 
-			rollerOutake(-100, 300);
+			rollerOutake(-100, 250);
 
 			waitInMilliseconds(200);
 
-			clearDriveEnc();
+			//clearDriveEnc();
 
 			//drive backward
-			driveBackward(-110, -500);
+			//driveBackward(-110, -500);
 
 			waitInMilliseconds(300);
 
 			clearDriveEnc();
 
-			turnLeft(127, 150);
+			turnLeft(127, 120);
 
 			waitInMilliseconds(200);
 
 			clearDriveEnc();
 
-			driveBackward(-100, -750);
+			driveBackward(-100, -330);
 
 			waitInMilliseconds(200);
 
 			clearDriveEnc();
 
-			turnLeft(100, 340);
+			turnLeft(100, 300);
 
 			waitInMilliseconds(300);
 
@@ -303,17 +309,17 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			moveLiftUp(100, 1500);
+			moveLiftUp(100, 2300);
 
 			clearDriveEnc();
 
-			driveForward(127, 600);
+			driveForward(127, 500);
 
 			waitInMilliseconds(200);
 
 			drive(70, 70);
 			waitInMilliseconds(500);
-			drive(0, 0);
+			drive(15, 15);
 
 			waitInMilliseconds(400);
 
@@ -329,7 +335,7 @@ task autonomousRoutines()
 
 			moveMobileGoalIn();
 
-			driveBackward(-100, -500);
+			driveBackward(-70, -400);
 
 
 
@@ -420,25 +426,25 @@ task ProcessController() {
 		static bool rightDriveMoving = false;
 		if (abs(rightJoystickY) > MIN_JOYSTICK_THRESHOLD) {
 			rightDriveMoving = true;
-			motorReq[driveFR] = rightJoystickY;
-			motorReq[driveBR] = rightJoystickY;
+			motorReq2[driveFR] = rightJoystickY;
+			motorReq2[driveBR] = rightJoystickY;
 			writeDebugStreamLine("Right: %d%%", rightJoystickY);
 			} else {
 			rightDriveMoving = false;
-			motorReq[driveFR] = 0;
-			motorReq[driveBR] = 0;
+			motorReq2[driveFR] = 0;
+			motorReq2[driveBR] = 0;
 		}
 
 		static bool leftDriveMoving = false;
 		if (abs(leftJoystickY) > MIN_JOYSTICK_THRESHOLD) {
 			leftDriveMoving = true;
-			motorReq[driveFL] = leftJoystickY;
-			motorReq[driveBL] = leftJoystickY;
+			motorReq2[driveFL] = leftJoystickY;
+			motorReq2[driveBL] = leftJoystickY;
 			writeDebugStreamLine("Left: %d%%", leftJoystickY);
 			} else {
 			leftDriveMoving = false;
-			motorReq[driveFL] = 0;
-			motorReq[driveBL] = 0;
+			motorReq2[driveFL] = 0;
+			motorReq2[driveBL] = 0;
 		}
 
 		/*checkButtonToggle(Btn8LXmtr2, Btn8RXmtr2);
@@ -450,19 +456,23 @@ task ProcessController() {
 		} else {
 			motor[swingingArm] = 0;
 		}*/
-		if (isButtonPressed(Btn8LXmtr2)) {
-			motor[swingingArm] = 127;
-		} else if (isButtonPressed(Btn8RXmtr2)) {
-			motor[swingingArm] = -127;
-		} else {
-			motor[swingingArm] = 0;
+		if (isButtonPressed(Btn8RXmtr2)) {
+			armIsBack = true;
+		} else if (isButtonPressed(Btn8LXmtr2)) {
+			armIsBack = false;
+		}
+
+		if (armIsBack) {
+			moveArmOut();
+		} else if (!armIsBack) {
+			moveArmIn();
 		}
 
 		//Mobile Goal control on joystick
-		if (isButtonPressed(Btn6U)) {
-			motor[mobileGoal] = 127;
-		} else if (isButtonPressed(Btn6D)) {
+		if (isButtonPressed(Btn8U)) {
 			motor[mobileGoal] = -127;
+		} else if (isButtonPressed(Btn8D)) {
+			motor[mobileGoal] = 127;
 		} else {
 			motor[mobileGoal] = 0;
 		}
@@ -478,20 +488,20 @@ task ProcessController() {
 
 		//Move lift
 		if (isButtonPressed(Btn5UXmtr2)) {
-			motor[liftL] = 127;
-			motor[liftR] = 127;
+			motorReq[liftL] = 127;
+			motorReq[liftR] = 127;
 			} else if (isButtonPressed(Btn5DXmtr2)) {
-			motor[liftL] = -127;
-			motor[liftR] = -127;
+			motorReq[liftL] = -127;
+			motorReq[liftR] = -127;
 			} else {
-			motor[liftL] = 0;
-			motor[liftR] = 0;
+			motorReq[liftL] = 0;
+			motorReq[liftR] = 0;
 
 			//writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
 			//writeDebugStreamLine("lift Right, %d", SensorValue[liftRightPot]);
 			//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
 			//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
-			writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
+			//writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
 		}
 
 		if (isButtonClick(Btn8UXmtr2)) {
@@ -711,9 +721,9 @@ void selectTeamAlliance()
 }
 
 void moveArmOut () {
-	if (SensorValue[armPot] > 25) {
+	if (SensorValue[armPot] > 45) {
 		motor[swingingArm] = 115;
-	} else if (SensorValue[armPot] <= 25) {
+	} else if (SensorValue[armPot] <= 45) {
 		motor[swingingArm] = 0;
 	}
 }
@@ -804,6 +814,13 @@ void moveMobileGoalIn() {
 	motor[mobileGoal] = 0;
 }
 
+void moveMobileGoalInDistance(int distance) {
+	while (SensorValue[mobilePot] > distance) {
+		motor[mobileGoal] = 127;
+	}
+	motor[mobileGoal] = 0;
+}
+
 void moveMobileGoalOut() {
 	while (SensorValue[mobilePot] < 2170) {
 		motor[mobileGoal] = -127;
@@ -812,13 +829,12 @@ void moveMobileGoalOut() {
 }
 
 void moveMobileGoalOutAndDrive(int speed, int distance) {
-		while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
+	while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
 		drive(speed, speed);
-			while (SensorValue[mobilePot] < 2170) {
+		while (SensorValue[mobilePot] < 2170) {
 			motor[mobileGoal] = -127;
-	}
-	motor[mobileGoal] = 0;
-
+		}
+		motor[mobileGoal] = 0;
 	}
 	drive(0, 0);
 
@@ -826,6 +842,16 @@ void moveMobileGoalOutAndDrive(int speed, int distance) {
 	SensorValue[leftDriveEnc] = 0;
 }
 
+void moveMobileGoalInAndDrive(int speed, int distance) {
+	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
+		drive(speed, speed);
+		while (SensorValue[mobilePot] > 180) {
+			motor[mobileGoal] = 127;
+		}
+		motor[mobileGoal] = 0;
+	}
+	drive(0, 0);
+}
 
 
 void moveLiftUp(int speed, int distance) {

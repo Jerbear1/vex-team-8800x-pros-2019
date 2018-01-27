@@ -51,10 +51,10 @@
 #define MOTOR_TASK_DELAY        15      // task 1/frequency in mS (about 66Hz)
 #define MOTOR_DEADBAND          10
 
-#define MOTOR_NUM2               1/*kNumbOfTotalMotors*/
-#define MOTOR_MAX_VALUE2         127
-#define MOTOR_MIN_VALUE2         (-127)
-#define MOTOR_DEFAULT_SLEW_RATE2 6      // Default will cause 375mS from full fwd to rev
+#define MOTOR_NUM2               6/*kNumbOfTotalMotors*/
+#define MOTOR_MAX_VALUE2         120
+#define MOTOR_MIN_VALUE2         (-120)
+#define MOTOR_DEFAULT_SLEW_RATE2 4      // Default will cause 375mS from full fwd to rev
 #define MOTOR_FAST_SLEW_RATE2    256     // essentially off
 #define MOTOR_TASK_DELAY2        15      // task 1/frequency in mS (about 66Hz)
 #define MOTOR_DEADBAND2          10
@@ -88,7 +88,7 @@ task MotorSlewRateTask()
 	{
 		motorReq2[motorIndex2] = 0;
 		motorSlew2[motorIndex2] = MOTOR_DEFAULT_SLEW_RATE2;
-		//writeDebugStreamLine("for 2");
+		writeDebugStreamLine("for 2 %d %d", motorIndex2, MOTOR_NUM2);
 	}
 
 	// Initialize stuff
@@ -96,7 +96,7 @@ task MotorSlewRateTask()
 	{
 		motorReq[motorIndex] = 0;
 		motorSlew[motorIndex] = MOTOR_DEFAULT_SLEW_RATE;
-		//writeDebugStreamLine("for 1");
+		writeDebugStreamLine("for 1 %d %d", motorIndex, MOTOR_NUM);
 	}
 
 
@@ -105,7 +105,7 @@ task MotorSlewRateTask()
 	while( true )
 	{
 		// run loop for every motor
-		for( int motorIndex=1; motorIndex<MOTOR_NUM; motorIndex++)
+		for( int motorIndex=7; motorIndex<MOTOR_NUM; motorIndex++)
 		{
 
 		// So we don't keep accessing the internal storage
