@@ -44,9 +44,9 @@
 /*-----------------------------------------------------------------------------*/
 
 #define MOTOR_NUM               kNumbOfTotalMotors
-#define MOTOR_MAX_VALUE         100
-#define MOTOR_MIN_VALUE         (-100)
-#define MOTOR_DEFAULT_SLEW_RATE 8      // Default will cause 375mS from full fwd to rev
+#define MOTOR_MAX_VALUE         80
+#define MOTOR_MIN_VALUE         (-80)
+#define MOTOR_DEFAULT_SLEW_RATE 5      // Default will cause 375mS from full fwd to rev
 #define MOTOR_FAST_SLEW_RATE    256     // essentially off
 #define MOTOR_TASK_DELAY        15      // task 1/frequency in mS (about 66Hz)
 #define MOTOR_DEADBAND          10

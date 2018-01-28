@@ -173,7 +173,7 @@ bool liftIsPosition5;
 bool liftIsPosition6;
 bool liftIsDown = false;
 
-bool mobileGoalOut = true;
+bool mobileGoalOut;
 
 bool rollerIntaking = false;
 bool rollerOutaking = false;
@@ -258,7 +258,7 @@ task autonomousRoutines()
 			clearDriveEnc();
 
 			//mobile goal out
-			moveMobileGoalOutAndDrive(45, 1100);
+			moveMobileGoalOutAndDrive(50, 1200);
 
 			//drive forward
 			//driveForward (90, 1100);
@@ -294,7 +294,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnLeft(127, 120);
+			turnLeft(127, 95);
 
 			waitInMilliseconds(200);
 
@@ -306,7 +306,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnLeft(100, 300);
+			turnLeft(100, 275);
 
 			waitInMilliseconds(300);
 
@@ -340,9 +340,7 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			moveMobileGoalIn();
-
-			driveBackward(-70, -400);
+			moveMobileGoalInAuto();
 
 			} else if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
 			motor [roller] = 40;
@@ -391,7 +389,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnRight(115, 115);
+			turnRight(115, 95);
 
 			waitInMilliseconds(200);
 
@@ -403,7 +401,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnRight(100, 300);
+			turnRight(100, 275);
 
 			waitInMilliseconds(300);
 
@@ -437,7 +435,7 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			moveMobileGoalIn();
+			moveMobileGoalInAuto();
 
 			driveBackward(-70, -400);
 			} else if (allianceSide == LEFT && allianceColor == RED_ALLIANCE) {
@@ -451,7 +449,7 @@ task autonomousRoutines()
 			clearDriveEnc();
 
 			//mobile goal out
-			moveMobileGoalOutAndDrive(45, 1100);
+			moveMobileGoalOutAndDrive(50, 1200);
 
 			//drive forward
 			//driveForward (90, 1100);
@@ -487,7 +485,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnLeft(127, 120);
+			turnLeft(127, 95);
 
 			waitInMilliseconds(200);
 
@@ -499,7 +497,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnLeft(100, 300);
+			turnLeft(100, 275);
 
 			waitInMilliseconds(300);
 
@@ -533,7 +531,7 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			moveMobileGoalIn();
+			moveMobileGoalInAuto();
 
 			driveBackward(-70, -400);
 			} else if (allianceSide == RIGHT && allianceColor == RED_ALLIANCE) {
@@ -583,7 +581,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnRight(115, 115);
+			turnRight(115, 95);
 
 			waitInMilliseconds(200);
 
@@ -595,7 +593,7 @@ task autonomousRoutines()
 
 			clearDriveEnc();
 
-			turnRight(100, 300);
+			turnRight(100, 275);
 
 			waitInMilliseconds(300);
 
@@ -629,7 +627,7 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			moveMobileGoalIn();
+			moveMobileGoalInAuto();
 
 			driveBackward(-70, -400);
 		}
@@ -824,15 +822,20 @@ task ProcessController() {
 			motorReq[liftL] = 127;
 			motorReq[liftR] = 127;
 		} else if (isButtonPressed(Btn5DXmtr2)) {
-			motorReq[liftL] = -127;
-			motorReq[liftR] = -127;
+		 if (SensorValue[liftLeftPot] < 2550 || SensorValue[liftRightPot] < 2550) {
+				motorReq[liftL] = -90;
+				motorReq[liftR] = -90;
+			} else {
+				motor[liftL] = 0;
+				motor[liftR] = 0;
+			}
 		} else if (isButtonPressed(Btn7UXmtr2)) {
 			moveLiftUp(100, 1750);
 		} else if (isButtonPressed(Btn7DXmtr2)) {
 			moveLiftUp(100, 2100);
 		} else {
-			motorReq[liftL] = 0;
-			motorReq[liftR] = 0;
+			motor[liftL] = 0;
+			motor[liftR] = 0;
 		}
 
 		//writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
@@ -1059,16 +1062,16 @@ void selectTeamAlliance()
 }
 
 void moveArmOut () {
-	if (SensorValue[armPot] > 45) {
-		motor[swingingArm] = 115;
-		} else if (SensorValue[armPot] <= 45) {
+	if (SensorValue[armPot] > 220) {
+		motor[swingingArm] = 120;
+		} else if (SensorValue[armPot] <= 220) {
 		motor[swingingArm] = 0;
 	}
 }
 
 void moveArmIn () {
 	if (SensorValue[armPot] < 2115) {
-		motor[swingingArm] = -125;
+		motor[swingingArm] = -120;
 		} else if (SensorValue[armPot] >= 2115) {
 		motor[swingingArm] = 0;
 	}
@@ -1076,7 +1079,7 @@ void moveArmIn () {
 
 void moveArmOutAuto() {
 	while(SensorValue[armPot] > 45) {
-		motor[swingingArm] = 115;
+		motor[swingingArm] = 100;
 	}
 	motor[swingingArm] = 0;
 }
@@ -1162,7 +1165,7 @@ void clearDriveEnc() {
 }
 
 void moveMobileGoalIn() {
-	if (SensorValue[mobilePot] > 180) {
+	if (SensorValue[mobilePot] > 230) {
 		motor[mobileGoal] = 127;
 		} else {
 		motor[mobileGoal] = 0;
@@ -1170,7 +1173,7 @@ void moveMobileGoalIn() {
 }
 
 void moveMobileGoalInAuto() {
-	while (SensorValue[mobilePot] > 180) {
+	while (SensorValue[mobilePot] > 230) {
 		motor[mobileGoal] = 127;
 	}
 	motor[mobileGoal] = 0;
