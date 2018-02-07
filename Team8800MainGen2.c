@@ -83,15 +83,10 @@ void moveArmOutAuto();
 void moveArm(bool forward);
 void moveLiftUp(int speed, int distance);
 void moveLiftUpAuto(int speed, int distance);
-void moveLiftUp4(int height);
-void moveLiftUp5(int height);
 void rollerIntake(int speed);
 void rollerOutake(int speed, int distance);
 
-void checkPositions();
-
-bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName);
-void checkButtonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName);
+void liftPIDControl (float position);
 
 //Auto Functions
 void moveMobileGoalOutAndDrive(int speed, int distance);
@@ -146,9 +141,6 @@ const byte PRESET_LEVEL_THIRTEEN = 13;
 const byte PRESET_LEVEL_FOURTEEN = 14;
 const byte PRESET_LEVEL_FIFTEEN = 15;
 byte presetLevel = PRESET_LEVEL_ONE;
-
-const byte DRIVE_SLOW_FORWARD = 60;
-const byte DRIVE_SLOW_REVERSE = -60;
 
 unsigned long autonomousStartTime;
 
@@ -221,14 +213,6 @@ float leftProportion;
 float leftIntegral;
 float rightProportion;
 float rightIntegral;
-
-int armPotPosition = 2900;
-int getToArmSpeed = 35;
-
-int rollerRotationsOut = 0;
-
-int savedValueHeight;
-int savedValueHeight4;
 
 int rollerSpeed;
 
@@ -770,15 +754,6 @@ task ProcessController() {
 			motorReq2[driveBL] = 0;
 		}
 
-		/*checkButtonToggle(Btn8LXmtr2, Btn8RXmtr2);
-		//Arm controls on bumpers
-		if (buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
-		moveArm(true);
-		} else if (!buttonToggle(Btn8LXmtr2, Btn8RXmtr2)) {
-		moveArm(false);
-		} else {
-		motor[swingingArm] = 0;
-		}*/
 		if (isButtonPressed(Btn8RXmtr2)) {
 			armIsBack = true;
 			} else if (isButtonPressed(Btn8LXmtr2)) {
@@ -814,36 +789,30 @@ task ProcessController() {
 			} else if (isButtonPressed(Btn6UXmtr2)) {
 			motor[roller] = 127;
 			} else {
-			motor[roller] = 30;
+			//motor[roller] = 30;
+			motor[roller] = 0;
 		}
 
 		//Move lift
 		if (isButtonPressed(Btn5UXmtr2)) {
-			motorReq[liftL] = 127;
-			motorReq[liftR] = 127;
+			liftPIDControl(1000);
 		} else if (isButtonPressed(Btn5DXmtr2)) {
-		 if (SensorValue[liftLeftPot] < 2550 || SensorValue[liftRightPot] < 2550) {
-				motorReq[liftL] = -90;
-				motorReq[liftR] = -90;
-			} else {
-				motor[liftL] = 0;
-				motor[liftR] = 0;
-			}
-		} else if (isButtonPressed(Btn7UXmtr2)) {
-			moveLiftUp(100, 1750);
-		} else if (isButtonPressed(Btn7DXmtr2)) {
-			moveLiftUp(100, 2100);
+			motor[liftL] = -50;
+			motor[liftR] = -50;
 		} else {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
 		}
 
-		//writeDebugStreamLine("lift Left potentiometer, %d", SensorValue[liftLeftPot]);
-		//writeDebugStreamLine("lift Right, %d", SensorValue[liftRightPot]);
+		//writeDebugStreamLine("lift Left, %d", SensorValue[liftLeftPot]/2);
+		//writeDebugStreamLine("lift Right                               , %d", SensorValue[liftRightPot]/2);
 		//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
 		//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
 		//writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
-		writeDebugStreamLine("arm pot, %d", SensorValue[armPot]);
+		//writeDebugStreamLine("arm pot, %d", SensorValue[armPot]);
+
+		datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
+		datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
 
 		if (isButtonClick(Btn8UXmtr2)) {
 			theaterChaseTask(127, 0, 127, 127, 15000);
@@ -973,7 +942,6 @@ void selectTeamAlliance()
 			sideSelected = true;
 			break;
 		}
-
 		wait1Msec(10);
 	}
 
@@ -1255,16 +1223,66 @@ void moveLiftDown(int speed, int distance) {
 	motor [liftR] = 0;
 }
 
-bool buttonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
-	bool position;
-	if (isButtonPressed(buttonOneName)) {
-		position = true;
-		} else if (isButtonPressed(buttonTwoName)) {
-		position = false;
-	}
-	return position;
-}
+void liftPIDControl (float position) {
+	float leftEncoder = -SensorValue[liftLeftPot];
+	float rightEncoder = -SensorValue[liftRightPot];
 
-void checkButtonToggle(TVexJoysticks buttonOneName, TVexJoysticks buttonTwoName) {
-	buttonToggle(buttonOneName, buttonTwoName);
+	position = -position;
+
+	//Find lift error
+	liftLeftError = position - leftEncoder;
+	liftRightError = position - rightEncoder;
+
+	leftProportion = liftLeftError * leftkp;
+	rightProportion = liftRightError * rightkp;
+
+	leftIntegral = leftErrorT * leftki;
+	rightIntegral = rightErrorT * rightki;
+
+	leftCurrent = leftProportion + leftIntegral;
+	rightCurrent = rightProportion + rightProportion;
+
+	//left
+	/*if (liftLeftError < integralAcitveZone) {
+	leftErrorT += liftLeftError;
+	} else {
+	leftErrorT = 0;
+	}*/
+	if (leftErrorT > 50/leftki) {
+		leftErrorT = 50/leftki;
+	}
+
+	//right
+	/*if (liftRightError < integralAcitveZone) {
+	rightErrorT += liftRightError;
+	} else {
+	rightErrorT = 0;
+	}*/
+	if (rightErrorT > 50/rightki) {
+		rightErrorT = 50/rightki;
+	}
+
+	//left
+	if (SensorValue[liftLeftPot] <= position + liftLeftError && SensorValue[liftLeftPot] > position - liftLeftError) {
+		leftCurrent = 0;
+	}
+
+	//right
+	if (SensorValue[liftRightPot] <= position + liftError && SensorValue[liftRightPot] > position - liftError) {
+		rightCurrent = 0;
+	}
+
+	motor[liftL] = leftCurrent;
+	motor[liftR] = rightCurrent;
+
+	writeDebugStreamLine("left encoder %d", leftEncoder);
+	writeDebugStreamLine("                         right encoder %d", rightEncoder);
+	writeDebugStreamLine("position %d", position);
+	writeDebugStreamLine("          left error %d", liftLeftError);
+	writeDebugStreamLine("                  right error %d", liftRightError);
+
+	/*datalogAddValueWithTimeStamp(0, leftCurrent);
+	datalogAddValueWithTimeStamp(1, rightCurrent);
+	datalogAddValueWithTimeStamp(2, liftLeftError);
+	datalogAddValueWithTimeStamp(3, liftRightError);*/
 }
