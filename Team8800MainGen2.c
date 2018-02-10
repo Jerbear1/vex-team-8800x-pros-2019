@@ -5,8 +5,10 @@
 #pragma config(Sensor, dgtl1,  rightDriveEnc,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl3,  leftDriveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl5,  rollerEnc,      sensorQuadEncoder)
-#pragma config(Sensor, dgtl7,  MOSI,           sensorDigitalOut)
-#pragma config(Sensor, dgtl8,  SCLK,           sensorDigitalOut)
+#pragma config(Sensor, dgtl7,  liftRightEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl9,  liftLeftEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl11, MOSI,           sensorDigitalOut)
+#pragma config(Sensor, dgtl12, SCLK,           sensorDigitalOut)
 #pragma config(Motor,  port1,           mobileGoal,    tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           driveBL,       tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port3,           driveBR,       tmotorVex393HighSpeed_MC29, openLoop, reversed, encoderPort, None)
@@ -189,30 +191,36 @@ int level13Height = 120;
 int level14Height = 120;
 int level15Height = 120;
 
-int liftError = 20;
-int armError = 20;
+int leftPositionError = 10;
+int rightPositionError = 0;
+int armError = 2;
 
 float liftLeftError;
 float liftRightError;
 float leftErrorT;
 float rightErrorT;
+float liftLeftLastError;
+float liftRightLastError;
 
-float leftkp = 0.3;
-float leftki = 0.0000009;
+float leftkp = 1.2;
+float leftki = 0.007;
+float leftkd = 0.04;
 
-float rightkp = 0.3;
-float rightki = 0.000001;
-
+float rightkp = 1.2;
+float rightki = 0.007;
+float rightkd = 0.04;
 
 float leftCurrent;
 float rightCurrent;
 
-float integralAcitveZone = 500;
+float integralAcitveZone = 200;
 
 float leftProportion;
 float leftIntegral;
+float leftDerivative;
 float rightProportion;
 float rightIntegral;
+float rightDerivative;
 
 int rollerSpeed;
 
@@ -793,26 +801,34 @@ task ProcessController() {
 			motor[roller] = 0;
 		}
 
+		bool PID;
 		//Move lift
 		if (isButtonPressed(Btn5UXmtr2)) {
-			liftPIDControl(1000);
+			PID = true;
+			//motor[liftL] = 127;
+			//motor[liftR] = 127;
 		} else if (isButtonPressed(Btn5DXmtr2)) {
 			motor[liftL] = -50;
 			motor[liftR] = -50;
+			PID = false;
 		} else {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
 		}
 
-		//writeDebugStreamLine("lift Left, %d", SensorValue[liftLeftPot]/2);
-		//writeDebugStreamLine("lift Right                               , %d", SensorValue[liftRightPot]/2);
+		if (PID) {
+			liftPIDControl(900);
+		}
+
+		writeDebugStreamLine("lift Left, %d", SensorValue[liftLeftEncoder]/*SensorValue[liftLeftPot]/2*/);
+		writeDebugStreamLine("lift Right                               , %d", SensorValue[liftRightEncoder]/*SensorValue[liftRightPot]/2*/);
 		//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
 		//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
 		//writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
 		//writeDebugStreamLine("arm pot, %d", SensorValue[armPot]);
 
-		datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
-		datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
+		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
+		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
 
 		if (isButtonClick(Btn8UXmtr2)) {
 			theaterChaseTask(127, 0, 127, 127, 15000);
@@ -866,6 +882,8 @@ void initialize()
 	SensorValue[rightDriveEnc] = 0;
 	SensorValue[leftDriveEnc] = 0;
 	SensorValue[rollerEnc] = 0;
+	SensorValue[liftLeftEncoder] = 0;
+	SensorValue[liftRightEncoder] = 0;
 
 	datalogClear();
 
@@ -1030,17 +1048,17 @@ void selectTeamAlliance()
 }
 
 void moveArmOut () {
-	if (SensorValue[armPot] > 220) {
+	if (SensorValue[armPot] > 1800) {
 		motor[swingingArm] = 120;
-		} else if (SensorValue[armPot] <= 220) {
+		} else if (SensorValue[armPot] <= 1800) {
 		motor[swingingArm] = 0;
 	}
 }
 
 void moveArmIn () {
-	if (SensorValue[armPot] < 2115) {
+	if (SensorValue[armPot] < 3850) {
 		motor[swingingArm] = -120;
-		} else if (SensorValue[armPot] >= 2115) {
+		} else if (SensorValue[armPot] >= 3850) {
 		motor[swingingArm] = 0;
 	}
 }
@@ -1224,14 +1242,12 @@ void moveLiftDown(int speed, int distance) {
 }
 
 void liftPIDControl (float position) {
-	float leftEncoder = -SensorValue[liftLeftPot];
-	float rightEncoder = -SensorValue[liftRightPot];
-
-	position = -position;
+	float leftPot = (SensorValue[liftLeftPot]/2);
+	float rightPot = (SensorValue[liftRightPot]/2);
 
 	//Find lift error
-	liftLeftError = position - leftEncoder;
-	liftRightError = position - rightEncoder;
+	liftLeftError = position - leftPot;
+	liftRightError = position - rightPot;
 
 	leftProportion = liftLeftError * leftkp;
 	rightProportion = liftRightError * rightkp;
@@ -1239,50 +1255,89 @@ void liftPIDControl (float position) {
 	leftIntegral = leftErrorT * leftki;
 	rightIntegral = rightErrorT * rightki;
 
-	leftCurrent = leftProportion + leftIntegral;
-	rightCurrent = rightProportion + rightProportion;
+	leftDerivative = (liftLeftError - liftLeftLastError) * leftkd;
+	rightDerivative = (liftRightError - liftRightLastError) * rightkd;
+
+	leftCurrent = leftProportion + leftIntegral + leftDerivative;
+	rightCurrent = rightProportion + rightProportion + rightDerivative;
 
 	//left
-	/*if (liftLeftError < integralAcitveZone) {
+	if (liftLeftError < integralAcitveZone) {
 	leftErrorT += liftLeftError;
 	} else {
 	leftErrorT = 0;
-	}*/
+	}
 	if (leftErrorT > 50/leftki) {
 		leftErrorT = 50/leftki;
 	}
 
 	//right
-	/*if (liftRightError < integralAcitveZone) {
+	if (liftRightError < integralAcitveZone) {
 	rightErrorT += liftRightError;
 	} else {
 	rightErrorT = 0;
-	}*/
+	}
 	if (rightErrorT > 50/rightki) {
 		rightErrorT = 50/rightki;
 	}
 
+	if (liftLeftError == 0) {
+		leftDerivative = 0;
+	}
+	if (liftRightError == 0) {
+		rightDerivative = 0;
+	}
+
+	liftLeftLastError = liftLeftError;
+	liftRightLastError = liftRightError;
+
 	//left
-	if (SensorValue[liftLeftPot] <= position + liftLeftError && SensorValue[liftLeftPot] > position - liftLeftError) {
+	/*if (leftPot >= position + liftError && leftPot < position - liftError) {
 		leftCurrent = 0;
 	}
 
 	//right
-	if (SensorValue[liftRightPot] <= position + liftError && SensorValue[liftRightPot] > position - liftError) {
+	if (rightPot >= position + liftError && rightPot < position - liftError) {
+		rightCurrent = 0;
+	}*/
+
+	if (abs(liftLeftError) <= leftPositionError) {
+		leftCurrent = 0;
+	}
+	if (abs(liftRightError) <= rightPositionError) {
 		rightCurrent = 0;
 	}
 
-	motor[liftL] = leftCurrent;
-	motor[liftR] = rightCurrent;
+	if (leftCurrent > 127) {
+		leftCurrent = 127;
+	}
+	if (rightCurrent > 127) {
+		rightCurrent = 127;
+	}
+	if (leftCurrent < -127) {
+		leftCurrent = -127;
+	}
+	if (rightCurrent < -127) {
+		rightCurrent = -127;
+	}
 
-	writeDebugStreamLine("left encoder %d", leftEncoder);
-	writeDebugStreamLine("                         right encoder %d", rightEncoder);
+	motor[liftL] = -leftCurrent;
+	motor[liftR] = -rightCurrent;
+
+	writeDebugStreamLine("left encoder %d", leftPot);
+	writeDebugStreamLine("                         right encoder %d", rightPot);
 	writeDebugStreamLine("position %d", position);
 	writeDebugStreamLine("          left error %d", liftLeftError);
 	writeDebugStreamLine("                  right error %d", liftRightError);
+	writeDebugStreamLine("                                            left curent %d", -leftCurrent);
+	writeDebugStreamLine("                                                        right curent %d", -rightCurrent);
 
-	/*datalogAddValueWithTimeStamp(0, leftCurrent);
-	datalogAddValueWithTimeStamp(1, rightCurrent);
+	datalogAddValueWithTimeStamp(0, leftPot);
+	datalogAddValueWithTimeStamp(1, rightPot);
 	datalogAddValueWithTimeStamp(2, liftLeftError);
-	datalogAddValueWithTimeStamp(3, liftRightError);*/
+	datalogAddValueWithTimeStamp(3, liftRightError);
+	datalogAddValueWithTimeStamp(4, -leftCurrent);
+	datalogAddValueWithTimeStamp(5, -rightCurrent);
+	datalogAddValueWithTimeStamp(6, -leftIntegral);
+	datalogAddValueWithTimeStamp(7, -rightIntegral);
 }
