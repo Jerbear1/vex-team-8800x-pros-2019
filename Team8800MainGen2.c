@@ -2,6 +2,8 @@
 #pragma config(Sensor, in2,    liftLeftPot,    sensorPotentiometer)
 #pragma config(Sensor, in3,    armPot,         sensorPotentiometer)
 #pragma config(Sensor, in4,    liftRightPot,   sensorAnalog)
+#pragma config(Sensor, in5,    thingyPot,      sensorPotentiometer)
+#pragma config(Sensor, in6,    thingy2Pot,     sensorPotentiometer)
 #pragma config(Sensor, dgtl1,  rightDriveEnc,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl3,  leftDriveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl5,  rollerEnc,      sensorQuadEncoder)
@@ -918,13 +920,18 @@ task ProcessController() {
 			stackLevel = 1;
 		}
 
-		writeDebugStreamLine("stack level %d", stackLevel);
-		writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
+		//writeDebugStreamLine("stack level %d", stackLevel);
+		//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
 		//writeDebugStreamLine("lift Right                               , %d", SensorValue[liftRightEncoder]/*SensorValue[liftRightPot]/2*/);
 		//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
 		//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
 		//writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
 		//writeDebugStreamLine("arm pot, %d", SensorValue[armPot]);
+		writeDebugStreamLine("thingy pot, %d", SensorValue[thingyPot]);
+		writeDebugStreamLine("thingy2 analog6 pot, %d", SensorValue[thingy2Pot]);
+
+		datalogAddValueWithTimeStamp(0, SensorValue[thingyPot]);
+		datalogAddValueWithTimeStamp(1, SensorValue[thingy2Pot]);
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
