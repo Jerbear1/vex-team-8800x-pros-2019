@@ -1554,3 +1554,137 @@ void postStacking() {
 	increaseStackLvl = true;
 	outakeFinished = false;
 }
+
+void autoDrivePIDControl (int leftDistance, int rightDistance) {
+	float leftEnc = SensorValue[leftDriveEnc];
+	float rightEnc = SensorValue[rightDriveEnc];
+
+	float leftError;
+	float rightError;
+	float leftProportion;
+	float rightProportion;
+	float leftIntegral;
+	float rightIntegral;
+	float leftDerivative;
+	float rightDerivative;
+
+	float leftErrorT;
+	float rightErrorT;
+	float leftLastError;
+	float rightLastError;
+
+	float leftCurrent;
+	float rightCurrent;
+
+	//Find Distance error
+	leftError = leftDistance - leftEnc;
+	rightError = rightDistance - rightEnc;
+
+	//Set proportion
+	leftProportion = leftError * leftkp;
+	rightProportion = rightError * rightkp;
+
+	leftIntegral = leftErrorT * leftki;
+	rightIntegral = rightErrorT * rightki;
+
+	leftDerivative = (leftError - leftLastError) * leftkd;
+	rightDerivative = (rightError - rightLastError) * rightkd;
+
+	//Calculate integral
+	//left
+	if (leftError < integralAcitveZone) {
+		leftErrorT += leftError;
+		} else {
+		leftErrorT = 0;
+	}
+	if (leftErrorT > 50/leftki) {
+		leftErrorT = 50/leftki;
+	}
+
+	//right
+	if (rightError < integralAcitveZone) {
+		rightErrorT += rightError;
+		} else {
+		rightErrorT = 0;
+	}
+	if (rightErrorT > 50/rightki) {
+		rightErrorT = 50/rightki;
+	}
+
+	//Calculate derivative
+	if (abs(liftLeftError) <= leftPositionError) {
+		leftDerivative = 0;
+	}
+	if (abs(liftRightError) <= rightPositionError) {
+		rightDerivative = 0;
+	}
+
+	leftLastError = leftError;
+	rightLastError = rightError;
+
+	//Set current
+	leftCurrent = leftProportion + leftIntegral + leftDerivative;
+	rightCurrent = rightProportion + rightIntegral + rightDerivative;
+
+	//left
+	/*if (leftPot >= position + liftError && leftPot < position - liftError) {
+	leftCurrent = 0;
+	}
+
+	//right
+	if (rightPot >= position + liftError && rightPot < position - liftError) {
+	rightCurrent = 0;
+	}*/
+
+	// Still needs to be done vvvvvvvv !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	if (abs(leftError) <= leftPositionError) {
+		leftCurrent = 0;
+		liftLeftAtPosition = true;
+	}
+	if (abs(liftRightError) <= rightPositionError) {
+		rightCurrent = 0;
+		liftRightAtPosition = true;
+	}
+	if (abs(liftLeftError) <= leftPositionError + 3) {
+		liftLeftAtPosition = true;
+	}
+	if (abs(liftRightError) <= rightPositionError + 3) {
+		liftRightAtPosition = true;
+	}
+
+	if (leftCurrent > 120) {
+		leftCurrent = 120;
+	}
+	if (rightCurrent > 120) {
+		rightCurrent = 120;
+	}
+	if (leftCurrent < -120) {
+		leftCurrent = -120;
+	}
+	if (rightCurrent < -120) {
+		rightCurrent = -120;
+	}
+
+	motor[liftL] = leftCurrent;
+	motor[liftR] = rightCurrent;
+
+	//writeDebugStreamLine("left %d", liftLeftAtPosition);
+	//writeDebugStreamLine("right %d", liftRightAtPosition);
+	//writeDebugStreamLine("arm %d", armIsReallyBack);
+	//writeDebugStreamLine("left encoder %d", leftPot);
+	//writeDebugStreamLine("                         right encoder %d", rightPot);
+	//writeDebugStreamLine("position %d", position);
+	//writeDebugStreamLine("          left error %d", liftLeftError);
+	//writeDebugStreamLine("                  right error %d", liftRightError);
+	//writeDebugStreamLine("                           q                 left curent %d", leftCurrent);
+	//writeDebugStreamLine("                                                        right curent %d", rightCurrent);
+
+	//datalogAddValueWithTimeStamp(0, leftPot);
+	//datalogAddValueWithTimeStamp(1, rightPot);
+	//datalogAddValueWithTimeStamp(2, liftLeftError);
+	//datalogAddValueWithTimeStamp(3, liftRightError);
+	//datalogAddValueWithTimeStamp(4, leftCurrent);
+	//datalogAddValueWithTimeStamp(5, rightCurrent);
+	//datalogAddValueWithTimeStamp(6, leftDerivative);
+	//datalogAddValueWithTimeStamp(7, rightDerivative);
+}
