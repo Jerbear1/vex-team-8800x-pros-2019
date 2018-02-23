@@ -7,9 +7,10 @@
 #pragma config(Sensor, dgtl1,  rightDriveEnc,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl3,  leftDriveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl5,  rollerEnc,      sensorQuadEncoder)
-#pragma config(Sensor, dgtl7,  liftRightEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl6,  liftRightEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl7,  MOSI,           sensorDigitalOut)
+#pragma config(Sensor, dgtl8,  SCLK,           sensorDigitalOut)
 #pragma config(Sensor, dgtl9,  liftLeftEncoder, sensorQuadEncoder)
-#pragma config(Sensor, dgtl11, liftLimit,      sensorTouch)
 #pragma config(Motor,  port1,           mobileGoal,    tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           driveBL,       tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port3,           driveBR,       tmotorVex393HighSpeed_MC29, openLoop, reversed, encoderPort, None)
@@ -61,6 +62,7 @@
 #pragma DebuggerWindows("debugStream")
 
 #include "Team8800Lib.c"		// Utility routines to simplify programming
+#include "Team8800Led.c"		// Routines to control the LED strip
 #include "MultiTask.c"  // Motor slew control
 
 // Delcarations
@@ -936,6 +938,22 @@ task ProcessController() {
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
 
+		if (isButtonClick(Btn7U)) {
+			theaterChaseTask(127, 0, 127, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7R)) {
+			theaterChaseTask(0, 0, 127, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7L)) {
+			theaterChaseTask(127, 0, 0, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7D)) {
+			rainbowCycleTask(0, 15000);
+		}
+
 		// --- Choose alliance if both Left & Right LCD Buttons are pressed
 
 		if ((nLCDButtons & (kButtonLeft | kButtonRight)) == (kButtonLeft | kButtonRight)) {
@@ -968,6 +986,9 @@ void initialize()
 {
 	// Library routines thread
 	startTask(activateLib);
+
+	// LED strip routines thread
+	setupLedStrip();
 
 	SensorValue[rightDriveEnc] = 0;
 	SensorValue[leftDriveEnc] = 0;
@@ -1435,7 +1456,6 @@ void liftPIDControl (int position) {
 
 	//writeDebugStreamLine("left %d", liftLeftAtPosition);
 	//writeDebugStreamLine("right %d", liftRightAtPosition);
-	writeDebugStreamLine("limit switch %d", SensorValue[liftLimit]);
 	//writeDebugStreamLine("arm %d", armIsReallyBack);
 	//writeDebugStreamLine("left encoder %d", leftPot);
 	//writeDebugStreamLine("                         right encoder %d", rightPot);
@@ -1545,19 +1565,19 @@ void postStacking() {
 	moveArmOut();
 	armIsBack = true;
 	if (!armIsReallyBack) {
-		if (SensorValue[liftLimit] == 0) {
+		/*if (SensorValue[liftLimit] == 0) {
 			motor[liftL] = -90;
 			motor[liftR] = -90;
-		}
+		}*/
 	} else {
 		motor[liftL] = 0;
 		motor[liftR] = 0;
 	}
-	if (SensorValue[liftLimit] == 1) {
+	/*if (SensorValue[liftLimit] == 1) {
 		SensorValue[liftLeftEncoder] = 0;
 		SensorValue[liftRightEncoder] = 0;
 		justStacked = false;
-	}
+	}*/
 	increaseStackLvl = true;
 	outakeFinished = false;
 }
