@@ -1,16 +1,12 @@
 #pragma config(Sensor, in1,    mobilePot,      sensorPotentiometer)
-#pragma config(Sensor, in2,    liftLeftPot,    sensorPotentiometer)
+#pragma config(Sensor, in2,    liftRightPot,   sensorPotentiometer)
 #pragma config(Sensor, in3,    armPot,         sensorPotentiometer)
-#pragma config(Sensor, in4,    liftRightPot,   sensorAnalog)
-#pragma config(Sensor, in5,    thingyPot,      sensorPotentiometer)
-#pragma config(Sensor, in6,    thingy2Pot,     sensorPotentiometer)
+#pragma config(Sensor, in4,    liftLeftPot,    sensorPotentiometer)
 #pragma config(Sensor, dgtl1,  rightDriveEnc,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl3,  leftDriveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl5,  rollerEnc,      sensorQuadEncoder)
-#pragma config(Sensor, dgtl6,  liftRightEncoder, sensorQuadEncoder)
 #pragma config(Sensor, dgtl7,  MOSI,           sensorDigitalOut)
 #pragma config(Sensor, dgtl8,  SCLK,           sensorDigitalOut)
-#pragma config(Sensor, dgtl9,  liftLeftEncoder, sensorQuadEncoder)
 #pragma config(Motor,  port1,           mobileGoal,    tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           driveBL,       tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port3,           driveBR,       tmotorVex393HighSpeed_MC29, openLoop, reversed, encoderPort, None)
@@ -66,6 +62,8 @@
 #include "MultiTask.c"  // Motor slew control
 
 // Delcarations
+
+int number = 10;
 
 // Initialize
 void initialize();
@@ -225,13 +223,13 @@ float rightErrorT;
 float liftLeftLastError;
 float liftRightLastError;
 
-float leftkp = 4;
-float leftki = 0.001;
-float leftkd = 35;
+float leftkp = 0.4;
+float leftki = 0.00001;
+float leftkd = 0.35;
 
-float rightkp = 4;
-float rightki = 0.001;
-float rightkd = 35;
+float rightkp = 0.4;
+float rightki = 0.00001;
+float rightkd = 0.35;
 
 float leftCurrent;
 float rightCurrent;
@@ -264,8 +262,6 @@ task autonomousRoutines()
 	case AUTONOMOUS_MODE_MOBILE_GOAL_20:
 		if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
 
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
 			motor [roller] = 40;
 
 			//move lift up
@@ -338,9 +334,6 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
-
 			moveLiftUpAuto(100, 20);
 
 			clearDriveEnc();
@@ -370,8 +363,6 @@ task autonomousRoutines()
 			driveBackward(-70, -200);
 
 			} else if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
 			motor [roller] = 40;
 
 			//move lift up
@@ -444,9 +435,6 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
-
 			moveLiftUpAuto(100, 25);
 
 			clearDriveEnc();
@@ -476,8 +464,6 @@ task autonomousRoutines()
 			driveBackward(-70, -200);
 
 			} else if (allianceSide == LEFT && allianceColor == RED_ALLIANCE) {
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
 			motor [roller] = 40;
 
 			//move lift up
@@ -550,9 +536,6 @@ task autonomousRoutines()
 
 			waitInMilliseconds(200);
 
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
-
 			moveLiftUpAuto(100, 20);
 
 			clearDriveEnc();
@@ -582,8 +565,6 @@ task autonomousRoutines()
 			driveBackward(-70, -200);
 
 		} else if (allianceSide == RIGHT && allianceColor == RED_ALLIANCE) {
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
 			motor [roller] = 40;
 
 			//move lift up
@@ -656,9 +637,6 @@ task autonomousRoutines()
 
 			//waitInMilliseconds(200);
 
-			SensorValue[liftLeftEncoder] = 0;
-			SensorValue[liftRightEncoder] = 0;
-
 			moveLiftUpAuto(100, 15);
 
 			clearDriveEnc();
@@ -694,9 +672,6 @@ task autonomousRoutines()
 		//Apply passive power to roller
 		motor [roller] = 40;
 
-		SensorValue[liftLeftEncoder] = 0;
-		SensorValue[liftRightEncoder] = 0;
-
 		//move lift up
 		moveLiftUpAuto(70, 30);
 
@@ -710,17 +685,10 @@ task autonomousRoutines()
 
 		waitInMilliseconds(200);
 
-		SensorValue[liftLeftEncoder] = 0;
-		SensorValue[liftRightEncoder] = 0;
-
 		//move lift down
 		moveLiftDown(50, 0);
 
 		waitInMilliseconds(500);
-
-
-		SensorValue[liftLeftEncoder] = 0;
-		SensorValue[liftRightEncoder] = 0;
 
 		//move lift up and release cone
 		motor[roller] = -100;
@@ -862,11 +830,13 @@ task ProcessController() {
 
 		//Move lift
 		if (isButtonPressed(Btn5UXmtr2)) {
-			motor[liftL] = 127;
-			motor[liftR] = 127;
+			/*motor[liftL] = 127;
+			motor[liftR] = 127;*/
+			liftPIDControl(1600);
 			} else if (isButtonPressed(Btn5DXmtr2)) {
-			motor[liftL] = -90;
-			motor[liftR] = -90;
+			/*motor[liftL] = -90;
+			motor[liftR] = -90;*/
+			liftPIDControl(1000);
 			} else if (stacking) {
 			autoStack(stackLevel);
 			} else {
@@ -905,8 +875,8 @@ task ProcessController() {
 
 		//Clear Encoders whenever limit switch is hit
 		/*if (SensorValue[liftLimit]) {
-		SensorValue[liftLeftEncoder] = 0;
-		SensorValue[liftRightEncoder] = 0;
+		SensorValue[liftLeftPot] = 0;
+		SensorValue[liftRightPot] = 0;
 		}*/
 
 		//Deactivate stacking emergency
@@ -924,16 +894,14 @@ task ProcessController() {
 
 		//writeDebugStreamLine("stack level %d", stackLevel);
 		//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
-		//writeDebugStreamLine("lift Right                               , %d", SensorValue[liftRightEncoder]/*SensorValue[liftRightPot]/2*/);
-		//writeDebugStreamLine("Left Enc, %d", SensorValue[leftDriveEnc]);
-		//writeDebugStreamLine("mobile, %d", SensorValue[mobilePot]);
-		//writeDebugStreamLine("roller Enc, %d", SensorValue[rollerEnc]);
-		//writeDebugStreamLine("arm pot, %d", SensorValue[armPot]);
-		writeDebugStreamLine("thingy pot, %d", SensorValue[thingyPot]);
-		writeDebugStreamLine("thingy2 analog6 pot, %d", SensorValue[thingy2Pot]);
+		//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
+		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
+		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
+		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 
-		datalogAddValueWithTimeStamp(0, SensorValue[thingyPot]);
-		datalogAddValueWithTimeStamp(1, SensorValue[thingy2Pot]);
+		datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
+		datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
@@ -993,8 +961,6 @@ void initialize()
 	SensorValue[rightDriveEnc] = 0;
 	SensorValue[leftDriveEnc] = 0;
 	SensorValue[rollerEnc] = 0;
-	SensorValue[liftLeftEncoder] = 0;
-	SensorValue[liftRightEncoder] = 0;
 
 	datalogClear();
 
@@ -1336,7 +1302,7 @@ void moveMobileGoalInAndDrive(int speed, int distance) {
 
 
 void moveLiftUp(int speed, int distance) {
-	if (((SensorValue[liftLeftEncoder] + SensorValue[liftRightEncoder])/2) < distance) {
+	if (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
 		motor [liftL] = speed;
 		motor [liftR] = speed;
 		} else {
@@ -1346,7 +1312,7 @@ void moveLiftUp(int speed, int distance) {
 }
 
 void moveLiftUpAuto(int speed, int distance) {
-	while (((SensorValue[liftLeftEncoder] + SensorValue[liftRightEncoder])/2) < distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
 		motor [liftL] = speed;
 		motor [liftR] = speed;
 	}
@@ -1355,7 +1321,7 @@ void moveLiftUpAuto(int speed, int distance) {
 }
 
 void moveLiftDown(int speed, int distance) {
-	while (((SensorValue[liftLeftEncoder] + SensorValue[liftRightEncoder])/2) > -distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > -distance) {
 		motor [liftL] = -speed;
 		motor [liftR] = -speed;
 	}
@@ -1364,8 +1330,8 @@ void moveLiftDown(int speed, int distance) {
 }
 
 void liftPIDControl (int position) {
-	float leftPot = SensorValue[liftLeftEncoder];
-	float rightPot = SensorValue[liftRightEncoder];
+	float leftPot = SensorValue[liftLeftPot];
+	float rightPot = SensorValue[liftRightPot];
 
 	//Find lift error
 	liftLeftError = position - leftPot;
@@ -1381,14 +1347,14 @@ void liftPIDControl (int position) {
 	rightDerivative = (liftRightError - liftRightLastError) * rightkd;
 
 	//left
-	if (liftLeftError < integralAcitveZone) {
+	if (abs(liftLeftError) < integralAcitveZone) {
 		leftErrorT += liftLeftError;
 		} else {
 		leftErrorT = 0;
 	}
-	if (leftErrorT > 50/leftki) {
+	/*if (leftErrorT > 50/leftki) {
 		leftErrorT = 50/leftki;
-	}
+	}*/
 
 	//right
 	if (liftRightError < integralAcitveZone) {
@@ -1396,16 +1362,16 @@ void liftPIDControl (int position) {
 		} else {
 		rightErrorT = 0;
 	}
-	if (rightErrorT > 50/rightki) {
+	/*if (rightErrorT > 50/rightki) {
 		rightErrorT = 50/rightki;
-	}
+	}*/
 
-	if (abs(liftLeftError) <= leftPositionError) {
+	/*if (abs(liftLeftError) <= leftPositionError) {
 		leftDerivative = 0;
 	}
 	if (abs(liftRightError) <= rightPositionError) {
 		rightDerivative = 0;
-	}
+	}*/
 
 	liftLeftLastError = liftLeftError;
 	liftRightLastError = liftRightError;
@@ -1431,10 +1397,10 @@ void liftPIDControl (int position) {
 		rightCurrent = 0;
 		liftRightAtPosition = true;
 	}
-	if (abs(liftLeftError) <= leftPositionError + 3) {
+	if (abs(liftLeftError) <= leftPositionError) {
 		liftLeftAtPosition = true;
 	}
-	if (abs(liftRightError) <= rightPositionError + 3) {
+	if (abs(liftRightError) <= rightPositionError) {
 		liftRightAtPosition = true;
 	}
 
@@ -1574,8 +1540,8 @@ void postStacking() {
 		motor[liftR] = 0;
 	}
 	/*if (SensorValue[liftLimit] == 1) {
-		SensorValue[liftLeftEncoder] = 0;
-		SensorValue[liftRightEncoder] = 0;
+		SensorValue[liftLeftPot] = 0;
+		SensorValue[liftRightPot] = 0;
 		justStacked = false;
 	}*/
 	increaseStackLvl = true;
