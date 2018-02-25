@@ -212,8 +212,8 @@ int level13Height = 120;
 int level14Height = 120;
 int level15Height = 120;
 
-int leftPositionError = 50;
-int rightPositionError = 50;
+int leftPositionError = 100;
+int rightPositionError = 100;
 int armError = 2;
 
 float liftLeftError;
@@ -851,25 +851,21 @@ task ProcessController() {
 
 		if (stacking) {
 			autoStack(stackLevel);
-			} else if (justStacked) {
+		} else if (stackPrev) {
+			autoStack(prevStackLevel);
+		} else if (justStacked) {
 			postStacking();
 		}
 
 		//Activate Stack
-		if (isButtonPressed(Btn7RXmtr2)) {
+		/*if (isButtonPressed(Btn7RXmtr2)) {
 			liftLeftAtPosition = true;
 			liftRightAtPosition = true;
-		}
+		}*/
 
 		//Activate last level
 		if (isButtonPressed(Btn8DXmtr2)) {
 			stackPrev = true;
-		}
-
-		if (stackPrev) {
-		autoStack(prevStackLevel);
-		} else if (justStacked) {
-		postStacking();
 		}
 
 		//Increase stack level
@@ -1401,7 +1397,7 @@ void liftPIDControl (int position) {
 	}
 
 	//Check that lift has stopped
-	/*if (abs(liftLeftError) <= leftPositionError) {
+	if (abs(liftLeftError) <= leftPositionError) {
 	liftLeftAtPosition = true;
 	} else {
 	liftLeftAtPosition = false;
@@ -1410,7 +1406,7 @@ void liftPIDControl (int position) {
 	liftRightAtPosition = true;
 	} else {
 	liftRightAtPosition = false;
-	}*/
+	}
 
 	if (leftCurrent > 100) {
 		leftCurrent = 100;
@@ -1451,34 +1447,34 @@ void liftPIDControl (int position) {
 
 void autoStackStep(int liftPos) {
 	if (outakeFinished) {
-	stacking = false;
-	stackPrev = false;
-	justStacked = true;
-	liftLeftAtPosition = false;
-	liftRightAtPosition = false;
-	armIsReallyBack = false;
-	writeDebugStreamLine("stage 4");
-	} else {
-	if (!armIsReallyBack) {
-	liftPIDControl(liftPos);
-	writeDebugStreamLine("stage 1");
-	} else if (time1[T1] <= 400) {
-	motor[liftL] = -60;
-	motor[liftR] = -60;
-	} else if (time1[T1] >= 400) {
-	rollerOutake(-127, 1000);
-	liftPIDControl(liftPos + 100);
-	writeDebugStreamLine("Second Pid and Outake");
-	}
+		stacking = false;
+		stackPrev = false;
+		justStacked = true;
+		liftLeftAtPosition = false;
+		liftRightAtPosition = false;
+		armIsReallyBack = false;
+		writeDebugStreamLine("stage 4");
+		} else {
+		if (!armIsReallyBack) {
+			liftPIDControl(liftPos);
+			writeDebugStreamLine("stage 1");
+			} else if (time1[T1] <= 400) {
+			motor[liftL] = -60;
+			motor[liftR] = -60;
+			} else if (time1[T1] >= 400) {
+			rollerOutake(-127, 1000);
+			liftPIDControl(liftPos + 100);
+			writeDebugStreamLine("Second Pid and Outake");
+		}
 
-	if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
-	moveArmIn();
-	//Not auto stacking stuff
-	armIsBack = false;
-	SensorValue[rollerEnc] = 0;
-	writeDebugStreamLine("stage 2");
-	clearTimer(T1);
-	}
+		if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
+			moveArmIn();
+			//Not auto stacking stuff
+			armIsBack = false;
+			SensorValue[rollerEnc] = 0;
+			writeDebugStreamLine("stage 2");
+			clearTimer(T1);
+		}
 	}
 }
 
@@ -1509,7 +1505,7 @@ void autoStack(int level) {
 		break;
 
 	case PRESET_LEVEL_SEVEN:
-		autoStackStep(1140);
+		autoStackStep(1170);
 		break;
 
 	case PRESET_LEVEL_EIGHT:
@@ -1543,8 +1539,9 @@ void postStacking() {
 	armIsBack = true;
 	if (!armIsReallyBack) {
 		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
-			motor[liftL] = -70;
-			motor[liftL] = -70;
+			/*motor[liftL] = -70;
+			motor[liftL] = -70;*/
+			liftPIDControl(260);
 		}
 		} else {
 		motor[liftL] = 0;
@@ -1552,7 +1549,7 @@ void postStacking() {
 	}
 	if (SensorValue[liftLeftPot] <= 270 && SensorValue[liftRightPot] <= 270) {
 		justStacked = false;
+		increaseStackLvl = true;
 	}
-	increaseStackLvl = true;
 	outakeFinished = false;
 }
