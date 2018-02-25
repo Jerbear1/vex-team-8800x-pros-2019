@@ -197,7 +197,7 @@ bool presetLevelScrollDown = false;
 bool timeUp = false;
 
 int stackLevel = 1;
-int prevStackLevel;
+int prevStackLevel = 0;
 
 int level4Height = 85;
 int level5Height = 115;
@@ -212,8 +212,8 @@ int level13Height = 120;
 int level14Height = 120;
 int level15Height = 120;
 
-int leftPositionError = 6;
-int rightPositionError = 6;
+int leftPositionError = 1;
+int rightPositionError = 1;
 int armError = 2;
 
 float liftLeftError;
@@ -224,17 +224,17 @@ float liftLeftLastError;
 float liftRightLastError;
 
 float leftkp = 0.4;
-float leftki = 0.00001;
-float leftkd = 0.35;
+float leftki = 0.008;
+float leftkd = 2;
 
 float rightkp = 0.4;
-float rightki = 0.00001;
-float rightkd = 0.35;
+float rightki = 0.0009;
+float rightkd = 2;
 
 float leftCurrent;
 float rightCurrent;
 
-float integralAcitveZone = 20;
+float integralAcitveZone = 100;
 
 float leftProportion;
 float leftIntegral;
@@ -832,11 +832,11 @@ task ProcessController() {
 		if (isButtonPressed(Btn5UXmtr2)) {
 			/*motor[liftL] = 127;
 			motor[liftR] = 127;*/
-			liftPIDControl(1600);
+			liftPIDControl(1000);
 			} else if (isButtonPressed(Btn5DXmtr2)) {
 			/*motor[liftL] = -90;
 			motor[liftR] = -90;*/
-			liftPIDControl(1000);
+			liftPIDControl(600);
 			} else if (stacking) {
 			autoStack(stackLevel);
 			} else {
@@ -868,7 +868,7 @@ task ProcessController() {
 
 		//Increase stack level
 		if (isButtonPressed(Btn8UXmtr2) && increaseStackLvl) {
-			prevStackLevel = stackLevel;
+			prevStackLevel ++;
 			stackLevel ++;
 			increaseStackLvl = false;
 		}
@@ -883,16 +883,19 @@ task ProcessController() {
 		if (isButtonPressed(Btn7UXmtr2)) {
 			stacking = false;
 			justStacked = false;
+			stackPrev = false;
 		}
 
 		//Deactivate stacking reset to 1
 		if (isButtonPressed(Btn7DXmtr2)) {
 			stacking = false;
 			justStacked = false;
+			stackPrev = false;
 			stackLevel = 1;
+			prevStackLevel = 0;
 		}
 
-		//writeDebugStreamLine("stack level %d", stackLevel);
+		writeDebugStreamLine("stack level %d", stackLevel);
 		//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
 		//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
 		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
@@ -902,6 +905,7 @@ task ProcessController() {
 
 		datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
+		//datalogAddValueWithTimeStamp(2, SensorValue[armPot]);
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
@@ -1126,7 +1130,7 @@ void selectTeamAlliance()
 
 void moveArmOut () {
 	if (SensorValue[armPot] > 2000) {
-		motor[swingingArm] = 110;
+		motor[swingingArm] = 120;
 		} else if (SensorValue[armPot] <= 2000) {
 		motor[swingingArm] = 0;
 		armIsReallyBack = false;
@@ -1135,7 +1139,7 @@ void moveArmOut () {
 
 void moveArmIn () {
 	if (SensorValue[armPot] < 3640) {
-		motor[swingingArm] = -110;
+		motor[swingingArm] = -120;
 		//writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
 		} else if (SensorValue[armPot] >= 3700) {
 		motor[swingingArm] = 0;
@@ -1357,9 +1361,9 @@ void liftPIDControl (int position) {
 	}*/
 
 	//right
-	if (liftRightError < integralAcitveZone) {
+	if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
 		rightErrorT += liftRightError;
-		} else {
+	} else {
 		rightErrorT = 0;
 	}
 	/*if (rightErrorT > 50/rightki) {
@@ -1377,7 +1381,7 @@ void liftPIDControl (int position) {
 	liftRightLastError = liftRightError;
 
 	leftCurrent = leftProportion + leftIntegral + leftDerivative;
-	rightCurrent = rightProportion + rightIntegral + rightDerivative;
+	rightCurrent = rightProportion + leftIntegral + rightDerivative;
 
 	//left
 	/*if (leftPot >= position + liftError && leftPot < position - liftError) {
@@ -1391,40 +1395,40 @@ void liftPIDControl (int position) {
 
 	if (abs(liftLeftError) <= leftPositionError) {
 		leftCurrent = 0;
-		liftLeftAtPosition = true;
 	}
 	if (abs(liftRightError) <= rightPositionError) {
 		rightCurrent = 0;
-		liftRightAtPosition = true;
 	}
-	if (abs(liftLeftError) <= leftPositionError) {
+
+	//Check that lift has stopped
+	if (abs(leftDerivative) <= leftPositionError) {
 		liftLeftAtPosition = true;
 	}
-	if (abs(liftRightError) <= rightPositionError) {
+	if (abs(rightDerivative) <= rightPositionError) {
 		liftRightAtPosition = true;
 	}
 
-	if (leftCurrent > 120) {
-		leftCurrent = 120;
+	if (leftCurrent > 100) {
+		leftCurrent = 100;
 	}
-	if (rightCurrent > 120) {
-		rightCurrent = 120;
+	if (rightCurrent > 100) {
+		rightCurrent = 100;
 	}
-	if (leftCurrent < -120) {
-		leftCurrent = -120;
+	if (leftCurrent < -100) {
+		leftCurrent = -100;
 	}
-	if (rightCurrent < -120) {
-		rightCurrent = -120;
+	if (rightCurrent < -100) {
+		rightCurrent = -100;
 	}
 
 	motor[liftL] = leftCurrent;
 	motor[liftR] = rightCurrent;
 
-	//writeDebugStreamLine("left %d", liftLeftAtPosition);
-	//writeDebugStreamLine("right %d", liftRightAtPosition);
+	//writeDebugStreamLine("left %d", leftCurrent);
+	//writeDebugStreamLine("             right %d", rightCurrent);
 	//writeDebugStreamLine("arm %d", armIsReallyBack);
-	//writeDebugStreamLine("left encoder %d", leftPot);
-	//writeDebugStreamLine("                         right encoder %d", rightPot);
+	//writeDebugStreamLine("  left integral %d", leftIntegral);
+	//writeDebugStreamLine("                          right integral %d", rightIntegral);
 	//writeDebugStreamLine("position %d", position);
 	//writeDebugStreamLine("          left error %d", liftLeftError);
 	//writeDebugStreamLine("                  right error %d", liftRightError);
@@ -1433,17 +1437,18 @@ void liftPIDControl (int position) {
 
 	//datalogAddValueWithTimeStamp(0, leftPot);
 	//datalogAddValueWithTimeStamp(1, rightPot);
-	//datalogAddValueWithTimeStamp(2, liftLeftError);
-	//datalogAddValueWithTimeStamp(3, liftRightError);
-	//datalogAddValueWithTimeStamp(4, leftCurrent);
-	//datalogAddValueWithTimeStamp(5, rightCurrent);
-	//datalogAddValueWithTimeStamp(6, leftDerivative);
-	//datalogAddValueWithTimeStamp(7, rightDerivative);
+	datalogAddValueWithTimeStamp(2, liftLeftError);
+	datalogAddValueWithTimeStamp(3, liftRightError);
+	datalogAddValueWithTimeStamp(4, leftIntegral);
+	datalogAddValueWithTimeStamp(5, rightIntegral);
+	datalogAddValueWithTimeStamp(6, position);
+	datalogAddValueWithTimeStamp(7, leftPot);
 }
 
 void autoStackStep(int liftPos) {
 	if (outakeFinished) {
 		stacking = false;
+		//prevStackLevel = false;
 		justStacked = true;
 		liftLeftAtPosition = false;
 		liftRightAtPosition = false;
@@ -1453,16 +1458,17 @@ void autoStackStep(int liftPos) {
 		if (!armIsReallyBack) {
 			liftPIDControl(liftPos);
 			writeDebugStreamLine("stage 1");
-		} else if (time1[T1] <= 200) {
-			motor[liftL] = -70;
-			motor[liftR] = -70;
-		} else if (time1[T1] >= 200) {
+		} else if (time1[T1] <= 400) {
+			motor[liftL] = -40;
+			motor[liftR] = -40;
+		} else if (time1[T1] >= 400) {
 			rollerOutake(-127, 750);
-			liftPIDControl(liftPos + 10);
+			liftPIDControl(liftPos + 100);
 		}
 
-		if (/*liftLeftAtPosition &&*/ liftRightAtPosition && !armIsReallyBack) {
+		if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
 			moveArmIn();
+			//Not auto stacking stuff
 			armIsBack = false;
 			SensorValue[rollerEnc] = 0;
 			writeDebugStreamLine("stage 2");
@@ -1474,55 +1480,55 @@ void autoStackStep(int liftPos) {
 void autoStack(int level) {
 	switch (level) {
 	case PRESET_LEVEL_ONE:
-		autoStackStep(20);
+		autoStackStep(500);
 		break;
 
 	case PRESET_LEVEL_TWO:
-		autoStackStep(27);
+		autoStackStep(570);
 		break;
 
 	case PRESET_LEVEL_THREE:
-		autoStackStep(35);
+		autoStackStep(670);
 		break;
 
 	case PRESET_LEVEL_FOUR:
-		autoStackStep(50);
+		autoStackStep(780);
 		break;
 
 	case PRESET_LEVEL_FIVE:
-		autoStackStep(60);
+		autoStackStep(980);
 		break;
 
 	case PRESET_LEVEL_SIX:
-		autoStackStep(60);
+		autoStackStep(1070);
 		break;
 
 	case PRESET_LEVEL_SEVEN:
-		autoStackStep(70);
+		autoStackStep(1140);
 		break;
 
 	case PRESET_LEVEL_EIGHT:
-		autoStackStep(80);
+		autoStackStep(1320);
 		break;
 
 	case PRESET_LEVEL_NINE:
-		autoStackStep(83);
+		autoStackStep(1470);
 		break;
 
 	case PRESET_LEVEL_TEN:
-		autoStackStep(87);
+		autoStackStep(1550);
 		break;
 
 	case PRESET_LEVEL_ELEVEN:
-		autoStackStep(90);
+		autoStackStep(1750);
 		break;
 
 	case PRESET_LEVEL_TWELVE:
-		autoStackStep(95);
+		autoStackStep(1970);
 		break;
 
 	case PRESET_LEVEL_THIRTEEN:
-		autoStackStep(100);
+		autoStackStep(2020);
 		break;
 	}
 }
@@ -1531,19 +1537,17 @@ void postStacking() {
 	moveArmOut();
 	armIsBack = true;
 	if (!armIsReallyBack) {
-		/*if (SensorValue[liftLimit] == 0) {
-			motor[liftL] = -90;
-			motor[liftR] = -90;
-		}*/
+		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
+			motor[liftL] = -40;
+			motor[liftL] = -40;
+		}
 	} else {
 		motor[liftL] = 0;
 		motor[liftR] = 0;
 	}
-	/*if (SensorValue[liftLimit] == 1) {
-		SensorValue[liftLeftPot] = 0;
-		SensorValue[liftRightPot] = 0;
+	if (SensorValue[liftLeftPot] <= 270 && SensorValue[liftRightPot] <= 270) {
 		justStacked = false;
-	}*/
+	}
 	increaseStackLvl = true;
 	outakeFinished = false;
 }
