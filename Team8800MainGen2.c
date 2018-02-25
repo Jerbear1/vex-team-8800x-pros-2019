@@ -1539,9 +1539,8 @@ void postStacking() {
 	armIsBack = true;
 	if (!armIsReallyBack) {
 		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
-			/*motor[liftL] = -70;
-			motor[liftL] = -70;*/
-			liftPIDControl(260);
+			motor[liftL] = -70;
+			motor[liftL] = -70;
 		}
 		} else {
 		motor[liftL] = 0;
