@@ -186,8 +186,7 @@ bool liftIsDown = false;
 
 bool liftLeftAtPosition;
 bool liftRightAtPosition;
-bool driveLeftAtPosition;
-bool driveRightAtPosition;
+bool driveAtPosition;
 bool turnAtPosition;
 
 bool mobileGoalOut;
@@ -208,8 +207,7 @@ int prevStackLevel = 0;
 
 int liftLeftPositionError = 65;
 int liftRightPositionError = 65;
-int driveLeftPositionError = 1;
-int driveRightPositionError = 1;
+int drivePositionError = 1;
 int turnPositionError = 1;
 int armError = 2;
 
@@ -222,12 +220,12 @@ float liftRightkp = 0.4;
 float liftRightkd = 2;
 
 //Drive PID values
-float driveLeftkp = 0.4;
-float driveLeftki = 0.008;
-float driveLeftkd = 2;
+float driveLeftkp = 0.73;
+float driveLeftki = 0.000002;
+float driveLeftkd = 100;
 
-float driveRightkp = 0.4;
-float driveRightki = 0.008;
+float driveRightkp = 0.83;
+float driveRightki = 0.000008;
 float driveRightkd = 2;
 
 //Turn PID values
@@ -707,7 +705,7 @@ task autonomousRoutines()
 		}
 		drive(0, 0);*/
 		while (true) {
-			autoDrivePIDControl(1800, 1800);
+			autoDrivePIDControl(800, 800);
 		}
 		break;
 
@@ -906,7 +904,10 @@ task ProcessController() {
 		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
-		writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
+		writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
+		writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
+
+		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
@@ -1586,101 +1587,81 @@ void postStacking() {
 }
 
 void autoDrivePIDControl (int leftDistance, int rightDistance) {
-	float leftEnc = SensorValue[leftDriveEnc];
-	float rightEnc = SensorValue[rightDriveEnc];
+	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
 
 	float integralAcitveZone = 100;
 
-	float leftError;
-	float rightError;
-	float leftProportion;
-	float rightProportion;
-	float leftIntegral;
-	float rightIntegral;
-	float leftDerivative;
-	float rightDerivative;
+	float error;
+	float proportion;
+	float integral;
+	float derivative;
 
-	float leftErrorT;
-	float rightErrorT;
-	float leftLastError;
-	float rightLastError;
+	float errorT;
+	float lastError;
 
-	float leftCurrent;
-	float rightCurrent;
+	float current;
 
 	//Find Distance error
-	leftError = leftDistance - leftEnc;
-	rightError = rightDistance - rightEnc;
+	error = leftDistance - encAverage;
 
 	//Set proportion
-	leftProportion = leftError * driveLeftkp;
-	rightProportion = rightError * driveRightkp;
+	proportion = error * driveLeftkp;
 
-	leftIntegral = leftErrorT * driveLeftki;
-	rightIntegral = rightErrorT * driveRightki;
+	integral = errorT * driveLeftki;
 
-	leftDerivative = (leftError - leftLastError) * driveLeftkd;
-	rightDerivative = (rightError - rightLastError) * driveRightkd;
+	derivative = (error - lastError) * driveLeftkd;
 
 	//Calculate integral
 	//left
-	if (leftError < integralAcitveZone) {
-		leftErrorT += leftError;
+	if (error < integralAcitveZone) {
+		errorT += error;
 		} else {
-		leftErrorT = 0;
+		errorT = 0;
 	}
 
-	//right
-	if (rightError < integralAcitveZone) {
-		rightErrorT += rightError;
-		} else {
-		rightErrorT = 0;
-	}
-
-	leftLastError = leftError;
-	rightLastError = rightError;
+	lastError = error;
 
 	//Set current
-	leftCurrent = leftProportion + leftIntegral + leftDerivative;
-	rightCurrent = rightProportion + rightIntegral + rightDerivative;
+	current = proportion + integral + derivative;
 
 	// Still needs to be done vvvvvvvv !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	if (abs(leftError) <= driveLeftPositionError) {
-		leftCurrent = 0;
-	}
-	if (abs(rightError) <= driveRightPositionError) {
-		rightCurrent = 0;
+	if (abs(error) <= drivePositionError) {
+		current = 0;
 	}
 
-	//Check that lift has stopped
-	if (abs(leftError) <= driveLeftPositionError) {
-		driveLeftAtPosition = true;
+	//Check that drive has stopped
+	if (abs(error) <= drivePositionError) {
+		driveAtPosition = true;
 		} else {
-		driveLeftAtPosition = false;
-	}
-	if (abs(rightError) <= driveRightPositionError) {
-		driveRightAtPosition = true;
-		} else {
-		driveRightAtPosition = false;
+		driveAtPosition = false;
 	}
 
-	if (leftCurrent > 127) {
-		leftCurrent = 127;
+	if (current > 127) {
+		current = 127;
 	}
-	if (rightCurrent > 127) {
-		rightCurrent = 127;
-	}
-	if (leftCurrent < -127) {
-		leftCurrent = -127;
-	}
-	if (rightCurrent < -127) {
-		rightCurrent = -127;
+	if (current > 127) {
+		current = 127;
 	}
 
-	motor[driveBL] = leftCurrent;
-	motor[driveFL] = leftCurrent;
-	motor[driveBR] = rightCurrent;
-	motor[driveFR] = rightCurrent;
+	motor[driveBL] = current;
+	motor[driveFL] = current;
+	motor[driveBR] = current;
+	motor[driveFR] = current;
+
+	writeDebugStreamLine("Current Angle %d", encAverage);
+	writeDebugStreamLine("             error %d", error);
+	writeDebugStreamLine("             integral %d", integral);
+	writeDebugStreamLine("             error total %d", errorT);
+	writeDebugStreamLine("             derivative %d", derivative);
+	writeDebugStreamLine("           last error %d", lastError);
+	writeDebugStreamLine("             turn error %d", error);
+
+	datalogAddValueWithTimeStamp(0, error);
+	datalogAddValueWithTimeStamp(1, encAverage);
+	datalogAddValueWithTimeStamp(2, integral);
+	datalogAddValueWithTimeStamp(3, derivative);
+	datalogAddValueWithTimeStamp(4, current);
+	datalogAddValueWithTimeStamp(5, derivative);
 }
 
 void autoGyroPIDControl (int setAngle) {
@@ -1753,10 +1734,10 @@ void autoGyroPIDControl (int setAngle) {
 	writeDebugStreamLine("           last error %d", lastError);
 	writeDebugStreamLine("             turn error %d", turnError);
 
-	datalogAddValueWithTimeStamp(0, turnError);
+	/*datalogAddValueWithTimeStamp(0, turnError);
 	datalogAddValueWithTimeStamp(1, currentAngle);
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);
-	datalogAddValueWithTimeStamp(5, setAngle);
+	datalogAddValueWithTimeStamp(5, setAngle);*/
 }
