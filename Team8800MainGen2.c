@@ -231,9 +231,9 @@ float driveRightki = 0.008;
 float driveRightkd = 2;
 
 //Turn PID values
-float turnkp = 0.455;
-float turnki = 0.00000000008;
-float turnkd = 2000;
+float turnkp = 0.83;
+float turnki = 0.000008;
+float turnkd = 100;
 
 int rollerSpeed;
 
@@ -707,7 +707,7 @@ task autonomousRoutines()
 		}
 		drive(0, 0);*/
 		while (true) {
-			autoGyroPIDControl(1800);
+			autoDrivePIDControl(1800, 1800);
 		}
 		break;
 
@@ -1474,14 +1474,6 @@ void liftPIDControl (int position) {
 	//writeDebugStreamLine("                  right error %d", liftRightError);
 	//writeDebugStreamLine("                           q                 left curent %d", leftCurrent);
 	//writeDebugStreamLine("
-
-	datalogAddValueWithTimeStamp(0, leftPot);
-	datalogAddValueWithTimeStamp(1, rightPot);
-	datalogAddValueWithTimeStamp(2, liftLeftError);
-	datalogAddValueWithTimeStamp(3, liftRightError);
-	datalogAddValueWithTimeStamp(4, sharedIntegral);
-	datalogAddValueWithTimeStamp(6, position);
-	datalogAddValueWithTimeStamp(7, leftPot);
 }
 
 void autoStackStep(int liftPos) {
@@ -1694,7 +1686,7 @@ void autoDrivePIDControl (int leftDistance, int rightDistance) {
 void autoGyroPIDControl (int setAngle) {
 	float currentAngle = SensorValue(driveGyro);
 
-	float integralAcitveZone = 2000;
+	float integralAcitveZone = 1000;
 
 	float turnError;
 	float proportion;
@@ -1717,8 +1709,14 @@ void autoGyroPIDControl (int setAngle) {
 	derivative = (turnError - lastError) * turnkd;
 
 	//Calculate integral
-	errorT += turnError;
+	if (turnError < integralAcitveZone) {
+		errorT += turnError;
+	} else {
+		errorT = 0;
+	}
 
+
+	//Calculate derivative
 	lastError = turnError;
 
 	//Set current
@@ -1732,7 +1730,7 @@ void autoGyroPIDControl (int setAngle) {
 	if (abs(turnError) <= turnPositionError) {
 		turnAtPosition = true;
 		} else {
-		liftLeftAtPosition = false;
+		turnAtPosition = false;
 	}
 
 	if (current > 127) {
@@ -1748,7 +1746,17 @@ void autoGyroPIDControl (int setAngle) {
 	motor[driveFR] = current;
 
 	writeDebugStreamLine("Current Angle %d", currentAngle);
-	writeDebugStreamLine("             Turn Error %d", turnError);
+	writeDebugStreamLine("             error %d", turnError);
+	writeDebugStreamLine("             integral %d", integral);
+	writeDebugStreamLine("             error total %d", errorT);
+	writeDebugStreamLine("             derivative %d", derivative);
+	writeDebugStreamLine("           last error %d", lastError);
+	writeDebugStreamLine("             turn error %d", turnError);
 
-	datalogAddValueWithTimeStamp(5, currentAngle);
+	datalogAddValueWithTimeStamp(0, turnError);
+	datalogAddValueWithTimeStamp(1, currentAngle);
+	datalogAddValueWithTimeStamp(2, integral);
+	datalogAddValueWithTimeStamp(3, derivative);
+	datalogAddValueWithTimeStamp(4, current);
+	datalogAddValueWithTimeStamp(5, setAngle);
 }
