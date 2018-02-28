@@ -220,13 +220,13 @@ float liftRightkp = 0.4;
 float liftRightkd = 2;
 
 //Drive PID values
-float driveLeftkp = 0.73;
-float driveLeftki = 0.000002;
-float driveLeftkd = 100;
+float driveLeftkp = 0.63;
+float driveLeftki = 0.000001;
+float driveLeftkd = 75;
 
-float driveRightkp = 0.83;
-float driveRightki = 0.000008;
-float driveRightkd = 2;
+float driveRightkp = 0.63;
+float driveRightki = 0.000001;
+float driveRightkd = 75;
 
 //Turn PID values
 float turnkp = 0.83;
