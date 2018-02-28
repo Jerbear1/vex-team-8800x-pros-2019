@@ -221,11 +221,11 @@ float liftRightkd = 2;
 
 //Drive PID values
 float driveLeftkp = 0.63;
-float driveLeftki = 0.000001;
+float driveLeftki = 0.0000009;
 float driveLeftkd = 75;
 
 float driveRightkp = 0.63;
-float driveRightki = 0.000001;
+float driveRightki = 0.0000009;
 float driveRightkd = 75;
 
 //Turn PID values
@@ -697,15 +697,8 @@ task autonomousRoutines()
 		break;
 
 	case AUTONOMOUS_MODE_FENCE:
-		//Gyro test
-		/*while(SensorValue(driveGyro) < 1800) {
-			drive(-50, 50);
-			writeDebugStream("gyro values in auto in8 %d
-			", SensorValue(driveGyro));
-		}
-		drive(0, 0);*/
 		while (true) {
-			autoDrivePIDControl(800, 800);
+			autoGyroPIDControl(1800);
 		}
 		break;
 
@@ -1142,8 +1135,6 @@ void initializeGyro() {
 	wait1Msec(1000);
 	SensorType(driveGyro) = sensorGyro;
 	wait1Msec(2000);
-
-	//SensorScale[in8] = 260;
 
 	writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
 }
@@ -1656,12 +1647,12 @@ void autoDrivePIDControl (int leftDistance, int rightDistance) {
 	writeDebugStreamLine("           last error %d", lastError);
 	writeDebugStreamLine("             turn error %d", error);
 
-	datalogAddValueWithTimeStamp(0, error);
+	/*datalogAddValueWithTimeStamp(0, error);
 	datalogAddValueWithTimeStamp(1, encAverage);
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);
-	datalogAddValueWithTimeStamp(5, derivative);
+	datalogAddValueWithTimeStamp(5, derivative);*/
 }
 
 void autoGyroPIDControl (int setAngle) {
@@ -1714,11 +1705,11 @@ void autoGyroPIDControl (int setAngle) {
 		turnAtPosition = false;
 	}
 
-	if (current > 127) {
-		current = 127;
+	if (current > 90) {
+		current = 90;
 	}
-	if (current < -127) {
-		current = -127;
+	if (current < -90) {
+		current = -90;
 	}
 
 	motor[driveBL] = -current;
@@ -1734,10 +1725,10 @@ void autoGyroPIDControl (int setAngle) {
 	writeDebugStreamLine("           last error %d", lastError);
 	writeDebugStreamLine("             turn error %d", turnError);
 
-	/*datalogAddValueWithTimeStamp(0, turnError);
+	datalogAddValueWithTimeStamp(0, turnError);
 	datalogAddValueWithTimeStamp(1, currentAngle);
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);
-	datalogAddValueWithTimeStamp(5, setAngle);*/
+	datalogAddValueWithTimeStamp(5, setAngle);
 }
