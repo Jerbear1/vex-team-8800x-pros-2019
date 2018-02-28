@@ -91,8 +91,9 @@ void rollerIntake(int speed);
 void rollerOutake(int speed, int distance);
 
 void liftPIDControl(int position);
-void autoDrivePIDControl (int leftDistance, int rightDistance);
-void autoGyroPIDControl (int setAngle);
+void autoDrivePIDControl (int distance, bool drive);
+void autoGyroPIDControl (int setAngle, bool turn);
+void autoDriveGyroPIDControl (int setAngle, int distance);
 
 //Auto Functions
 void moveMobileGoalOutAndDrive(int speed, int distance);
@@ -209,6 +210,8 @@ int liftLeftPositionError = 65;
 int liftRightPositionError = 65;
 int drivePositionError = 1;
 int turnPositionError = 1;
+int turnDrivePositionError = 2;
+int driveTurnPositionError = 200;
 int armError = 2;
 
 //Lift PID values
@@ -220,18 +223,33 @@ float liftRightkp = 0.4;
 float liftRightkd = 2;
 
 //Drive PID values
-float driveLeftkp = 0.63;
-float driveLeftki = 0.0000009;
-float driveLeftkd = 75;
-
-float driveRightkp = 0.63;
-float driveRightki = 0.0000009;
-float driveRightkd = 75;
+float drivekp = 0.63;
+float driveki = 0.0000009;
+float drivekd = 75;
 
 //Turn PID values
 float turnkp = 0.83;
 float turnki = 0.000008;
 float turnkd = 100;
+
+//Turn Drive PID values
+float turnDrivekp = 5.8;
+float turnDriveki = 0.00000055;
+float turnDrivekd = 0.0010;
+
+//Drive Turn PID values
+float driveTurnkp = 0.145;
+float driveTurnki = 0.0000000155;
+float driveTurnkd = 0.0075;
+
+float turnError;
+
+int driveCurrent;
+int gyroCurrent;
+int overallCurrentLeft;
+int overallCurrentRight;
+
+int turnPower = 35;
 
 int rollerSpeed;
 
@@ -698,7 +716,7 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_FENCE:
 		while (true) {
-			autoGyroPIDControl(1800);
+			autoDriveGyroPIDControl(0, 2000);
 		}
 		break;
 
@@ -897,10 +915,10 @@ task ProcessController() {
 		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
-		writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
-		writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
+		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
+		//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
 
-		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
+		writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
 		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
@@ -1135,6 +1153,8 @@ void initializeGyro() {
 	wait1Msec(1000);
 	SensorType(driveGyro) = sensorGyro;
 	wait1Msec(2000);
+
+	SensorValue(1800);
 
 	writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
 }
@@ -1577,7 +1597,7 @@ void postStacking() {
 	outakeFinished = false;
 }
 
-void autoDrivePIDControl (int leftDistance, int rightDistance) {
+void autoDrivePIDControl (int distance, bool drive) {
 	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
 
 	float integralAcitveZone = 100;
@@ -1593,14 +1613,23 @@ void autoDrivePIDControl (int leftDistance, int rightDistance) {
 	float current;
 
 	//Find Distance error
-	error = leftDistance - encAverage;
+	error = distance - encAverage;
 
-	//Set proportion
-	proportion = error * driveLeftkp;
+	if (drive) {
+		//Set proportion
+		proportion = error * drivekp;
 
-	integral = errorT * driveLeftki;
+		integral = errorT * driveki;
 
-	derivative = (error - lastError) * driveLeftkd;
+		derivative = (error - lastError) * drivekd;
+	} else if (!drive) {
+		//Set proportion for turn drive
+		proportion = error * driveTurnkp;
+
+		integral = errorT * driveTurnki;
+
+		derivative = (error - lastError) * driveTurnkd;
+	}
 
 	//Calculate integral
 	//left
@@ -1614,10 +1643,14 @@ void autoDrivePIDControl (int leftDistance, int rightDistance) {
 
 	//Set current
 	current = proportion + integral + derivative;
+	driveCurrent = proportion + integral + derivative;
 
-	// Still needs to be done vvvvvvvv !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	if (abs(error) <= drivePositionError) {
 		current = 0;
+	}
+
+	if (abs(error) <= driveTurnPositionError) {
+		gyroCurrent = 0;
 	}
 
 	//Check that drive has stopped
@@ -1630,37 +1663,38 @@ void autoDrivePIDControl (int leftDistance, int rightDistance) {
 	if (current > 127) {
 		current = 127;
 	}
-	if (current > 127) {
-		current = 127;
+	if (current < -127) {
+		current = -127;
 	}
 
-	motor[driveBL] = current;
-	motor[driveFL] = current;
-	motor[driveBR] = current;
-	motor[driveFR] = current;
+	if (drive) {
+		motor[driveBL] = current;
+		motor[driveFL] = current;
+		motor[driveBR] = current;
+		motor[driveFR] = current;
+	}
 
-	writeDebugStreamLine("Current Angle %d", encAverage);
-	writeDebugStreamLine("             error %d", error);
-	writeDebugStreamLine("             integral %d", integral);
+	//writeDebugStreamLine("Current Angle %d", encAverage);
+	writeDebugStreamLine("           drive  error %d", error);
+	/*writeDebugStreamLine("             integral %d", integral);
 	writeDebugStreamLine("             error total %d", errorT);
 	writeDebugStreamLine("             derivative %d", derivative);
-	writeDebugStreamLine("           last error %d", lastError);
-	writeDebugStreamLine("             turn error %d", error);
+	writeDebugStreamLine("           last error %d", lastError);*/
+	//writeDebugStreamLine("             drive current 2/ %d", current);
 
 	/*datalogAddValueWithTimeStamp(0, error);
 	datalogAddValueWithTimeStamp(1, encAverage);
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
-	datalogAddValueWithTimeStamp(4, current);
-	datalogAddValueWithTimeStamp(5, derivative);*/
+	datalogAddValueWithTimeStamp(4, current);*/
+	datalogAddValueWithTimeStamp(5, error);
 }
 
-void autoGyroPIDControl (int setAngle) {
+void autoGyroPIDControl (int setAngle, bool turn) {
 	float currentAngle = SensorValue(driveGyro);
 
 	float integralAcitveZone = 1000;
 
-	float turnError;
 	float proportion;
 	float integral;
 	float derivative;
@@ -1673,26 +1707,35 @@ void autoGyroPIDControl (int setAngle) {
 	//Find Angle error
 	turnError = setAngle - currentAngle;
 
-	//Set proportion
-	proportion = turnError * turnkp;
+	if (turn) {
+		//Set proportion
+		proportion = turnError * turnkp;
 
-	integral = errorT * turnki;
+		integral = errorT * turnki;
 
-	derivative = (turnError - lastError) * turnkd;
+		derivative = (turnError - lastError) * turnkd;
+	} else if (!turn) {
+		//Set proportion for turn drive
+		proportion = turnError * turnDrivekp;
+
+		integral = errorT * turnDriveki;
+
+		derivative = (turnError - lastError) * turnDrivekd;
+	}
 
 	//Calculate integral
 	if (turnError < integralAcitveZone) {
 		errorT += turnError;
-	} else {
+		} else {
 		errorT = 0;
 	}
-
 
 	//Calculate derivative
 	lastError = turnError;
 
 	//Set current
 	current = proportion + integral + derivative;
+	gyroCurrent = proportion + integral + derivative;
 
 	if (abs(turnError) <= turnPositionError) {
 		current = 0;
@@ -1711,24 +1754,81 @@ void autoGyroPIDControl (int setAngle) {
 	if (current < -90) {
 		current = -90;
 	}
+	if (turn) {
+		motor[driveBL] = -current;
+		motor[driveFL] = -current;
+		motor[driveBR] = current;
+		motor[driveFR] = current;
+	}
 
-	motor[driveBL] = -current;
-	motor[driveFL] = -current;
-	motor[driveBR] = current;
-	motor[driveFR] = current;
-
-	writeDebugStreamLine("Current Angle %d", currentAngle);
-	writeDebugStreamLine("             error %d", turnError);
-	writeDebugStreamLine("             integral %d", integral);
+	//writeDebugStreamLine("Current Angle %d", currentAngle);
+	writeDebugStreamLine("            turn error %d", turnError);
+	/*writeDebugStreamLine("             integral %d", integral);
 	writeDebugStreamLine("             error total %d", errorT);
 	writeDebugStreamLine("             derivative %d", derivative);
-	writeDebugStreamLine("           last error %d", lastError);
-	writeDebugStreamLine("             turn error %d", turnError);
+	writeDebugStreamLine("           last error %d", lastError);*/
+	//writeDebugStreamLine("             angle current 2/ %d", current);
 
-	datalogAddValueWithTimeStamp(0, turnError);
+	/*datalogAddValueWithTimeStamp(0, turnError);
 	datalogAddValueWithTimeStamp(1, currentAngle);
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
-	datalogAddValueWithTimeStamp(4, current);
-	datalogAddValueWithTimeStamp(5, setAngle);
+	datalogAddValueWithTimeStamp(4, current);*/
+	datalogAddValueWithTimeStamp(4, turnError);
+}
+
+void autoDriveGyroPIDControl (int setAngle, int distance) {
+	autoDrivePIDControl(distance, false);
+	autoGyroPIDControl(setAngle, false);
+
+	//Assign power to motors
+	overallCurrentLeft = driveCurrent - gyroCurrent;
+	overallCurrentRight = driveCurrent + gyroCurrent;
+
+	motor[driveBL] = overallCurrentLeft;
+	motor[driveFL] = overallCurrentLeft;
+	motor[driveBR] = overallCurrentRight;
+	motor[driveFR] = overallCurrentRight;
+
+	//Limit power to motors
+	if (gyroCurrent > turnPower) {
+		gyroCurrent = turnPower;
+	}
+	if (gyroCurrent < -turnPower) {
+		gyroCurrent = -turnPower;
+	}
+
+	if (abs(turnError) <= turnDrivePositionError) {
+		gyroCurrent = 0;
+	}
+
+	if (driveCurrent > 127 - turnPower) {
+		driveCurrent = 127 - turnPower;
+	}
+	if (driveCurrent < -(127 - turnPower)) {
+		driveCurrent = -(127 - turnPower);
+	}
+
+	if (overallCurrentLeft > 127) {
+		overallCurrentLeft = 127;
+	}
+	if (overallCurrentLeft < -127) {
+		overallCurrentLeft = -127;
+	}
+	if (overallCurrentRight > 127) {
+		overallCurrentRight = 127;
+	}
+	if (overallCurrentRight < -127) {
+		overallCurrentRight = -127;
+	}
+
+	/*writeDebugStreamLine("Angle current %d", gyroCurrent);
+	writeDebugStreamLine("Drive current %d", driveCurrent);
+	writeDebugStreamLine("             overall  current left %d", overallCurrentLeft);
+	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
+
+	datalogAddValueWithTimeStamp(0, driveCurrent);
+	datalogAddValueWithTimeStamp(1, gyroCurrent);
+	datalogAddValueWithTimeStamp(2, overallCurrentLeft);
+	datalogAddValueWithTimeStamp(3, overallCurrentRight);
 }
