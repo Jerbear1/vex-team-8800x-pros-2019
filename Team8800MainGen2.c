@@ -93,7 +93,7 @@ void rollerOutake(int speed, int distance);
 void liftPIDControl(int position);
 void autoDrivePIDControl (int distance, bool drive);
 void autoGyroPIDControl (int setAngle, bool turn);
-void autoDriveGyroPIDControl (int setAngle, int distance, int turnkp, int turnki, int turnkd, int drivekp, int driveki, int drivekd);
+void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd);
 void autoLiftPIDControl (int position, int kp, int ki, int kd);
 
 //Auto Functions
@@ -703,19 +703,6 @@ task autonomousRoutines()
 		//move lift down
 		moveLiftDown(50, 0);
 
-		waitInMilliseconds(500);
-
-		//move lift up and release cone
-		motor[roller] = -100;
-		moveLiftUpAuto(100, 10);
-
-		waitInMilliseconds(100);
-
-		//back up
-		driveBackward(-100, 200);
-
-		//turn and drive out of the way
-		turnLeft(100, 300);
 		driveBackward(-100, -400);
 		break;
 
@@ -726,18 +713,18 @@ task autonomousRoutines()
 
 		while (time1(T2) < 3000) {
 
-			moveLiftUp(100, 600);
+			moveLiftUp(100, 700);
 
 			//Drive
 			if (time1(T2) > 500) {
-				autoDriveGyroPIDControl(0, 1300, 1, 0.00015, 0.5, 1, 0.000000079, 0.4);
+				autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
 			//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
-			} else {
-				motor[mobileGoal] = -20;
+				} else {
+				motor[mobileGoal] = 0;
 			}
 
 			wait1Msec(20);
@@ -747,25 +734,104 @@ task autonomousRoutines()
 		clearTimer(T2);
 		clearDriveEnc();
 
-		while (time1(T2) < 2000) {
+		while (time1(T2) < 2300) {
 
 			if (mobileGoalIsOut) {
-				moveMobileGoalIn();
-			} else {
+				moveMobileGoalInAuto();
+				} else {
 				motor[mobileGoal] = 20;
 			}
 
 			//Drive
 			if (time1(T2) > 1500) {
-				autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				driveBackward(-100, -460);
+				moveLiftDown(50, 400);
+				//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+			}
+
+			if (time1(T2) > 1800) {
+				rollerOutakeAuto(-100, 150);
 			}
 
 			wait1Msec(20);
 		}
 
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
+
+		wait1Msec(200);
+
+		while (time1(T2) < 2000) {
+			//turn
+			autoGyroPIDControl(-300, true);
+		}
+
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
+
+		while (time1(T2) < 1000) {
+			//drive backward
+			driveBackward(-100, -60);
+		}
+
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
+
+		while (time1(T2) < 2000) {
+			//turn
+			autoGyroPIDControl(-1500, true);
+		}
+
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
+
+		while (time1(T2) < 2000) {
+			moveMobileGoalOut();
+
+			moveLiftUp(100, 600);
+
+			if (time1(T2) > 300) {
+				drive(100, 100);
+				wait1Msec(800);
+				drive(0, 0);
+			}
+			wait1Msec(20);
+		}
+
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
+
+		while (time1(T2) < 600) {
+			drive(-60, -60);
+			waitInMilliseconds(400);
+			drive(0, 0);
+		}
+
+
 		break;
 
 	case AUTONOMOUS_MODE_SKILLS:
+		while (true) {
+			writeDebugStreamLine("             mobile goal %d", SensorValue[mobilePot]);
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+				} else {
+				motor[mobileGoal] = -20;
+			}
+
+			waitInMilliseconds(2000);
+
+			if (mobileGoalIsOut) {
+				moveMobileGoalInAuto();
+				} else {
+				motor[mobileGoal] = 20;
+			}
+		}
 
 
 		break;
@@ -847,13 +913,13 @@ task ProcessController() {
 		if (!stacking) {
 			if (isButtonPressed(Btn8RXmtr2)) {
 				armIsBack = true;
-			} else if (isButtonPressed(Btn8LXmtr2)) {
+				} else if (isButtonPressed(Btn8LXmtr2)) {
 				armIsBack = false;
 			}
 
 			if (armIsBack) {
 				moveArmOut();
-			} else if (!armIsBack) {
+				} else if (!armIsBack) {
 				moveArmIn();
 			}
 		}
@@ -1230,7 +1296,7 @@ void moveArmIn () {
 
 void moveArmOutAuto() {
 	while(SensorValue[armPot] > 2000) {
-	motor[swingingArm] = 100;
+		motor[swingingArm] = 100;
 	}
 	motor[swingingArm] = 0;
 }
@@ -1334,7 +1400,7 @@ void moveMobileGoalIn() {
 }
 
 void moveMobileGoalInAuto() {
-	while (SensorValue[mobilePot] > 230) {
+	while (SensorValue[mobilePot] > 330) {
 		motor[mobileGoal] = 127;
 	}
 	motor[mobileGoal] = 0;
@@ -1410,7 +1476,7 @@ void moveLiftUpAuto(int speed, int distance) {
 }
 
 void moveLiftDown(int speed, int distance) {
-	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > -distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
 		motor [liftL] = -speed;
 		motor [liftR] = -speed;
 	}
@@ -1735,6 +1801,8 @@ void autoDrivePIDControl (int distance, bool drive) {
 	writeDebugStreamLine("             derivative %d", derivative);
 	writeDebugStreamLine("           last error %d", lastError);*/
 	//writeDebugStreamLine("             drive current 2/ %d", current);
+	writeDebugStreamLine("             proportion %d", proportion);
+	writeDebugStreamLine("             error %d", error);
 
 	/*datalogAddValueWithTimeStamp(0, error);
 	datalogAddValueWithTimeStamp(1, encAverage);
@@ -1831,7 +1899,7 @@ void autoGyroPIDControl (int setAngle, bool turn) {
 	//datalogAddValueWithTimeStamp(4, turnError);
 }
 
-void autoDriveGyroPIDControl (int setAngle, int distance, int turnkp, int turnki, int turnkd, int drivekp, int driveki, int drivekd) {
+void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd) {
 	turnDrivekp = turnkp;
 	turnDriveki = turnki;
 	turnDrivekd = turnkd;
@@ -1888,6 +1956,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance, int turnkp, int turnki
 	writeDebugStreamLine("Drive current %d", driveCurrent);
 	writeDebugStreamLine("             overall  current left %d", overallCurrentLeft);
 	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
+	//writeDebugStreamLine("             gyro %d", SensorValue[driveGyro]);
 
 	datalogAddValueWithTimeStamp(0, driveCurrent);
 	datalogAddValueWithTimeStamp(1, gyroCurrent);
