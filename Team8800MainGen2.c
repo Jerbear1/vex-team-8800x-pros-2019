@@ -203,6 +203,8 @@ bool presetLevelScrollDown = false;
 
 bool timeUp = false;
 
+int armPower;
+
 int stackLevel = 1;
 int prevStackLevel = 0;
 
@@ -799,16 +801,16 @@ task ProcessController() {
 			motorReq2[driveBL] = 0;
 		}
 
-		if (isButtonPressed(Btn8RXmtr2)) {
-			armIsBack = true;
-			} else if (isButtonPressed(Btn8LXmtr2)) {
-			armIsBack = false;
-		}
-
 		if (!stacking) {
+			if (isButtonPressed(Btn8RXmtr2)) {
+				armIsBack = true;
+			} else if (isButtonPressed(Btn8LXmtr2)) {
+				armIsBack = false;
+			}
+
 			if (armIsBack) {
 				moveArmOut();
-				} else if (!armIsBack) {
+			} else if (!armIsBack) {
 				moveArmIn();
 			}
 		}
@@ -910,7 +912,8 @@ task ProcessController() {
 		//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
 		//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
 		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
-		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
+		writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
+		writeDebugStreamLine("arm power,                                                    %d", armPower );
 		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
 		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
@@ -918,10 +921,10 @@ task ProcessController() {
 		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
 		//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
 
-		writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
+		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
 
-		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
-		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
+		datalogAddValueWithTimeStamp(6, SensorValue[armPot]);
+		datalogAddValueWithTimeStamp(5, armPower);
 		//datalogAddValueWithTimeStamp(2, SensorValue[armPot]);
 
 		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
@@ -1154,33 +1157,35 @@ void initializeGyro() {
 	SensorType(driveGyro) = sensorGyro;
 	wait1Msec(2000);
 
-	SensorValue(1800);
-
 	writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
 }
 
 void moveArmOut () {
 	if (SensorValue[armPot] > 2000) {
 		motor[swingingArm] = 120;
+		armPower = 120;
 		} else if (SensorValue[armPot] <= 2000) {
 		motor[swingingArm] = 0;
+		armPower = 0;
 		armIsReallyBack = false;
 	}
 }
 
 void moveArmIn () {
-	if (SensorValue[armPot] < 3730) {
+	if (SensorValue[armPot] < 3500) {
 		motor[swingingArm] = -120;
+		armPower = -120;
 		//writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
-		} else if (SensorValue[armPot] >= 3740) {
+		} else if (SensorValue[armPot] >= 3500) {
 		motor[swingingArm] = 0;
+		armPower = 0;
 		armIsReallyBack = true;
 	}
 }
 
 void moveArmOutAuto() {
 	while(SensorValue[armPot] > 2000) {
-		motor[swingingArm] = 100;
+	motor[swingingArm] = 100;
 	}
 	motor[swingingArm] = 0;
 }
@@ -1514,7 +1519,7 @@ void autoStackStep(int liftPos) {
 		if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
 			moveArmIn();
 			//Not auto stacking stuff
-			armIsBack = false;
+			//armIsBack = false;
 			SensorValue[rollerEnc] = 0;
 			writeDebugStreamLine("stage 2");
 			clearTimer(T1);
@@ -1580,7 +1585,7 @@ void autoStack(int level) {
 
 void postStacking() {
 	moveArmOut();
-	armIsBack = true;
+	//armIsBack = true;
 	if (!armIsReallyBack) {
 		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
 			/*motor[liftL] = -70;
@@ -1622,7 +1627,7 @@ void autoDrivePIDControl (int distance, bool drive) {
 		integral = errorT * driveki;
 
 		derivative = (error - lastError) * drivekd;
-	} else if (!drive) {
+		} else if (!drive) {
 		//Set proportion for turn drive
 		proportion = error * driveTurnkp;
 
@@ -1687,7 +1692,7 @@ void autoDrivePIDControl (int distance, bool drive) {
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);*/
-	datalogAddValueWithTimeStamp(5, error);
+	//datalogAddValueWithTimeStamp(5, error);
 }
 
 void autoGyroPIDControl (int setAngle, bool turn) {
@@ -1714,7 +1719,7 @@ void autoGyroPIDControl (int setAngle, bool turn) {
 		integral = errorT * turnki;
 
 		derivative = (turnError - lastError) * turnkd;
-	} else if (!turn) {
+		} else if (!turn) {
 		//Set proportion for turn drive
 		proportion = turnError * turnDrivekp;
 
