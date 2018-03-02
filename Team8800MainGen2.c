@@ -724,7 +724,7 @@ task autonomousRoutines()
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
 				} else {
-				motor[mobileGoal] = 0;
+				motor[mobileGoal] = -50;
 			}
 
 			wait1Msec(20);
@@ -739,11 +739,11 @@ task autonomousRoutines()
 			if (mobileGoalIsOut) {
 				moveMobileGoalInAuto();
 				} else {
-				motor[mobileGoal] = 20;
+				motor[mobileGoal] = 50;
 			}
 
 			//Drive
-			if (time1(T2) > 1500) {
+			if (time1(T2) > 1600) {
 				driveBackward(-100, -460);
 				moveLiftDown(50, 400);
 				//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
@@ -1394,7 +1394,7 @@ void moveMobileGoalIn() {
 		motor[mobileGoal] = 127;
 		mobileGoalIsOut = true;
 		} else {
-		motor[mobileGoal] = 20;
+		motor[mobileGoal] = 50;
 		mobileGoalIsOut = false;
 	}
 }
@@ -1418,7 +1418,7 @@ void moveMobileGoalOut() {
 		motor[mobileGoal] = -127;
 		mobileGoalIsOut = false;
 		} else {
-		motor[mobileGoal] = -20;
+		motor[mobileGoal] = -50;
 		mobileGoalIsOut = true;
 	}
 }
