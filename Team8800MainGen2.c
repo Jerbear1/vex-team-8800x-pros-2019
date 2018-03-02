@@ -812,7 +812,7 @@ task autonomousRoutines()
 				waitInMilliseconds(400);
 				drive(0, 0);
 			}
-				moveMobileGoalIn();
+			moveMobileGoalIn();
 
 			} else if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
 			motor[roller] = 40;
@@ -1136,1261 +1136,1316 @@ task autonomousRoutines()
 			moveMobileGoalIn();
 		}
 
-			break;
-
-		case AUTONOMOUS_MODE_SKILLS:
-			while (true) {
-				writeDebugStreamLine("             mobile goal %d", SensorValue[mobilePot]);
-				if (!mobileGoalIsOut) {
-					moveMobileGoalOut();
-					} else {
-					motor[mobileGoal] = -20;
-				}
-
-				waitInMilliseconds(2000);
-
-				if (mobileGoalIsOut) {
-					moveMobileGoalInAuto();
-					} else {
-					motor[mobileGoal] = 20;
-				}
-			}
-
-			break;
-
-		case AUTONOMOUS_MODE_STACK_DRIVE:
-
-			break;
-
-		case AUTONOMOUS_MODE_STACK_PIPE:
-
-			break;
-
-		case AUTONOMOUS_MODE_STACK_BACK:
-
-			break;
-
-		case AUTONOMOUS_MODE_DRIVE_BLOCK:
-
-			break;
+		if (allianceColor == BLUE_ALLIANCE) {
+			theaterChaseTask(0, 0, 127, 50, 15000);
+			} else {
+			theaterChaseTask(127, 0, 0, 50, 15000);
 		}
-	}
 
-	task autonomous()
-	{
-		robotMode = AUTONOMOUS;
+		break;
 
-		autonomousStartTime = nSysTime;
-		writeDebugStreamLine("Starting Autonomous...");
+	case AUTONOMOUS_MODE_SKILLS:
+		/*while (true) {
+		writeDebugStreamLine("             mobile goal %d", SensorValue[mobilePot]);
+		if (!mobileGoalIsOut) {
+		moveMobileGoalOut();
+		} else {
+		motor[mobileGoal] = -20;
+		}
 
-		initialize();
+		waitInMilliseconds(2000);
 
-		if (false) AutonomousCodePlaceholderForTesting();  // complains if I remove this
+		if (mobileGoalIsOut) {
+		moveMobileGoalInAuto();
+		} else {
+		motor[mobileGoal] = 20;
+		}
+		}*/
 
-		startTask(autonomousRoutines);
-	}
+		motor[roller] = 40;
 
-	task ProcessController() {
-		while(true) {
+		clearTimer(T2);
 
-			/*
-			Main Controller:
-			joysticks = drive
+		while (time1(T2) < 3000) {
 
-			Partner Contorller:
-			right joystick = catapult
-			*/
+			moveLiftUp(100, 700);
 
-			// --- Joysticks to control robot driving (main controller only)
-
-			static byte rightJoystickY, leftJoystickY, prevRightJoystickY = 0, prevLeftJoystickY = 0;
-
-			rightJoystickY = readRightJoystickYAxis();
-			leftJoystickY = readLeftJoystickYAxis();
-
-			static bool rightDriveMoving = false;
-			if (abs(rightJoystickY) > MIN_JOYSTICK_THRESHOLD) {
-				rightDriveMoving = true;
-				motorReq2[driveFR] = rightJoystickY;
-				motorReq2[driveBR] = rightJoystickY;
-				writeDebugStreamLine("Right: %d%%", rightJoystickY);
-				} else {
-				rightDriveMoving = false;
-				motorReq2[driveFR] = 0;
-				motorReq2[driveBR] = 0;
+			//Drive
+			if (time1(T2) > 500) {
+				autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
-			static bool leftDriveMoving = false;
-			if (abs(leftJoystickY) > MIN_JOYSTICK_THRESHOLD) {
-				leftDriveMoving = true;
-				motorReq2[driveFL] = leftJoystickY;
-				motorReq2[driveBL] = leftJoystickY;
-				writeDebugStreamLine("Left: %d%%", leftJoystickY);
-				} else {
-				leftDriveMoving = false;
-				motorReq2[driveFL] = 0;
-				motorReq2[driveBL] = 0;
-			}
-
-			if (!stacking) {
-				if (isButtonPressed(Btn8RXmtr2)) {
-					armIsBack = true;
-					} else if (isButtonPressed(Btn8LXmtr2)) {
-					armIsBack = false;
-				}
-
-				if (armIsBack) {
-					moveArmOut();
-					} else if (!armIsBack) {
-					moveArmIn();
-				}
-			}
-
-			//Mobile Goal control on joystick
-			if (isButtonPressed(Btn8U)) {
-				mobileGoalOut = true;
-				} else if (isButtonPressed(Btn8D)) {
-				mobileGoalOut = false;
-			}
-
-			if (isButtonPressed(Btn8R)) {
+			//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
-				} else if (isButtonPressed(Btn8L)) {
-				moveMobileGoalIn();
-				} else if (mobileGoalOut) {
-				moveMobileGoalOut();
-				} else if (!mobileGoalOut) {
-				moveMobileGoalIn();
+				} else {
+				motor[mobileGoal] = -50;
 			}
 
-			//Roller control
-			if (!stacking) {
-				if (isButtonPressed(Btn6DXmtr2)) {
-					motor[roller] = -127;
-					} else if (isButtonPressed(Btn6UXmtr2)) {
-					motor[roller] = 127;
-					} else {
-					motor[roller] = 30;
-				}
-			}
-
-			//Move lift
-			if (!stacking) {
-				if (isButtonPressed(Btn5UXmtr2)) {
-					motor[liftL] = 127;
-					motor[liftR] = 127;
-					//liftPIDControl(1000);
-					} else if (isButtonPressed(Btn5DXmtr2)) {
-					motor[liftL] = -90;
-					motor[liftR] = -90;
-					//liftPIDControl(500);
-					} else if (isButtonPressed(Btn7LXmtr2)) {
-					liftPIDControl(600);
-					} else {
-					motor[liftL] = 0;
-					motor[liftR] = 0;
-				}
-			}
-
-			//Activate curent level
-			if (isButtonPressed(Btn8UXmtr2)) {
-				stacking = true;
-			}
-
-			if (stacking) {
-				autoStack(stackLevel);
-				} else if (stackPrev) {
-				autoStack(prevStackLevel);
-				} else if (justStacked) {
-				postStacking();
-			}
-
-			//Activate Stack
-			/*if (isButtonPressed(Btn7RXmtr2)) {
-			liftLeftAtPosition = true;
-			liftRightAtPosition = true;
-			}*/
-
-			//Activate last level
-			if (isButtonPressed(Btn8DXmtr2)) {
-				stackPrev = true;
-			}
-
-			//Increase stack level
-			if (isButtonPressed(Btn8UXmtr2) && increaseStackLvl) {
-				prevStackLevel ++;
-				stackLevel ++;
-				increaseStackLvl = false;
-			}
-
-			//Deactivate stacking emergency
-			if (isButtonPressed(Btn7UXmtr2)) {
-				stacking = false;
-				justStacked = false;
-				stackPrev = false;
-			}
-
-			//Deactivate stacking reset to 1
-			if (isButtonPressed(Btn7DXmtr2)) {
-				stacking = false;
-				justStacked = false;
-				stackPrev = false;
-				stackLevel = 1;
-				prevStackLevel = 0;
-			}
-
-			//writeDebugStreamLine("stack level %d", stackLevel);
-			//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
-			//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
-			//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
-			//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
-			//writeDebugStreamLine("arm power,                                                    %d", armPower );
-			//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-			//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
-			//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
-
-			//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
-			//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
-
-			//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
-			//writeDebugStreamLine("Lift right pot,      %d", SensorValue(liftRightPot));
-			//writeDebugStreamLine("						Lift Left pot,      %d", SensorValue(liftLeftPot));
-
-			datalogAddValueWithTimeStamp(6, SensorValue[armPot]);
-			datalogAddValueWithTimeStamp(5, armPower);
-			//datalogAddValueWithTimeStamp(2, SensorValue[armPot]);
-
-			//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
-			//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
-
-			if (isButtonClick(Btn7U)) {
-				theaterChaseTask(127, 0, 127, 127, 15000);
-			}
-
-			if (isButtonClick(Btn7R)) {
-				theaterChaseTask(0, 0, 127, 127, 15000);
-			}
-
-			if (isButtonClick(Btn7L)) {
-				theaterChaseTask(127, 0, 0, 127, 15000);
-			}
-
-			if (isButtonClick(Btn7D)) {
-				rainbowCycleTask(0, 15000);
-			}
-
-			// --- Choose alliance if both Left & Right LCD Buttons are pressed
-
-			if ((nLCDButtons & (kButtonLeft | kButtonRight)) == (kButtonLeft | kButtonRight)) {
-				selectTeamAlliance();
-			}
-
-			//writeDebugStreamLine("value Arm pot %d", SensorValue[armPot]);
-
-			wait1Msec(15);
-		}
-	}
-
-	task usercontrol()
-	{
-		robotMode = USER_CONTROL;
-
-		if (false) UserControlCodePlaceholderForTesting();	// complains if I remove this
-
-		writeDebugStreamLine("Starting User Control...");
-		writeDebugStreamLine("Main battery level: %3.2f", nAvgBatteryLevel * 0.001);
-		writeDebugStreamLine("Backup battery level: %3.2f", BackupBatteryLevel * 0.001);
-
-		initialize();
-
-		startTask(MotorSlewRateTask);
-		startTask(ProcessController);
-	}
-
-	void initialize()
-	{
-		// Library routines thread
-		startTask(activateLib);
-
-		// LED strip routines thread
-		setupLedStrip();
-
-		//Clear Sensors
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
-		SensorValue[rollerEnc] = 0;
-
-		datalogClear();
-
-		presetLevel = PRESET_LEVEL_ONE;
-	}
-
-	void timerCallback(unsigned int timerId)
-	{
-
-	}
-
-	void selectTeamAlliance()
-	{
-		// Defaults
-		allianceColor = BLUE_ALLIANCE;
-		allianceSide = RIGHT;
-		autonomousMode = AUTONOMOUS_MODE_MOBILE_GOAL_20;
-		//return;
-
-		//SensorValue[ledGreen] = 0;
-		//SensorValue[ledRed] = 0;
-
-		// Zero out encoder positions
-
-		// Clear LCD and turn on backlight
-		clearLCDLine(0);
-		clearLCDLine(1);
-		bLCDBacklight = true;
-
-		// Display alliance selection
-		displayLCDString(0, 0, " Team Color  ");
-		displayLCDString(1, 0, " Blue       Red ");
-
-		bool allianceSelected = false;
-		while (!allianceSelected) {	//bIfiRobotDisabled
-			// Wait for button press
-			switch (getLcdButtons()) {
-			case kButtonLeft:
-				allianceColor = BLUE_ALLIANCE;
-				displayLCDString(1, 0, "[Blue]      Red ");
-				allianceSelected = true;
-				break;
-
-			case kButtonRight:
-				allianceColor = RED_ALLIANCE;
-				displayLCDString(1, 0, "Blue       [Red]");
-				allianceSelected = true;
-				break;
-			}
-
-			wait1Msec(10);
+			wait1Msec(20);
 		}
 
-		// Display autonomous selection
-		wait1Msec(500);
+		drive(0, 0);
+		clearTimer(T2);
+		clearDriveEnc();
 
-		// Display alliance selection
-		displayLCDString(0, 0, " Team Side  ");
-		displayLCDString(1, 0, " Left     Right ");
+		while (time1(T2) < 2300) {
 
-		bool sideSelected = false;
-		while (!sideSelected) {	//bIfiRobotDisabled
-			// Wait for button press
-			switch (getLcdButtons()) {
-			case kButtonLeft:
-				allianceSide = LEFT;
-				displayLCDString(1, 0, "[Left]    Right ");
-				sideSelected = true;
-				break;
-
-			case kButtonRight:
-				allianceSide = RIGHT;
-				displayLCDString(1, 0, "Left     [Right]");
-				sideSelected = true;
-				break;
+			if (mobileGoalIsOut) {
+				moveMobileGoalInAuto();
+				} else {
+				motor[mobileGoal] = 50;
 			}
-			wait1Msec(10);
+
+			//Drive
+			if (time1(T2) > 1600) {
+				driveBackward(-100, -230);
+				moveLiftDown(50, 400);
+				//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+			}
+
+			if (time1(T2) > 1800) {
+				rollerOutakeAuto(-100, 150);
+			}
+
+			wait1Msec(20);
 		}
 
+		break;
 
+	case AUTONOMOUS_MODE_STACK_DRIVE:
 
-		// Display autonomous selection
-		wait1Msec(500);
+		break;
 
-		displayLCDString(0, 0, "Autonomous Mode ");
-		displayLCDString(1, 0, "Full  Min  None ");
+	case AUTONOMOUS_MODE_STACK_PIPE:
 
-		bool autonomousSelected = false;
-		int scrollCount = 1;
-		byte scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
-		while (!autonomousSelected) {
-			// Wait for button press
-			if(nLCDButtons == 1) {
-				scrollCount -= 1;
-			}
-			if(nLCDButtons == 4) {
-				scrollCount += 1;
-			}
-			if(nLCDButtons == 2) {
-				autonomousMode = scrolledAuto;
-				autonomousSelected = true;
-			}
+		break;
 
-			switch (scrollCount) {
-			case 1:
-				scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
-				displayLCDString(1, 0, "[1]2 3 4 5 6 7 8 ");
-				wait1Msec(200);
-				break;
+	case AUTONOMOUS_MODE_STACK_BACK:
 
-			case 2:
-				scrolledAuto = AUTONOMOUS_MODE_CUBE_BACK_STAR;
-				displayLCDString(1, 0, " 1[2]3 4 5 6 7 8 ");
-				wait1Msec(200);
-				break;
+		break;
 
-			case 3:
-				scrolledAuto = AUTONOMOUS_MODE_FENCE;
-				displayLCDString(1, 0, " 1 2[3]4 5 6 7 8 ");
-				wait1Msec(200);
-				break;
+	case AUTONOMOUS_MODE_DRIVE_BLOCK:
 
-			case 4:
-				scrolledAuto = AUTONOMOUS_MODE_SKILLS;
-				displayLCDString(1, 0, " 1 2 3[4]5 6 7 8 ");
-				wait1Msec(200);
-				break;
+		break;
+	}
+}
 
-			case 5:
-				scrolledAuto = AUTONOMOUS_MODE_STACK_DRIVE;
-				displayLCDString(1, 0, " 1 2 3 4[5]6 7 8 ");
-				wait1Msec(200);
-				break;
+task autonomous()
+{
+	robotMode = AUTONOMOUS;
 
-			case 6:
-				scrolledAuto = AUTONOMOUS_MODE_STACK_PIPE;
-				displayLCDString(1, 0, " 1 2 3 4 5[6]7 8 ");
-				wait1Msec(200);
-				break;
+	autonomousStartTime = nSysTime;
+	writeDebugStreamLine("Starting Autonomous...");
 
-			case 7:
-				scrolledAuto = AUTONOMOUS_MODE_STACK_BACK;
-				displayLCDString(1, 0, " 1 2 3 4 5 6[7]8 ");
-				wait1Msec(200);
-				break;
+	initialize();
 
-			case 8:
-				scrolledAuto = AUTONOMOUS_MODE_DRIVE_BLOCK;
-				displayLCDString(1, 0, " 1 2 3 4 5 6 7[8]");
-				wait1Msec(200);
-				break;
-			}
+	if (false) AutonomousCodePlaceholderForTesting();  // complains if I remove this
 
-			wait1Msec(10);
+	startTask(autonomousRoutines);
+}
+
+task ProcessController() {
+	while(true) {
+
+		/*
+		Main Controller:
+		joysticks = drive
+
+		Partner Contorller:
+		right joystick = catapult
+		*/
+
+		// --- Joysticks to control robot driving (main controller only)
+
+		static byte rightJoystickY, leftJoystickY, prevRightJoystickY = 0, prevLeftJoystickY = 0;
+
+		rightJoystickY = readRightJoystickYAxis();
+		leftJoystickY = readLeftJoystickYAxis();
+
+		static bool rightDriveMoving = false;
+		if (abs(rightJoystickY) > MIN_JOYSTICK_THRESHOLD) {
+			rightDriveMoving = true;
+			motorReq2[driveFR] = rightJoystickY;
+			motorReq2[driveBR] = rightJoystickY;
+			writeDebugStreamLine("Right: %d%%", rightJoystickY);
+			} else {
+			rightDriveMoving = false;
+			motorReq2[driveFR] = 0;
+			motorReq2[driveBR] = 0;
 		}
 
-		wait1Msec(500);
+		static bool leftDriveMoving = false;
+		if (abs(leftJoystickY) > MIN_JOYSTICK_THRESHOLD) {
+			leftDriveMoving = true;
+			motorReq2[driveFL] = leftJoystickY;
+			motorReq2[driveBL] = leftJoystickY;
+			writeDebugStreamLine("Left: %d%%", leftJoystickY);
+			} else {
+			leftDriveMoving = false;
+			motorReq2[driveFL] = 0;
+			motorReq2[driveBL] = 0;
+		}
 
-		// Clear LCD
-		clearLCDLine(0);
-		clearLCDLine(1);
+		if (!stacking) {
+			if (isButtonPressed(Btn8RXmtr2)) {
+				armIsBack = true;
+				} else if (isButtonPressed(Btn8LXmtr2)) {
+				armIsBack = false;
+			}
+
+			if (armIsBack) {
+				moveArmOut();
+				} else if (!armIsBack) {
+				moveArmIn();
+			}
+		}
+
+		//Mobile Goal control on joystick
+		if (isButtonPressed(Btn8U)) {
+			mobileGoalOut = true;
+			} else if (isButtonPressed(Btn8D)) {
+			mobileGoalOut = false;
+		}
+
+		if (isButtonPressed(Btn8R)) {
+			moveMobileGoalOut();
+			} else if (isButtonPressed(Btn8L)) {
+			moveMobileGoalIn();
+			} else if (mobileGoalOut) {
+			moveMobileGoalOut();
+			} else if (!mobileGoalOut) {
+			moveMobileGoalIn();
+		}
+
+		//Roller control
+		if (!stacking) {
+			if (isButtonPressed(Btn6DXmtr2)) {
+				motor[roller] = -127;
+				} else if (isButtonPressed(Btn6UXmtr2)) {
+				motor[roller] = 127;
+				} else {
+				motor[roller] = 30;
+			}
+		}
+
+		//Move lift
+		if (!stacking) {
+			if (isButtonPressed(Btn5UXmtr2)) {
+				motor[liftL] = 127;
+				motor[liftR] = 127;
+				//liftPIDControl(1000);
+				} else if (isButtonPressed(Btn5DXmtr2)) {
+				motor[liftL] = -90;
+				motor[liftR] = -90;
+				//liftPIDControl(500);
+				} else if (isButtonPressed(Btn7LXmtr2)) {
+				liftPIDControl(600);
+				} else {
+				motor[liftL] = 0;
+				motor[liftR] = 0;
+			}
+		}
+
+		//Activate curent level
+		if (isButtonPressed(Btn8UXmtr2)) {
+			stacking = true;
+		}
+
+		if (stacking) {
+			autoStack(stackLevel);
+			} else if (stackPrev) {
+			autoStack(prevStackLevel);
+			} else if (justStacked) {
+			postStacking();
+		}
+
+		//Activate Stack
+		/*if (isButtonPressed(Btn7RXmtr2)) {
+		liftLeftAtPosition = true;
+		liftRightAtPosition = true;
+		}*/
+
+		//Activate last level
+		if (isButtonPressed(Btn8DXmtr2)) {
+			stackPrev = true;
+		}
+
+		//Increase stack level
+		if (isButtonPressed(Btn8UXmtr2) && increaseStackLvl) {
+			prevStackLevel ++;
+			stackLevel ++;
+			increaseStackLvl = false;
+		}
+
+		//Deactivate stacking emergency
+		if (isButtonPressed(Btn7UXmtr2)) {
+			stacking = false;
+			justStacked = false;
+			stackPrev = false;
+		}
+
+		//Deactivate stacking reset to 1
+		if (isButtonPressed(Btn7DXmtr2)) {
+			stacking = false;
+			justStacked = false;
+			stackPrev = false;
+			stackLevel = 1;
+			prevStackLevel = 0;
+		}
+
+		//writeDebugStreamLine("stack level %d", stackLevel);
+		//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
+		//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
+		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
+		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
+		//writeDebugStreamLine("arm power,                                                    %d", armPower );
+		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
+
+		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
+		//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
+
+		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
+		//writeDebugStreamLine("Lift right pot,      %d", SensorValue(liftRightPot));
+		//writeDebugStreamLine("						Lift Left pot,      %d", SensorValue(liftLeftPot));
+
+		datalogAddValueWithTimeStamp(6, SensorValue[armPot]);
+		datalogAddValueWithTimeStamp(5, armPower);
+		//datalogAddValueWithTimeStamp(2, SensorValue[armPot]);
+
+		//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
+		//datalogAddValueWithTimeStamp(1, SensorValue[liftRightPot]);
+
+		if (isButtonClick(Btn7U)) {
+			theaterChaseTask(127, 0, 127, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7R)) {
+			theaterChaseTask(0, 0, 127, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7L)) {
+			theaterChaseTask(127, 0, 0, 127, 15000);
+		}
+
+		if (isButtonClick(Btn7D)) {
+			rainbowCycleTask(0, 15000);
+		}
+
+		// --- Choose alliance if both Left & Right LCD Buttons are pressed
+
+		if ((nLCDButtons & (kButtonLeft | kButtonRight)) == (kButtonLeft | kButtonRight)) {
+			selectTeamAlliance();
+		}
+
+		//writeDebugStreamLine("value Arm pot %d", SensorValue[armPot]);
+
+		wait1Msec(15);
+	}
+}
+
+task usercontrol()
+{
+	robotMode = USER_CONTROL;
+
+	if (false) UserControlCodePlaceholderForTesting();	// complains if I remove this
+
+	writeDebugStreamLine("Starting User Control...");
+	writeDebugStreamLine("Main battery level: %3.2f", nAvgBatteryLevel * 0.001);
+	writeDebugStreamLine("Backup battery level: %3.2f", BackupBatteryLevel * 0.001);
+
+	initialize();
+
+	startTask(MotorSlewRateTask);
+	startTask(ProcessController);
+}
+
+void initialize()
+{
+	// Library routines thread
+	startTask(activateLib);
+
+	// LED strip routines thread
+	setupLedStrip();
+
+	//Clear Sensors
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+	SensorValue[rollerEnc] = 0;
+
+	datalogClear();
+
+	presetLevel = PRESET_LEVEL_ONE;
+}
+
+void timerCallback(unsigned int timerId)
+{
+
+}
+
+void selectTeamAlliance()
+{
+	// Defaults
+	allianceColor = BLUE_ALLIANCE;
+	allianceSide = RIGHT;
+	autonomousMode = AUTONOMOUS_MODE_MOBILE_GOAL_20;
+	//return;
+
+	//SensorValue[ledGreen] = 0;
+	//SensorValue[ledRed] = 0;
+
+	// Zero out encoder positions
+
+	// Clear LCD and turn on backlight
+	clearLCDLine(0);
+	clearLCDLine(1);
+	bLCDBacklight = true;
+
+	// Display alliance selection
+	displayLCDString(0, 0, " Team Color  ");
+	displayLCDString(1, 0, " Blue       Red ");
+
+	bool allianceSelected = false;
+	while (!allianceSelected) {	//bIfiRobotDisabled
+		// Wait for button press
+		switch (getLcdButtons()) {
+		case kButtonLeft:
+			allianceColor = BLUE_ALLIANCE;
+			displayLCDString(1, 0, "[Blue]      Red ");
+			allianceSelected = true;
+			break;
+
+		case kButtonRight:
+			allianceColor = RED_ALLIANCE;
+			displayLCDString(1, 0, "Blue       [Red]");
+			allianceSelected = true;
+			break;
+		}
+
+		wait1Msec(10);
 	}
 
-	void initializeGyro() {
-		writeDebugStreamLine("Gyro before initialize %d", SensorValue[in8]);
+	// Display autonomous selection
+	wait1Msec(500);
 
-		SensorType(driveGyro) = sensorNone;
-		wait1Msec(1000);
-		SensorType(driveGyro) = sensorGyro;
-		wait1Msec(2000);
+	// Display alliance selection
+	displayLCDString(0, 0, " Team Side  ");
+	displayLCDString(1, 0, " Left     Right ");
 
-		writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
+	bool sideSelected = false;
+	while (!sideSelected) {	//bIfiRobotDisabled
+		// Wait for button press
+		switch (getLcdButtons()) {
+		case kButtonLeft:
+			allianceSide = LEFT;
+			displayLCDString(1, 0, "[Left]    Right ");
+			sideSelected = true;
+			break;
+
+		case kButtonRight:
+			allianceSide = RIGHT;
+			displayLCDString(1, 0, "Left     [Right]");
+			sideSelected = true;
+			break;
+		}
+		wait1Msec(10);
 	}
 
-	void moveArmOut () {
-		if (SensorValue[armPot] > 2000) {
-			motor[swingingArm] = 120;
-			armPower = 120;
-			} else if (SensorValue[armPot] <= 2000) {
-			motor[swingingArm] = 0;
-			armPower = 0;
-			armIsReallyBack = false;
+
+
+	// Display autonomous selection
+	wait1Msec(500);
+
+	displayLCDString(0, 0, "Autonomous Mode ");
+	displayLCDString(1, 0, "Full  Min  None ");
+
+	bool autonomousSelected = false;
+	int scrollCount = 1;
+	byte scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
+	while (!autonomousSelected) {
+		// Wait for button press
+		if(nLCDButtons == 1) {
+			scrollCount -= 1;
 		}
+		if(nLCDButtons == 4) {
+			scrollCount += 1;
+		}
+		if(nLCDButtons == 2) {
+			autonomousMode = scrolledAuto;
+			autonomousSelected = true;
+		}
+
+		switch (scrollCount) {
+		case 1:
+			scrolledAuto = AUTONOMOUS_MODE_MOBILE_GOAL_20;
+			displayLCDString(1, 0, "[1]2 3 4 5 6 7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 2:
+			scrolledAuto = AUTONOMOUS_MODE_CUBE_BACK_STAR;
+			displayLCDString(1, 0, " 1[2]3 4 5 6 7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 3:
+			scrolledAuto = AUTONOMOUS_MODE_FENCE;
+			displayLCDString(1, 0, " 1 2[3]4 5 6 7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 4:
+			scrolledAuto = AUTONOMOUS_MODE_SKILLS;
+			displayLCDString(1, 0, " 1 2 3[4]5 6 7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 5:
+			scrolledAuto = AUTONOMOUS_MODE_STACK_DRIVE;
+			displayLCDString(1, 0, " 1 2 3 4[5]6 7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 6:
+			scrolledAuto = AUTONOMOUS_MODE_STACK_PIPE;
+			displayLCDString(1, 0, " 1 2 3 4 5[6]7 8 ");
+			wait1Msec(200);
+			break;
+
+		case 7:
+			scrolledAuto = AUTONOMOUS_MODE_STACK_BACK;
+			displayLCDString(1, 0, " 1 2 3 4 5 6[7]8 ");
+			wait1Msec(200);
+			break;
+
+		case 8:
+			scrolledAuto = AUTONOMOUS_MODE_DRIVE_BLOCK;
+			displayLCDString(1, 0, " 1 2 3 4 5 6 7[8]");
+			wait1Msec(200);
+			break;
+		}
+
+		wait1Msec(10);
 	}
 
-	void moveArmIn () {
-		if (SensorValue[armPot] < 3500) {
-			motor[swingingArm] = -120;
-			armPower = -120;
-			//writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
-			} else if (SensorValue[armPot] >= 3500) {
-			motor[swingingArm] = 0;
-			armPower = 0;
-			armIsReallyBack = true;
-		}
-	}
+	wait1Msec(500);
 
-	void moveArmOutAuto() {
-		while(SensorValue[armPot] > 2000) {
-			motor[swingingArm] = 100;
-		}
+	// Clear LCD
+	clearLCDLine(0);
+	clearLCDLine(1);
+}
+
+void initializeGyro() {
+	writeDebugStreamLine("Gyro before initialize %d", SensorValue[in8]);
+
+	SensorType(driveGyro) = sensorNone;
+	wait1Msec(1000);
+	SensorType(driveGyro) = sensorGyro;
+	wait1Msec(2000);
+
+	writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
+}
+
+void moveArmOut () {
+	if (SensorValue[armPot] > 2000) {
+		motor[swingingArm] = 120;
+		armPower = 120;
+		} else if (SensorValue[armPot] <= 2000) {
 		motor[swingingArm] = 0;
+		armPower = 0;
+		armIsReallyBack = false;
 	}
+}
 
-	void moveArm (bool forward) {
-		if (forward) {
-			moveArmOut();
-			} else {
-			moveArmIn();
-		}
+void moveArmIn () {
+	if (SensorValue[armPot] < 3500) {
+		motor[swingingArm] = -120;
+		armPower = -120;
+		//writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
+		} else if (SensorValue[armPot] >= 3500) {
+		motor[swingingArm] = 0;
+		armPower = 0;
+		armIsReallyBack = true;
 	}
+}
 
-	void rollerIntake(int speed) {
+void moveArmOutAuto() {
+	while(SensorValue[armPot] > 2000) {
+		motor[swingingArm] = 100;
+	}
+	motor[swingingArm] = 0;
+}
+
+void moveArm (bool forward) {
+	if (forward) {
+		moveArmOut();
+		} else {
+		moveArmIn();
+	}
+}
+
+void rollerIntake(int speed) {
+	motor[roller] = speed;
+	rollerSpeed = speed;
+	//	writeDebugStreamLine("Set speed %d", rollerSpeed);
+}
+
+void rollerOutake(int speed, int distance) {
+	if (distance > SensorValue[rollerEnc]) {
 		motor[roller] = speed;
-		rollerSpeed = speed;
-		//	writeDebugStreamLine("Set speed %d", rollerSpeed);
-	}
-
-	void rollerOutake(int speed, int distance) {
-		if (distance > SensorValue[rollerEnc]) {
-			motor[roller] = speed;
-			} else {
-			motor [roller] = 0;
-			outakeFinished = true;
-		}
-	}
-
-	void rollerOutakeAuto(int speed, int distance) {
-		while (distance > SensorValue[rollerEnc]) {
-			motor[roller] = speed;
-		}
+		} else {
 		motor [roller] = 0;
+		outakeFinished = true;
 	}
+}
 
-	//Drive function for auto
-	void drive(int left, int right) {
-		turnMotor(driveFL, left);
-		turnMotor(driveFR, right);
-		turnMotor(driveBL, left);
-		turnMotor(driveBR, right);
+void rollerOutakeAuto(int speed, int distance) {
+	while (distance > SensorValue[rollerEnc]) {
+		motor[roller] = speed;
 	}
-	//Drive function with encoders for auto
-	void driveForward(int speed, int distance) {
-		while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
-			writeDebugStreamLine(" Left Encoder: %d", SensorValue[leftDriveEnc]);
-			writeDebugStreamLine(" Right Encoder: %d", SensorValue[rightDriveEnc]);
-			writeDebugStreamLine("Moving forward");
-			drive(speed, speed);
-		}
-		drive(0, 0);
+	motor [roller] = 0;
+}
 
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
-		writeDebugStreamLine("Front Left Encoder: %d", SensorValue[leftDriveEnc]);
-		writeDebugStreamLine("Front Right Encoder: %d", SensorValue[rightDriveEnc]);
+//Drive function for auto
+void drive(int left, int right) {
+	turnMotor(driveFL, left);
+	turnMotor(driveFR, right);
+	turnMotor(driveBL, left);
+	turnMotor(driveBR, right);
+}
+//Drive function with encoders for auto
+void driveForward(int speed, int distance) {
+	while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
+		writeDebugStreamLine(" Left Encoder: %d", SensorValue[leftDriveEnc]);
+		writeDebugStreamLine(" Right Encoder: %d", SensorValue[rightDriveEnc]);
+		writeDebugStreamLine("Moving forward");
+		drive(speed, speed);
 	}
+	drive(0, 0);
 
-	void driveBackward(int speed, int distance) {
-		while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
-			drive(speed, speed);
-		}
-		drive(0, 0);
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+	writeDebugStreamLine("Front Left Encoder: %d", SensorValue[leftDriveEnc]);
+	writeDebugStreamLine("Front Right Encoder: %d", SensorValue[rightDriveEnc]);
+}
 
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
+void driveBackward(int speed, int distance) {
+	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
+		drive(speed, speed);
 	}
+	drive(0, 0);
 
-	void turnLeft(int speed, int distance) {
-		while (SensorValue[leftDriveEnc] < distance && SensorValue[rightDriveEnc] > (-distance)) {
-			drive(-speed, speed);
-		}
-		drive(0, 0);
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
 
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
+void turnLeft(int speed, int distance) {
+	while (SensorValue[leftDriveEnc] < distance && SensorValue[rightDriveEnc] > (-distance)) {
+		drive(-speed, speed);
 	}
+	drive(0, 0);
 
-	void turnRight(int speed, int distance) {
-		while (SensorValue[leftDriveEnc] > (-distance) && SensorValue[rightDriveEnc] < distance) {
-			drive(speed, -speed);
-		}
-		drive(0, 0);
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
 
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
+void turnRight(int speed, int distance) {
+	while (SensorValue[leftDriveEnc] > (-distance) && SensorValue[rightDriveEnc] < distance) {
+		drive(speed, -speed);
 	}
+	drive(0, 0);
 
-	void clearDriveEnc() {
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
+
+void clearDriveEnc() {
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
+
+void  moveMobileGoalIn() {
+	if (SensorValue[mobilePot] > 230) {
+		motor[mobileGoal] = 127;
+		mobileGoalIsOut = true;
+		} else {
+		motor[mobileGoal] = 50;
+		mobileGoalIsOut = false;
 	}
+}
 
-	void  moveMobileGoalIn() {
-		if (SensorValue[mobilePot] > 230) {
-			motor[mobileGoal] = 127;
-			mobileGoalIsOut = true;
-			} else {
-			motor[mobileGoal] = 50;
-			mobileGoalIsOut = false;
-		}
+void moveMobileGoalInAuto() {
+	while (SensorValue[mobilePot] > 330) {
+		motor[mobileGoal] = 127;
 	}
+	motor[mobileGoal] = 0;
+}
 
-	void moveMobileGoalInAuto() {
-		while (SensorValue[mobilePot] > 330) {
-			motor[mobileGoal] = 127;
-		}
-		motor[mobileGoal] = 0;
+void moveMobileGoalInDistance(int distance) {
+	while (SensorValue[mobilePot] > distance) {
+		motor[mobileGoal] = 127;
 	}
+	motor[mobileGoal] = 0;
+}
 
-	void moveMobileGoalInDistance(int distance) {
-		while (SensorValue[mobilePot] > distance) {
-			motor[mobileGoal] = 127;
-		}
-		motor[mobileGoal] = 0;
+void moveMobileGoalOut() {
+	if (SensorValue[mobilePot] < 2000) {
+		motor[mobileGoal] = -127;
+		mobileGoalIsOut = false;
+		} else {
+		motor[mobileGoal] = -50;
+		mobileGoalIsOut = true;
 	}
+}
 
-	void moveMobileGoalOut() {
-		if (SensorValue[mobilePot] < 2000) {
-			motor[mobileGoal] = -127;
-			mobileGoalIsOut = false;
-			} else {
-			motor[mobileGoal] = -50;
-			mobileGoalIsOut = true;
-		}
+void moveMobileGoalOutAuto() {
+	while (SensorValue[mobilePot] < 2000) {
+		motor[mobileGoal] = -127;
 	}
+	motor[mobileGoal] = 0;
+}
 
-	void moveMobileGoalOutAuto() {
+void moveMobileGoalOutAndDrive(int speed, int distance) {
+	while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
+		drive(speed, speed);
 		while (SensorValue[mobilePot] < 2000) {
 			motor[mobileGoal] = -127;
 		}
 		motor[mobileGoal] = 0;
 	}
+	drive(0, 0);
 
-	void moveMobileGoalOutAndDrive(int speed, int distance) {
-		while (SensorValue[rightDriveEnc] < distance && SensorValue[leftDriveEnc] < distance) {
-			drive(speed, speed);
-			while (SensorValue[mobilePot] < 2000) {
-				motor[mobileGoal] = -127;
-			}
-			motor[mobileGoal] = 0;
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
+}
+
+void moveMobileGoalInAndDrive(int speed, int distance) {
+	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
+		drive(speed, speed);
+		while (SensorValue[mobilePot] > 180) {
+			motor[mobileGoal] = 127;
 		}
-		drive(0, 0);
-
-		SensorValue[rightDriveEnc] = 0;
-		SensorValue[leftDriveEnc] = 0;
+		motor[mobileGoal] = 0;
 	}
-
-	void moveMobileGoalInAndDrive(int speed, int distance) {
-		while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
-			drive(speed, speed);
-			while (SensorValue[mobilePot] > 180) {
-				motor[mobileGoal] = 127;
-			}
-			motor[mobileGoal] = 0;
-		}
-		drive(0, 0);
-	}
+	drive(0, 0);
+}
 
 
-	void moveLiftUp(int speed, int distance) {
-		if (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
-			motor [liftL] = speed;
-			motor [liftR] = speed;
-			} else {
-			motor [liftL] = 0;
-			motor [liftR] = 0;
-		}
-	}
-
-	void moveLiftUpAuto(int speed, int distance) {
-		while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
-			motor [liftL] = speed;
-			motor [liftR] = speed;
-		}
+void moveLiftUp(int speed, int distance) {
+	if (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
+		motor [liftL] = speed;
+		motor [liftR] = speed;
+		} else {
 		motor [liftL] = 0;
 		motor [liftR] = 0;
 	}
+}
 
-	void moveLiftDown(int speed, int distance) {
-		while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
-			motor [liftL] = -speed;
-			motor [liftR] = -speed;
-		}
-		motor [liftL] = 0;
-		motor [liftR] = 0;
+void moveLiftUpAuto(int speed, int distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) < distance) {
+		motor [liftL] = speed;
+		motor [liftR] = speed;
+	}
+	motor [liftL] = 0;
+	motor [liftR] = 0;
+}
+
+void moveLiftDown(int speed, int distance) {
+	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
+		motor [liftL] = -speed;
+		motor [liftR] = -speed;
+	}
+	motor [liftL] = 0;
+	motor [liftR] = 0;
+}
+
+void liftPIDControl (int position) {
+	float leftCurrent;
+	float rightCurrent;
+
+	float integralAcitveZone = 100;
+
+	float leftProportion;
+	float sharedIntegral;
+	float leftDerivative;
+	float rightProportion;
+	float rightDerivative;
+
+	float liftLeftError;
+	float liftRightError;
+	float leftErrorT;
+	float rightErrorT;
+	float liftLeftLastError;
+	float liftRightLastError;
+
+	float leftPot = SensorValue[liftLeftPot];
+	float rightPot = SensorValue[liftRightPot];
+
+	//Find lift error
+	liftLeftError = position - leftPot;
+	liftRightError = position - rightPot;
+
+	leftProportion = liftLeftError * liftLeftkp;
+	rightProportion = liftRightError * liftRightkp;
+
+	sharedIntegral = leftErrorT * liftSharedki;
+
+	leftDerivative = (liftLeftError - liftLeftLastError) * liftLeftkd;
+	rightDerivative = (liftRightError - liftRightLastError) * liftRightkd;
+
+	//left
+	if (abs(liftLeftError) < integralAcitveZone) {
+		leftErrorT += liftLeftError;
+		} else {
+		leftErrorT = 0;
+	}
+	/*if (leftErrorT > 50/leftki) {
+	leftErrorT = 50/leftki;
+	}*/
+
+	//right
+	if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
+		rightErrorT += liftRightError;
+		} else {
+		rightErrorT = 0;
+	}
+	/*if (rightErrorT > 50/rightki) {
+	rightErrorT = 50/rightki;
+	}*/
+
+	/*if (abs(liftLeftError) <= leftPositionError) {
+	leftDerivative = 0;
+	}
+	if (abs(liftRightError) <= rightPositionError) {
+	rightDerivative = 0;
+	}*/
+
+	liftLeftLastError = liftLeftError;
+	liftRightLastError = liftRightError;
+
+	leftCurrent = leftProportion + sharedIntegral + leftDerivative;
+	rightCurrent = rightProportion + sharedIntegral + rightDerivative;
+
+	//left
+	/*if (leftPot >= position + liftError && leftPot < position - liftError) {
+	leftCurrent = 0;
 	}
 
-	void liftPIDControl (int position) {
-		float leftCurrent;
-		float rightCurrent;
+	//right
+	if (rightPot >= position + liftError && rightPot < position - liftError) {
+	rightCurrent = 0;
+	}*/
 
-		float integralAcitveZone = 100;
-
-		float leftProportion;
-		float sharedIntegral;
-		float leftDerivative;
-		float rightProportion;
-		float rightDerivative;
-
-		float liftLeftError;
-		float liftRightError;
-		float leftErrorT;
-		float rightErrorT;
-		float liftLeftLastError;
-		float liftRightLastError;
-
-		float leftPot = SensorValue[liftLeftPot];
-		float rightPot = SensorValue[liftRightPot];
-
-		//Find lift error
-		liftLeftError = position - leftPot;
-		liftRightError = position - rightPot;
-
-		leftProportion = liftLeftError * liftLeftkp;
-		rightProportion = liftRightError * liftRightkp;
-
-		sharedIntegral = leftErrorT * liftSharedki;
-
-		leftDerivative = (liftLeftError - liftLeftLastError) * liftLeftkd;
-		rightDerivative = (liftRightError - liftRightLastError) * liftRightkd;
-
-		//left
-		if (abs(liftLeftError) < integralAcitveZone) {
-			leftErrorT += liftLeftError;
-			} else {
-			leftErrorT = 0;
-		}
-		/*if (leftErrorT > 50/leftki) {
-		leftErrorT = 50/leftki;
-		}*/
-
-		//right
-		if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
-			rightErrorT += liftRightError;
-			} else {
-			rightErrorT = 0;
-		}
-		/*if (rightErrorT > 50/rightki) {
-		rightErrorT = 50/rightki;
-		}*/
-
-		/*if (abs(liftLeftError) <= leftPositionError) {
-		leftDerivative = 0;
-		}
-		if (abs(liftRightError) <= rightPositionError) {
-		rightDerivative = 0;
-		}*/
-
-		liftLeftLastError = liftLeftError;
-		liftRightLastError = liftRightError;
-
-		leftCurrent = leftProportion + sharedIntegral + leftDerivative;
-		rightCurrent = rightProportion + sharedIntegral + rightDerivative;
-
-		//left
-		/*if (leftPot >= position + liftError && leftPot < position - liftError) {
+	if (abs(liftLeftError) <= liftLeftPositionError) {
 		leftCurrent = 0;
-		}
-
-		//right
-		if (rightPot >= position + liftError && rightPot < position - liftError) {
+	}
+	if (abs(liftRightError) <= liftRightPositionError) {
 		rightCurrent = 0;
-		}*/
-
-		if (abs(liftLeftError) <= liftLeftPositionError) {
-			leftCurrent = 0;
-		}
-		if (abs(liftRightError) <= liftRightPositionError) {
-			rightCurrent = 0;
-		}
-
-		//Check that lift has stopped
-		if (abs(liftLeftError) <= liftLeftPositionError) {
-			liftLeftAtPosition = true;
-			} else {
-			liftLeftAtPosition = false;
-		}
-		if (abs(liftRightError) <= liftRightPositionError) {
-			liftRightAtPosition = true;
-			} else {
-			liftRightAtPosition = false;
-		}
-
-		if (leftCurrent > 100) {
-			leftCurrent = 100;
-		}
-		if (rightCurrent > 100) {
-			rightCurrent = 100;
-		}
-		if (leftCurrent < -100) {
-			leftCurrent = -100;
-		}
-		if (rightCurrent < -100) {
-			rightCurrent = -100;
-		}
-
-		motor[liftL] = leftCurrent;
-		motor[liftR] = rightCurrent;
-
-		writeDebugStreamLine("left pot %d", leftPot);
-		writeDebugStreamLine("             right pot %d", rightPot);
-		//writeDebugStreamLine("arm %d", armIsReallyBack);
-		//writeDebugStreamLine("  left integral %d", sharedIntegral);
-		//writeDebugStreamLine("                          right integral %d", rightIntegral);
-		//writeDebugStreamLine("position %d", position);
-		//writeDebugStreamLine("          left error %d", liftLeftError);
-		//writeDebugStreamLine("                  right error %d", liftRightError);
-		writeDebugStreamLine("                     left curent %d", leftCurrent);
-		writeDebugStreamLine("                                    right curent %d", rightCurrent);
 	}
 
-	void autoStackStep(int liftPos) {
-		if (outakeFinished) {
-			stacking = false;
-			stackPrev = false;
-			justStacked = true;
-			liftLeftAtPosition = false;
-			liftRightAtPosition = false;
-			armIsReallyBack = false;
-			increaseStackLvl = true;
-			writeDebugStreamLine("stage 4");
-			} else {
-			if (!armIsReallyBack) {
-				liftPIDControl(liftPos);
-				writeDebugStreamLine("stage 1");
-				} else if (time1[T1] <= 400) {
-				motor[liftL] = -60;
-				motor[liftR] = -60;
-				} else if (time1[T1] >= 400) {
-				rollerOutake(-127, 500);
-				liftPIDControl(liftPos + 100);
-				writeDebugStreamLine("Second Pid and Outake");
-			}
-
-			if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
-				moveArmIn();
-				//Not auto stacking stuff
-				//armIsBack = false;
-				SensorValue[rollerEnc] = 0;
-				writeDebugStreamLine("stage 2");
-				clearTimer(T1);
-			}
-		}
+	//Check that lift has stopped
+	if (abs(liftLeftError) <= liftLeftPositionError) {
+		liftLeftAtPosition = true;
+		} else {
+		liftLeftAtPosition = false;
+	}
+	if (abs(liftRightError) <= liftRightPositionError) {
+		liftRightAtPosition = true;
+		} else {
+		liftRightAtPosition = false;
 	}
 
-	void autoStack(int level) {
-		switch (level) {
-		case PRESET_LEVEL_ONE:
-			autoStackStep(500);
-			break;
-
-		case PRESET_LEVEL_TWO:
-			autoStackStep(580);
-			break;
-
-		case PRESET_LEVEL_THREE:
-			autoStackStep(800);
-			break;
-
-		case PRESET_LEVEL_FOUR:
-			autoStackStep(960);
-			break;
-
-		case PRESET_LEVEL_FIVE:
-			autoStackStep(1020);
-			break;
-
-		case PRESET_LEVEL_SIX:
-			autoStackStep(1080);
-			break;
-
-		case PRESET_LEVEL_SEVEN:
-			autoStackStep(1150);
-			break;
-
-		case PRESET_LEVEL_EIGHT:
-			autoStackStep(1320);
-			break;
-
-		case PRESET_LEVEL_NINE:
-			autoStackStep(1470);
-			break;
-
-		case PRESET_LEVEL_TEN:
-			autoStackStep(1550);
-			break;
-
-		case PRESET_LEVEL_ELEVEN:
-			autoStackStep(1750);
-			break;
-
-		case PRESET_LEVEL_TWELVE:
-			autoStackStep(1970);
-			break;
-
-		case PRESET_LEVEL_THIRTEEN:
-			autoStackStep(2020);
-			break;
-		}
+	if (leftCurrent > 100) {
+		leftCurrent = 100;
+	}
+	if (rightCurrent > 100) {
+		rightCurrent = 100;
+	}
+	if (leftCurrent < -100) {
+		leftCurrent = -100;
+	}
+	if (rightCurrent < -100) {
+		rightCurrent = -100;
 	}
 
-	void postStacking() {
-		moveArmOut();
-		//armIsBack = true;
+	motor[liftL] = leftCurrent;
+	motor[liftR] = rightCurrent;
+
+	writeDebugStreamLine("left pot %d", leftPot);
+	writeDebugStreamLine("             right pot %d", rightPot);
+	//writeDebugStreamLine("arm %d", armIsReallyBack);
+	//writeDebugStreamLine("  left integral %d", sharedIntegral);
+	//writeDebugStreamLine("                          right integral %d", rightIntegral);
+	//writeDebugStreamLine("position %d", position);
+	//writeDebugStreamLine("          left error %d", liftLeftError);
+	//writeDebugStreamLine("                  right error %d", liftRightError);
+	writeDebugStreamLine("                     left curent %d", leftCurrent);
+	writeDebugStreamLine("                                    right curent %d", rightCurrent);
+}
+
+void autoStackStep(int liftPos) {
+	if (outakeFinished) {
+		stacking = false;
+		stackPrev = false;
+		justStacked = true;
+		liftLeftAtPosition = false;
+		liftRightAtPosition = false;
+		armIsReallyBack = false;
+		increaseStackLvl = true;
+		writeDebugStreamLine("stage 4");
+		} else {
 		if (!armIsReallyBack) {
-			if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
-				/*motor[liftL] = -70;
-				motor[liftL] = -70;*/
-				liftPIDControl(260);
-			}
-			} else {
-			motor[liftL] = 0;
-			motor[liftR] = 0;
+			liftPIDControl(liftPos);
+			writeDebugStreamLine("stage 1");
+			} else if (time1[T1] <= 400) {
+			motor[liftL] = -60;
+			motor[liftR] = -60;
+			} else if (time1[T1] >= 400) {
+			rollerOutake(-127, 500);
+			liftPIDControl(liftPos + 100);
+			writeDebugStreamLine("Second Pid and Outake");
 		}
-		if (SensorValue[liftLeftPot] <= 300 && SensorValue[liftRightPot] <= 300) {
-			justStacked = false;
+
+		if (liftLeftAtPosition && liftRightAtPosition && !armIsReallyBack) {
+			moveArmIn();
+			//Not auto stacking stuff
+			//armIsBack = false;
+			SensorValue[rollerEnc] = 0;
+			writeDebugStreamLine("stage 2");
+			clearTimer(T1);
 		}
-		outakeFinished = false;
+	}
+}
+
+void autoStack(int level) {
+	switch (level) {
+	case PRESET_LEVEL_ONE:
+		autoStackStep(500);
+		break;
+
+	case PRESET_LEVEL_TWO:
+		autoStackStep(580);
+		break;
+
+	case PRESET_LEVEL_THREE:
+		autoStackStep(800);
+		break;
+
+	case PRESET_LEVEL_FOUR:
+		autoStackStep(960);
+		break;
+
+	case PRESET_LEVEL_FIVE:
+		autoStackStep(1020);
+		break;
+
+	case PRESET_LEVEL_SIX:
+		autoStackStep(1080);
+		break;
+
+	case PRESET_LEVEL_SEVEN:
+		autoStackStep(1150);
+		break;
+
+	case PRESET_LEVEL_EIGHT:
+		autoStackStep(1320);
+		break;
+
+	case PRESET_LEVEL_NINE:
+		autoStackStep(1470);
+		break;
+
+	case PRESET_LEVEL_TEN:
+		autoStackStep(1550);
+		break;
+
+	case PRESET_LEVEL_ELEVEN:
+		autoStackStep(1750);
+		break;
+
+	case PRESET_LEVEL_TWELVE:
+		autoStackStep(1970);
+		break;
+
+	case PRESET_LEVEL_THIRTEEN:
+		autoStackStep(2020);
+		break;
+	}
+}
+
+void postStacking() {
+	moveArmOut();
+	//armIsBack = true;
+	if (!armIsReallyBack) {
+		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
+			/*motor[liftL] = -70;
+			motor[liftL] = -70;*/
+			liftPIDControl(260);
+		}
+		} else {
+		motor[liftL] = 0;
+		motor[liftR] = 0;
+	}
+	if (SensorValue[liftLeftPot] <= 300 && SensorValue[liftRightPot] <= 300) {
+		justStacked = false;
+	}
+	outakeFinished = false;
+}
+
+void autoDrivePIDControl (int distance, bool drive) {
+	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
+
+	float integralAcitveZone = 100;
+
+	float error;
+	float proportion;
+	float integral;
+	float derivative;
+
+	float errorT;
+	float lastError;
+
+	float current;
+
+	//Find Distance error
+	error = distance - encAverage;
+
+	if (drive) {
+		//Set proportion
+		proportion = error * drivekp;
+
+		integral = errorT * driveki;
+
+		derivative = (error - lastError) * drivekd;
+		} else if (!drive) {
+		//Set proportion for turn drive
+		proportion = error * driveTurnkp;
+
+		integral = errorT * driveTurnki;
+
+		derivative = (error - lastError) * driveTurnkd;
 	}
 
-	void autoDrivePIDControl (int distance, bool drive) {
-		float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
-
-		float integralAcitveZone = 100;
-
-		float error;
-		float proportion;
-		float integral;
-		float derivative;
-
-		float errorT;
-		float lastError;
-
-		float current;
-
-		//Find Distance error
-		error = distance - encAverage;
-
-		if (drive) {
-			//Set proportion
-			proportion = error * drivekp;
-
-			integral = errorT * driveki;
-
-			derivative = (error - lastError) * drivekd;
-			} else if (!drive) {
-			//Set proportion for turn drive
-			proportion = error * driveTurnkp;
-
-			integral = errorT * driveTurnki;
-
-			derivative = (error - lastError) * driveTurnkd;
-		}
-
-		//Calculate integral
-		//left
-		if (error < integralAcitveZone) {
-			errorT += error;
-			} else {
-			errorT = 0;
-		}
-
-		lastError = error;
-
-		//Set current
-		current = proportion + integral + derivative;
-		driveCurrent = proportion + integral + derivative;
-
-		if (abs(error) <= drivePositionError) {
-			current = 0;
-		}
-
-		if (abs(error) <= driveTurnPositionError) {
-			gyroCurrent = 0;
-		}
-
-		//Check that drive has stopped
-		if (abs(error) <= drivePositionError) {
-			driveAtPosition = true;
-			} else {
-			driveAtPosition = false;
-		}
-
-		if (current > 127) {
-			current = 127;
-		}
-		if (current < -127) {
-			current = -127;
-		}
-
-		if (drive) {
-			motor[driveBL] = current;
-			motor[driveFL] = current;
-			motor[driveBR] = current;
-			motor[driveFR] = current;
-		}
-
-		//writeDebugStreamLine("Current Angle %d", encAverage);
-		//writeDebugStreamLine("           drive  error %d", error);
-		/*writeDebugStreamLine("             integral %d", integral);
-		writeDebugStreamLine("             error total %d", errorT);
-		writeDebugStreamLine("             derivative %d", derivative);
-		writeDebugStreamLine("           last error %d", lastError);*/
-		//writeDebugStreamLine("             drive current 2/ %d", current);
-		writeDebugStreamLine("             proportion %d", proportion);
-		writeDebugStreamLine("             error %d", error);
-
-		/*datalogAddValueWithTimeStamp(0, error);
-		datalogAddValueWithTimeStamp(1, encAverage);
-		datalogAddValueWithTimeStamp(2, integral);
-		datalogAddValueWithTimeStamp(3, derivative);
-		datalogAddValueWithTimeStamp(4, current);*/
-		datalogAddValueWithTimeStamp(5, error);
+	//Calculate integral
+	//left
+	if (error < integralAcitveZone) {
+		errorT += error;
+		} else {
+		errorT = 0;
 	}
 
-	void autoGyroPIDControl (int setAngle, bool turn) {
-		float currentAngle = SensorValue(driveGyro);
+	lastError = error;
 
-		float integralAcitveZone = 1000;
+	//Set current
+	current = proportion + integral + derivative;
+	driveCurrent = proportion + integral + derivative;
 
-		float proportion;
-		float integral;
-		float derivative;
-
-		float errorT;
-		float lastError;
-
-		float current;
-
-		//Find Angle error
-		turnError = setAngle - currentAngle;
-
-		if (turn) {
-			//Set proportion
-			proportion = turnError * turnkp;
-
-			integral = errorT * turnki;
-
-			derivative = (turnError - lastError) * turnkd;
-			} else if (!turn) {
-			//Set proportion for turn drive
-			proportion = turnError * turnDrivekp;
-
-			integral = errorT * turnDriveki;
-
-			derivative = (turnError - lastError) * turnDrivekd;
-		}
-
-		//Calculate integral
-		if (turnError < integralAcitveZone) {
-			errorT += turnError;
-			} else {
-			errorT = 0;
-		}
-
-		//Calculate derivative
-		lastError = turnError;
-
-		//Set current
-		current = proportion + integral + derivative;
-		gyroCurrent = proportion + integral + derivative;
-
-		if (abs(turnError) <= turnPositionError) {
-			current = 0;
-		}
-
-		//Check that lift has stopped
-		if (abs(turnError) <= turnPositionError) {
-			turnAtPosition = true;
-			} else {
-			turnAtPosition = false;
-		}
-
-		if (current > 90) {
-			current = 90;
-		}
-		if (current < -90) {
-			current = -90;
-		}
-		if (turn) {
-			motor[driveBL] = -current;
-			motor[driveFL] = -current;
-			motor[driveBR] = current;
-			motor[driveFR] = current;
-		}
-
-		//writeDebugStreamLine("Current Angle %d", currentAngle);
-		//writeDebugStreamLine("            turn error %d", turnError);
-		/*writeDebugStreamLine("             integral %d", integral);
-		writeDebugStreamLine("             error total %d", errorT);
-		writeDebugStreamLine("             derivative %d", derivative);
-		writeDebugStreamLine("           last error %d", lastError);*/
-		//writeDebugStreamLine("             angle current 2/ %d", current);
-
-		datalogAddValueWithTimeStamp(4, turnError);
-		/*datalogAddValueWithTimeStamp(1, currentAngle);
-		datalogAddValueWithTimeStamp(2, integral);
-		datalogAddValueWithTimeStamp(3, derivative);
-		datalogAddValueWithTimeStamp(4, current);*/
-		//datalogAddValueWithTimeStamp(4, turnError);
+	if (abs(error) <= drivePositionError) {
+		current = 0;
 	}
 
-	void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd) {
-		turnDrivekp = turnkp;
-		turnDriveki = turnki;
-		turnDrivekd = turnkd;
-
-		driveTurnkp = drivekp;
-		driveTurnki = driveki;
-		driveTurnkd = drivekd;
-
-		autoDrivePIDControl(distance, false);
-		autoGyroPIDControl(setAngle, false);
-
-		//Assign power to motors
-		overallCurrentLeft = driveCurrent - gyroCurrent;
-		overallCurrentRight = driveCurrent + gyroCurrent;
-
-		motor[driveBL] = overallCurrentLeft;
-		motor[driveFL] = overallCurrentLeft;
-		motor[driveBR] = overallCurrentRight;
-		motor[driveFR] = overallCurrentRight;
-
-		//Limit power to motors
-		if (gyroCurrent > turnPower) {
-			gyroCurrent = turnPower;
-		}
-		if (gyroCurrent < -turnPower) {
-			gyroCurrent = -turnPower;
-		}
-
-		if (abs(turnError) <= turnDrivePositionError) {
-			gyroCurrent = 0;
-		}
-
-		if (driveCurrent > 127 - turnPower) {
-			driveCurrent = 127 - turnPower;
-		}
-		if (driveCurrent < -(127 - turnPower)) {
-			driveCurrent = -(127 - turnPower);
-		}
-
-		if (overallCurrentLeft > 127) {
-			overallCurrentLeft = 127;
-		}
-		if (overallCurrentLeft < -127) {
-			overallCurrentLeft = -127;
-		}
-		if (overallCurrentRight > 127) {
-			overallCurrentRight = 127;
-		}
-		if (overallCurrentRight < -127) {
-			overallCurrentRight = -127;
-		}
-
-		/*writeDebugStreamLine("Angle current %d", gyroCurrent);
-		writeDebugStreamLine("Drive current %d", driveCurrent);
-		writeDebugStreamLine("             overall  current left %d", overallCurrentLeft);
-		writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
-		//writeDebugStreamLine("             gyro %d", SensorValue[driveGyro]);
-
-		datalogAddValueWithTimeStamp(0, driveCurrent);
-		datalogAddValueWithTimeStamp(1, gyroCurrent);
-		datalogAddValueWithTimeStamp(2, overallCurrentLeft);
-		datalogAddValueWithTimeStamp(3, overallCurrentRight);
+	if (abs(error) <= driveTurnPositionError) {
+		gyroCurrent = 0;
 	}
 
-	void autoLiftPIDControl (int position, int kp, int ki, int kd) {
-		float leftCurrent;
-		float rightCurrent;
-
-		float integralAcitveZone = 100;
-
-		float leftProportion;
-		float sharedIntegral;
-		float leftDerivative;
-		float rightProportion;
-		float rightDerivative;
-
-		float liftLeftError;
-		float liftRightError;
-		float leftErrorT;
-		float rightErrorT;
-		float liftLeftLastError;
-		float liftRightLastError;
-
-		float leftPot = SensorValue[liftLeftPot];
-		float rightPot = SensorValue[liftRightPot];
-
-		//Find lift error
-		liftLeftError = position - leftPot;
-		liftRightError = position - rightPot;
-
-		leftProportion = liftLeftError * kp;
-		rightProportion = liftRightError * kp;
-
-		sharedIntegral = leftErrorT * ki;
-
-		leftDerivative = (liftLeftError - liftLeftLastError) * kd;
-		rightDerivative = (liftRightError - liftRightLastError) * kd;
-
-		//left
-		if (abs(liftLeftError) < integralAcitveZone) {
-			leftErrorT += liftLeftError;
-			} else {
-			leftErrorT = 0;
-		}
-
-		//right
-		if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
-			rightErrorT += liftRightError;
-			} else {
-			rightErrorT = 0;
-		}
-
-		liftLeftLastError = liftLeftError;
-		liftRightLastError = liftRightError;
-
-		leftCurrent = leftProportion + sharedIntegral + leftDerivative;
-		rightCurrent = rightProportion + sharedIntegral + rightDerivative;
-
-		if (abs(liftLeftError) <= liftLeftPositionError) {
-			leftCurrent = 0;
-		}
-		if (abs(liftRightError) <= liftRightPositionError) {
-			rightCurrent = 0;
-		}
-
-		//Check that lift has stopped
-		if (abs(liftLeftError) <= liftLeftPositionError) {
-			liftLeftAtPosition = true;
-			} else {
-			liftLeftAtPosition = false;
-		}
-		if (abs(liftRightError) <= liftRightPositionError) {
-			liftRightAtPosition = true;
-			} else {
-			liftRightAtPosition = false;
-		}
-
-		if (leftCurrent > 100) {
-			leftCurrent = 100;
-		}
-		if (rightCurrent > 100) {
-			rightCurrent = 100;
-		}
-		if (leftCurrent < -100) {
-			leftCurrent = -100;
-		}
-		if (rightCurrent < -100) {
-			rightCurrent = -100;
-		}
-
-		motor[liftL] = leftCurrent;
-		motor[liftR] = rightCurrent;
-
-		/*writeDebugStreamLine("left pot %d", leftPot);
-		writeDebugStreamLine("             right pot %d", rightPot);
-		//writeDebugStreamLine("arm %d", armIsReallyBack);
-		writeDebugStreamLine("  integral %d", sharedIntegral);
-		//writeDebugStreamLine("                          right integral %d", rightIntegral);
-		//writeDebugStreamLine("position %d", position);
-		//writeDebugStreamLine("          left error %d", liftLeftError);
-		//writeDebugStreamLine("                  right error %d", liftRightError);
-		writeDebugStreamLine("                     left curent %d", leftCurrent);
-		writeDebugStreamLine("                                    right curent %d", rightCurrent);
-
-		datalogAddValueWithTimeStamp(0, leftCurrent);
-		datalogAddValueWithTimeStamp(1, rightCurrent);
-		datalogAddValueWithTimeStamp(2, leftPot);
-		datalogAddValueWithTimeStamp(3, rightPot);
-		datalogAddValueWithTimeStamp(4, sharedIntegral);
-		datalogAddValueWithTimeStamp(5, liftLeftError);
-		datalogAddValueWithTimeStamp(6, liftLeftError);*/
+	//Check that drive has stopped
+	if (abs(error) <= drivePositionError) {
+		driveAtPosition = true;
+		} else {
+		driveAtPosition = false;
 	}
+
+	if (current > 127) {
+		current = 127;
+	}
+	if (current < -127) {
+		current = -127;
+	}
+
+	if (drive) {
+		motor[driveBL] = current;
+		motor[driveFL] = current;
+		motor[driveBR] = current;
+		motor[driveFR] = current;
+	}
+
+	//writeDebugStreamLine("Current Angle %d", encAverage);
+	//writeDebugStreamLine("           drive  error %d", error);
+	/*writeDebugStreamLine("             integral %d", integral);
+	writeDebugStreamLine("             error total %d", errorT);
+	writeDebugStreamLine("             derivative %d", derivative);
+	writeDebugStreamLine("           last error %d", lastError);*/
+	//writeDebugStreamLine("             drive current 2/ %d", current);
+	writeDebugStreamLine("             proportion %d", proportion);
+	writeDebugStreamLine("             error %d", error);
+
+	/*datalogAddValueWithTimeStamp(0, error);
+	datalogAddValueWithTimeStamp(1, encAverage);
+	datalogAddValueWithTimeStamp(2, integral);
+	datalogAddValueWithTimeStamp(3, derivative);
+	datalogAddValueWithTimeStamp(4, current);*/
+	datalogAddValueWithTimeStamp(5, error);
+}
+
+void autoGyroPIDControl (int setAngle, bool turn) {
+	float currentAngle = SensorValue(driveGyro);
+
+	float integralAcitveZone = 1000;
+
+	float proportion;
+	float integral;
+	float derivative;
+
+	float errorT;
+	float lastError;
+
+	float current;
+
+	//Find Angle error
+	turnError = setAngle - currentAngle;
+
+	if (turn) {
+		//Set proportion
+		proportion = turnError * turnkp;
+
+		integral = errorT * turnki;
+
+		derivative = (turnError - lastError) * turnkd;
+		} else if (!turn) {
+		//Set proportion for turn drive
+		proportion = turnError * turnDrivekp;
+
+		integral = errorT * turnDriveki;
+
+		derivative = (turnError - lastError) * turnDrivekd;
+	}
+
+	//Calculate integral
+	if (turnError < integralAcitveZone) {
+		errorT += turnError;
+		} else {
+		errorT = 0;
+	}
+
+	//Calculate derivative
+	lastError = turnError;
+
+	//Set current
+	current = proportion + integral + derivative;
+	gyroCurrent = proportion + integral + derivative;
+
+	if (abs(turnError) <= turnPositionError) {
+		current = 0;
+	}
+
+	//Check that lift has stopped
+	if (abs(turnError) <= turnPositionError) {
+		turnAtPosition = true;
+		} else {
+		turnAtPosition = false;
+	}
+
+	if (current > 90) {
+		current = 90;
+	}
+	if (current < -90) {
+		current = -90;
+	}
+	if (turn) {
+		motor[driveBL] = -current;
+		motor[driveFL] = -current;
+		motor[driveBR] = current;
+		motor[driveFR] = current;
+	}
+
+	//writeDebugStreamLine("Current Angle %d", currentAngle);
+	//writeDebugStreamLine("            turn error %d", turnError);
+	/*writeDebugStreamLine("             integral %d", integral);
+	writeDebugStreamLine("             error total %d", errorT);
+	writeDebugStreamLine("             derivative %d", derivative);
+	writeDebugStreamLine("           last error %d", lastError);*/
+	//writeDebugStreamLine("             angle current 2/ %d", current);
+
+	datalogAddValueWithTimeStamp(4, turnError);
+	/*datalogAddValueWithTimeStamp(1, currentAngle);
+	datalogAddValueWithTimeStamp(2, integral);
+	datalogAddValueWithTimeStamp(3, derivative);
+	datalogAddValueWithTimeStamp(4, current);*/
+	//datalogAddValueWithTimeStamp(4, turnError);
+}
+
+void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd) {
+	turnDrivekp = turnkp;
+	turnDriveki = turnki;
+	turnDrivekd = turnkd;
+
+	driveTurnkp = drivekp;
+	driveTurnki = driveki;
+	driveTurnkd = drivekd;
+
+	autoDrivePIDControl(distance, false);
+	autoGyroPIDControl(setAngle, false);
+
+	//Assign power to motors
+	overallCurrentLeft = driveCurrent - gyroCurrent;
+	overallCurrentRight = driveCurrent + gyroCurrent;
+
+	motor[driveBL] = overallCurrentLeft;
+	motor[driveFL] = overallCurrentLeft;
+	motor[driveBR] = overallCurrentRight;
+	motor[driveFR] = overallCurrentRight;
+
+	//Limit power to motors
+	if (gyroCurrent > turnPower) {
+		gyroCurrent = turnPower;
+	}
+	if (gyroCurrent < -turnPower) {
+		gyroCurrent = -turnPower;
+	}
+
+	if (abs(turnError) <= turnDrivePositionError) {
+		gyroCurrent = 0;
+	}
+
+	if (driveCurrent > 127 - turnPower) {
+		driveCurrent = 127 - turnPower;
+	}
+	if (driveCurrent < -(127 - turnPower)) {
+		driveCurrent = -(127 - turnPower);
+	}
+
+	if (overallCurrentLeft > 127) {
+		overallCurrentLeft = 127;
+	}
+	if (overallCurrentLeft < -127) {
+		overallCurrentLeft = -127;
+	}
+	if (overallCurrentRight > 127) {
+		overallCurrentRight = 127;
+	}
+	if (overallCurrentRight < -127) {
+		overallCurrentRight = -127;
+	}
+
+	/*writeDebugStreamLine("Angle current %d", gyroCurrent);
+	writeDebugStreamLine("Drive current %d", driveCurrent);
+	writeDebugStreamLine("             overall  current left %d", overallCurrentLeft);
+	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
+	//writeDebugStreamLine("             gyro %d", SensorValue[driveGyro]);
+
+	datalogAddValueWithTimeStamp(0, driveCurrent);
+	datalogAddValueWithTimeStamp(1, gyroCurrent);
+	datalogAddValueWithTimeStamp(2, overallCurrentLeft);
+	datalogAddValueWithTimeStamp(3, overallCurrentRight);
+}
+
+void autoLiftPIDControl (int position, int kp, int ki, int kd) {
+	float leftCurrent;
+	float rightCurrent;
+
+	float integralAcitveZone = 100;
+
+	float leftProportion;
+	float sharedIntegral;
+	float leftDerivative;
+	float rightProportion;
+	float rightDerivative;
+
+	float liftLeftError;
+	float liftRightError;
+	float leftErrorT;
+	float rightErrorT;
+	float liftLeftLastError;
+	float liftRightLastError;
+
+	float leftPot = SensorValue[liftLeftPot];
+	float rightPot = SensorValue[liftRightPot];
+
+	//Find lift error
+	liftLeftError = position - leftPot;
+	liftRightError = position - rightPot;
+
+	leftProportion = liftLeftError * kp;
+	rightProportion = liftRightError * kp;
+
+	sharedIntegral = leftErrorT * ki;
+
+	leftDerivative = (liftLeftError - liftLeftLastError) * kd;
+	rightDerivative = (liftRightError - liftRightLastError) * kd;
+
+	//left
+	if (abs(liftLeftError) < integralAcitveZone) {
+		leftErrorT += liftLeftError;
+		} else {
+		leftErrorT = 0;
+	}
+
+	//right
+	if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
+		rightErrorT += liftRightError;
+		} else {
+		rightErrorT = 0;
+	}
+
+	liftLeftLastError = liftLeftError;
+	liftRightLastError = liftRightError;
+
+	leftCurrent = leftProportion + sharedIntegral + leftDerivative;
+	rightCurrent = rightProportion + sharedIntegral + rightDerivative;
+
+	if (abs(liftLeftError) <= liftLeftPositionError) {
+		leftCurrent = 0;
+	}
+	if (abs(liftRightError) <= liftRightPositionError) {
+		rightCurrent = 0;
+	}
+
+	//Check that lift has stopped
+	if (abs(liftLeftError) <= liftLeftPositionError) {
+		liftLeftAtPosition = true;
+		} else {
+		liftLeftAtPosition = false;
+	}
+	if (abs(liftRightError) <= liftRightPositionError) {
+		liftRightAtPosition = true;
+		} else {
+		liftRightAtPosition = false;
+	}
+
+	if (leftCurrent > 100) {
+		leftCurrent = 100;
+	}
+	if (rightCurrent > 100) {
+		rightCurrent = 100;
+	}
+	if (leftCurrent < -100) {
+		leftCurrent = -100;
+	}
+	if (rightCurrent < -100) {
+		rightCurrent = -100;
+	}
+
+	motor[liftL] = leftCurrent;
+	motor[liftR] = rightCurrent;
+
+	/*writeDebugStreamLine("left pot %d", leftPot);
+	writeDebugStreamLine("             right pot %d", rightPot);
+	//writeDebugStreamLine("arm %d", armIsReallyBack);
+	writeDebugStreamLine("  integral %d", sharedIntegral);
+	//writeDebugStreamLine("                          right integral %d", rightIntegral);
+	//writeDebugStreamLine("position %d", position);
+	//writeDebugStreamLine("          left error %d", liftLeftError);
+	//writeDebugStreamLine("                  right error %d", liftRightError);
+	writeDebugStreamLine("                     left curent %d", leftCurrent);
+	writeDebugStreamLine("                                    right curent %d", rightCurrent);
+
+	datalogAddValueWithTimeStamp(0, leftCurrent);
+	datalogAddValueWithTimeStamp(1, rightCurrent);
+	datalogAddValueWithTimeStamp(2, leftPot);
+	datalogAddValueWithTimeStamp(3, rightPot);
+	datalogAddValueWithTimeStamp(4, sharedIntegral);
+	datalogAddValueWithTimeStamp(5, liftLeftError);
+	datalogAddValueWithTimeStamp(6, liftLeftError);*/
+}
