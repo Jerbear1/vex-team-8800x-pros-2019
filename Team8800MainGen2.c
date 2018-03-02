@@ -714,6 +714,7 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_CUBE_BACK_STAR:
 
+		/////////////////////////////////////////////////////////////////////////////AUTO 2///////////////////////////////////////////////
 		//Apply passive power to roller
 		motor [roller] = 40;
 
@@ -737,6 +738,8 @@ task autonomousRoutines()
 		break;
 
 	case AUTONOMOUS_MODE_FENCE:
+
+		////////////////////////////////////////////////////////////////////////////////AUTO 3/////////////////////////////////////////////////
 		if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
 			motor[roller] = 40;
 
@@ -765,7 +768,7 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 2300) {
+			while (time1(T2) < 2200) {
 
 				if (mobileGoalIsOut) {
 					moveMobileGoalInAuto();
@@ -775,16 +778,51 @@ task autonomousRoutines()
 
 				//Drive
 				if (time1(T2) > 1600) {
-					driveBackward(-100, -460);
 					moveLiftDown(50, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 1800) {
-					rollerOutakeAuto(-100, 150);
+				if (time1(T2) > 2050) {
+					rollerOutake(-100, 150);
 				}
 
 				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+
+				moveLiftDown(50, 300);
+
+				moveArmOut();
+
+				motor[roller] = 120;
+				if (time1(T2) > 1000) {
+					motor[roller] = 40;
+					moveLiftUp(100, 550);
+				}
+				if (time1(T2) > 1300) {
+					moveArmIn();
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+
+			while (time1(T2) < 1000) {
+				moveLiftDown(20, 550);
+				driveBackward(-100, -580);
+				if (time1(T2) > 200) {
+					motor[roller] = -100;
+					waitInMilliseconds(400);
+					motor[roller] = 0;
+				}
 			}
 
 			drive(0, 0);
@@ -795,7 +833,7 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1750, true);
+				autoGyroPIDControl(-1700, true);
 			}
 
 			drive(0, 0);
@@ -804,10 +842,10 @@ task autonomousRoutines()
 
 			while (time1(T2) < 1500) {
 				moveMobileGoalOut();
+				moveLiftUp(80, 500);
+				motor[roller] = -100;
 
-				moveLiftUp(100, 500);
-
-				drive(20, 20);
+				drive(50, 50);
 				waitInMilliseconds(200);
 				drive(0, 0);
 			}
@@ -822,56 +860,131 @@ task autonomousRoutines()
 				drive(0, 0);
 			}
 
-			moveMobileGoalIn();
-		}
-		break;
-
-	case AUTONOMOUS_MODE_SKILLS:
-		/*while (true) {
-		writeDebugStreamLine("             mobile goal %d", SensorValue[mobilePot]);
-		if (!mobileGoalIsOut) {
-		moveMobileGoalOut();
-		} else {
-		motor[mobileGoal] = -20;
-		}
-
-		waitInMilliseconds(2000);
-
-		if (mobileGoalIsOut) {
-		moveMobileGoalInAuto();
-		} else {
-		motor[mobileGoal] = 20;
-		}
-		}*/
-
-		motor[roller] = 40;
-
-		clearTimer(T2);
-
-		while (time1(T2) < 3000) {
-
-			moveLiftUp(100, 700);
-
-			//Drive
-			if (time1(T2) > 500) {
-				autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
-			}
-
-			//Move mobile goal lifter out
-			if (!mobileGoalIsOut) {
-				moveMobileGoalOut();
+			if (mobileGoalIsOut) {
+				moveMobileGoalInAuto();
 				} else {
-				motor[mobileGoal] = -50;
+				motor[mobileGoal] = 50;
 			}
 
-			wait1Msec(20);
-		}
+			} else if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
+			motor[roller] = 40;
 
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
+			clearTimer(T2);
 
-		while (time1(T2) < 2300) {
+			while (time1(T2) < 3000) {
+
+				moveLiftUp(100, 700);
+
+				//Drive
+				if (time1(T2) > 500) {
+					autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				}
+
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+					} else {
+					motor[mobileGoal] = -50;
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 2200) {
+
+				if (mobileGoalIsOut) {
+					moveMobileGoalInAuto();
+					} else {
+					motor[mobileGoal] = 50;
+				}
+
+				//Drive
+				if (time1(T2) > 1600) {
+					moveLiftDown(50, 400);
+					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				}
+
+				if (time1(T2) > 2050) {
+					rollerOutake(-100, 150);
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+
+				moveLiftDown(50, 300);
+
+				moveArmOut();
+
+				motor[roller] = 120;
+				if (time1(T2) > 1000) {
+					motor[roller] = 40;
+					moveLiftUp(100, 550);
+				}
+				if (time1(T2) > 1300) {
+					moveArmIn();
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+
+			while (time1(T2) < 1000) {
+				moveLiftDown(20, 550);
+				driveBackward(-100, -580);
+				if (time1(T2) > 200) {
+					motor[roller] = -100;
+					waitInMilliseconds(400);
+					motor[roller] = 0;
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			wait1Msec(200);
+
+			while (time1(T2) < 2000) {
+				//turn
+				autoGyroPIDControl(-1700, true);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				moveMobileGoalOut();
+				moveLiftUp(80, 500);
+				motor[roller] = -100;
+
+				drive(50, 50);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 300) {
+				drive(-60, -60);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
 
 			if (mobileGoalIsOut) {
 				moveMobileGoalInAuto();
@@ -879,23 +992,269 @@ task autonomousRoutines()
 				motor[mobileGoal] = 50;
 			}
 
-			//Drive
-			if (time1(T2) > 1600) {
-				driveBackward(-100, -230);
-				moveLiftDown(50, 400);
-				//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+			} else if (allianceSide == RIGHT && allianceColor == RED_ALLIANCE) {
+			motor[roller] = 40;
+
+			clearTimer(T2);
+
+			while (time1(T2) < 3000) {
+
+				moveLiftUp(100, 700);
+
+				//Drive
+				if (time1(T2) > 500) {
+					autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				}
+
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+					} else {
+					motor[mobileGoal] = -50;
+				}
+
+				wait1Msec(20);
 			}
 
-			if (time1(T2) > 1800) {
-				rollerOutakeAuto(-100, 150);
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 2200) {
+
+				if (mobileGoalIsOut) {
+					moveMobileGoalInAuto();
+					} else {
+					motor[mobileGoal] = 50;
+				}
+
+				//Drive
+				if (time1(T2) > 1600) {
+					moveLiftDown(50, 400);
+					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				}
+
+				if (time1(T2) > 2050) {
+					rollerOutake(-100, 150);
+				}
+
+				wait1Msec(20);
 			}
 
-			wait1Msec(20);
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+
+				moveLiftDown(50, 300);
+
+				moveArmOut();
+
+				motor[roller] = 120;
+				if (time1(T2) > 1000) {
+					motor[roller] = 40;
+					moveLiftUp(100, 550);
+				}
+				if (time1(T2) > 1300) {
+					moveArmIn();
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+
+			while (time1(T2) < 1000) {
+				moveLiftDown(20, 550);
+				driveBackward(-100, -580);
+				if (time1(T2) > 200) {
+					motor[roller] = -100;
+					waitInMilliseconds(400);
+					motor[roller] = 0;
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			wait1Msec(200);
+
+			while (time1(T2) < 2000) {
+				//turn
+				autoGyroPIDControl(-1700, true);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				moveMobileGoalOut();
+				moveLiftUp(80, 500);
+				motor[roller] = -100;
+
+				drive(50, 50);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 300) {
+				drive(-60, -60);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			if (mobileGoalIsOut) {
+				moveMobileGoalInAuto();
+				} else {
+				motor[mobileGoal] = 50;
+			}
+
+			} else if (allianceSide == LEFT && allianceColor == RED_ALLIANCE) {
+			motor[roller] = 40;
+
+			clearTimer(T2);
+
+			while (time1(T2) < 3000) {
+
+				moveLiftUp(100, 700);
+
+				//Drive
+				if (time1(T2) > 500) {
+					autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				}
+
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+					} else {
+					motor[mobileGoal] = -50;
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 2200) {
+
+				if (mobileGoalIsOut) {
+					moveMobileGoalInAuto();
+					} else {
+					motor[mobileGoal] = 50;
+				}
+
+				//Drive
+				if (time1(T2) > 1600) {
+					moveLiftDown(50, 400);
+					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				}
+
+				if (time1(T2) > 2050) {
+					rollerOutake(-100, 150);
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+
+				moveLiftDown(50, 300);
+
+				moveArmOut();
+
+				motor[roller] = 120;
+				if (time1(T2) > 1000) {
+					motor[roller] = 40;
+					moveLiftUp(100, 550);
+				}
+				if (time1(T2) > 1300) {
+					moveArmIn();
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+
+			while (time1(T2) < 1000) {
+				moveLiftDown(20, 550);
+				driveBackward(-100, -580);
+				if (time1(T2) > 200) {
+					motor[roller] = -100;
+					waitInMilliseconds(400);
+					motor[roller] = 0;
+				}
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			wait1Msec(200);
+
+			while (time1(T2) < 2000) {
+				//turn
+				autoGyroPIDControl(-1700, true);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				moveMobileGoalOut();
+				moveLiftUp(80, 500);
+				motor[roller] = -100;
+
+				drive(50, 50);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 300) {
+				drive(-60, -60);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			if (mobileGoalIsOut) {
+				moveMobileGoalInAuto();
+				} else {
+				motor[mobileGoal] = 50;
+			}
 		}
 
 		break;
 
+	case AUTONOMOUS_MODE_SKILLS:
+
+		break;
+
 	case AUTONOMOUS_MODE_STACK_DRIVE:
+		while (true) {
+			autoDriveGyroPIDControl(0, 150, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+		}
 
 		break;
 
@@ -1535,12 +1894,13 @@ void moveLiftUpAuto(int speed, int distance) {
 }
 
 void moveLiftDown(int speed, int distance) {
-	while (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
+	if (((SensorValue[liftLeftPot] + SensorValue[liftRightPot])/2) > distance) {
 		motor [liftL] = -speed;
 		motor [liftR] = -speed;
+		} else {
+		motor [liftL] = 0;
+		motor [liftR] = 0;
 	}
-	motor [liftL] = 0;
-	motor [liftR] = 0;
 }
 
 void liftPIDControl (int position) {
