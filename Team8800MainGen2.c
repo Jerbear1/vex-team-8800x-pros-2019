@@ -306,7 +306,7 @@ task autonomousRoutines()
 			while (time1(T2) < 2300) {
 
 				if (mobileGoalIsOut) {
-					moveMobileGoalInAuto();
+					moveMobileGoalIn();
 					} else {
 					motor[mobileGoal] = 50;
 				}
@@ -316,10 +316,6 @@ task autonomousRoutines()
 					driveBackward(-100, -460);
 					moveLiftDown(50, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
-				}
-
-				if (time1(T2) > 1800) {
-					rollerOutakeAuto(-100, 150);
 				}
 
 				wait1Msec(20);
@@ -357,11 +353,14 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
+			SensorValue[rollerEnc] = 0;
 
 			while (time1(T2) < 2000) {
 				moveMobileGoalOut();
 
 				moveLiftUp(100, 500);
+
+				rollerOutake(-100, 150);
 
 				if (time1(T2) > 300) {
 					drive(100, 100);
@@ -380,7 +379,7 @@ task autonomousRoutines()
 				waitInMilliseconds(400);
 				drive(0, 0);
 			}
-			moveMobileGoalIn();
+			moveMobileGoalInAuto();
 
 			} else if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
 			motor[roller] = 40;
@@ -767,18 +766,24 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
+			SensorValue[rollerEnc] = 0;
 
 			while (time1(T2) < 2200) {
 
 				if (mobileGoalIsOut) {
-					moveMobileGoalInAuto();
+					moveMobileGoalIn();
 					} else {
 					motor[mobileGoal] = 50;
 				}
 
 				//Drive
-				if (time1(T2) > 1600) {
+				if (time1(T2) > 1600 && time1(T2) < 2050) {
 					moveLiftDown(50, 400);
+					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				}
+
+				if (time1(T2) > 2050) {
+					moveLiftUp(80, 600);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
@@ -793,14 +798,14 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
+			moveArmOut();
+			motor[roller] = 120;
+
 			while (time1(T2) < 1500) {
 				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
-				moveArmOut();
-
-				motor[roller] = 120;
 				if (time1(T2) > 1000) {
 					motor[roller] = 40;
 					moveLiftUp(100, 550);
@@ -818,11 +823,6 @@ task autonomousRoutines()
 			while (time1(T2) < 1000) {
 				moveLiftDown(20, 550);
 				driveBackward(-100, -580);
-				if (time1(T2) > 200) {
-					motor[roller] = -100;
-					waitInMilliseconds(400);
-					motor[roller] = 0;
-				}
 			}
 
 			drive(0, 0);
@@ -845,8 +845,8 @@ task autonomousRoutines()
 				moveLiftUp(80, 500);
 				motor[roller] = -100;
 
-				drive(50, 50);
-				waitInMilliseconds(200);
+				drive(50, 90);
+				waitInMilliseconds(500);
 				drive(0, 0);
 			}
 
@@ -855,7 +855,7 @@ task autonomousRoutines()
 			clearDriveEnc();
 
 			while (time1(T2) < 300) {
-				drive(-60, -60);
+				drive(-60, -100);
 				waitInMilliseconds(200);
 				drive(0, 0);
 			}
@@ -1818,7 +1818,7 @@ void  moveMobileGoalIn() {
 }
 
 void moveMobileGoalInAuto() {
-	while (SensorValue[mobilePot] > 330) {
+	while (SensorValue[mobilePot] > 230) {
 		motor[mobileGoal] = 127;
 	}
 	motor[mobileGoal] = 0;
