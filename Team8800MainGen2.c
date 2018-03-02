@@ -3022,10 +3022,10 @@ void initializeGyro() {
 }
 
 void moveArmOut () {
-	if (SensorValue[armPot] > 2000) {
+	if (SensorValue[armPot] > 1900) {
 		motor[swingingArm] = 120;
 		armPower = 120;
-		} else if (SensorValue[armPot] <= 2000) {
+		} else if (SensorValue[armPot] <= 1900) {
 		motor[swingingArm] = 0;
 		armPower = 0;
 		armIsReallyBack = false;
@@ -3371,10 +3371,10 @@ void autoStackStep(int liftPos) {
 		if (!armIsReallyBack) {
 			liftPIDControl(liftPos);
 			writeDebugStreamLine("stage 1");
-			} else if (time1[T1] <= 400) {
+			} else if (time1[T1] <= 600) {
 			motor[liftL] = -60;
 			motor[liftR] = -60;
-			} else if (time1[T1] >= 400) {
+			} else if (time1[T1] >= 600) {
 			rollerOutake(-127, 500);
 			liftPIDControl(liftPos + 100);
 			writeDebugStreamLine("Second Pid and Outake");
@@ -3394,23 +3394,23 @@ void autoStackStep(int liftPos) {
 void autoStack(int level) {
 	switch (level) {
 	case PRESET_LEVEL_ONE:
-		autoStackStep(500);
+		autoStackStep(480);
 		break;
 
 	case PRESET_LEVEL_TWO:
-		autoStackStep(580);
+		autoStackStep(550);
 		break;
 
 	case PRESET_LEVEL_THREE:
-		autoStackStep(780);
+		autoStackStep(750);
 		break;
 
 	case PRESET_LEVEL_FOUR:
-		autoStackStep(940);
+		autoStackStep(890);
 		break;
 
 	case PRESET_LEVEL_FIVE:
-		autoStackStep(1000);
+		autoStackStep(960);
 		break;
 
 	case PRESET_LEVEL_SIX:
@@ -3418,31 +3418,31 @@ void autoStack(int level) {
 		break;
 
 	case PRESET_LEVEL_SEVEN:
-		autoStackStep(1130);
+		autoStackStep(1110);
 		break;
 
 	case PRESET_LEVEL_EIGHT:
-		autoStackStep(1300);
+		autoStackStep(1260);
 		break;
 
 	case PRESET_LEVEL_NINE:
-		autoStackStep(1450);
+		autoStackStep(1420);
 		break;
 
 	case PRESET_LEVEL_TEN:
-		autoStackStep(1530);
+		autoStackStep(1500);
 		break;
 
 	case PRESET_LEVEL_ELEVEN:
-		autoStackStep(1650);
+		autoStackStep(1630);
 		break;
 
 	case PRESET_LEVEL_TWELVE:
-		autoStackStep(1730);
+		autoStackStep(1710);
 		break;
 
 	case PRESET_LEVEL_THIRTEEN:
-		autoStackStep(1800);
+		autoStackStep(1780);
 		break;
 	}
 }
@@ -3451,10 +3451,10 @@ void postStacking() {
 	moveArmOut();
 	//armIsBack = true;
 	if (!armIsReallyBack) {
-		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
+		if (SensorValue[liftLeftPot] > 230 && SensorValue[liftRightPot] > 230) {
 			/*motor[liftL] = -70;
 			motor[liftL] = -70;*/
-			liftPIDControl(260);
+			liftPIDControl(220);
 		}
 		} else {
 		motor[liftL] = 0;
