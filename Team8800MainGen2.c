@@ -275,438 +275,6 @@ task autonomousRoutines()
 {
 	switch (autonomousMode) {
 	case AUTONOMOUS_MODE_MOBILE_GOAL_20:
-		if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
-
-			motor [roller] = 40;
-
-			//move lift up
-			moveLiftUpAuto(100, 25);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			//mobile goal out
-			moveMobileGoalOutAndDrive(55, 1300);
-
-			//drive forward
-			//driveForward (90, 1100);
-
-			waitInMilliseconds(200);
-
-			//intake the mobile goal
-			//moveMobileGoalIn();
-			moveMobileGoalInDistance(1000);
-			moveMobileGoalInAndDrive(-110, -380);
-			driveBackward(-110, -380);
-
-			motor[mobileGoal] = 5;
-			waitInMilliseconds(150);
-
-			//move lift down
-			motor [liftL] = -90;
-			motor [liftR] = -90;
-			waitInMilliseconds(500);
-			motor [liftL] = 0;
-			motor [liftR] =	0;
-
-			waitInMilliseconds(200);
-
-			SensorValue[rollerEnc] = 0;
-
-			rollerOutakeAuto(-100, 250);
-
-			waitInMilliseconds(200);
-
-			//clearDriveEnc();
-
-			//drive backward
-			//driveBackward(-110, -500);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			turnLeft(115, 85);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			driveBackward(-100, -370);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			turnLeft(100, 315);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			driveBackward(-120, -20);
-
-			waitInMilliseconds(200);
-
-			moveLiftUpAuto(100, 20);
-
-			clearDriveEnc();
-
-			driveForward(127, 500);
-
-			waitInMilliseconds(200);
-
-			drive(70, 70);
-			waitInMilliseconds(200);
-			drive(15, 15);
-
-			waitInMilliseconds(400);
-
-			moveMobileGoalOutAuto();
-
-			waitInMilliseconds(200);
-
-			drive(-50, -50);
-			waitInMilliseconds(700);
-			drive(0, 0);
-
-			waitInMilliseconds(200);
-
-			moveMobileGoalInAuto();
-
-			driveBackward(-70, -200);
-
-			} else if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
-			motor [roller] = 40;
-
-			//move lift up
-			moveLiftUpAuto(100, 25);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			//mobile goal out
-			moveMobileGoalOutAndDrive(55, 1300);
-
-			//drive forward
-			//driveForward (90, 1100);
-
-			waitInMilliseconds(200);
-
-			//intake the mobile goal
-			//moveMobileGoalIn();
-			moveMobileGoalInDistance(1000);
-			moveMobileGoalInAndDrive(-110, -380);
-			driveBackward(-110, -380);
-
-			motor[mobileGoal] = 5;
-			waitInMilliseconds(150);
-
-			//move lift down
-			motor [liftL] = -90;
-			motor [liftR] = -90;
-			waitInMilliseconds(500);
-			motor [liftL] = 0;
-			motor [liftR] =	0;
-
-			waitInMilliseconds(200);
-
-			SensorValue[rollerEnc] = 0;
-
-			rollerOutakeAuto(-100, 250);
-
-			waitInMilliseconds(200);
-
-			//clearDriveEnc();
-
-			//drive backward
-			//driveBackward(-110, -500);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			turnRight(115, 70);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			driveBackward(-100, -330);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			turnRight(100, 170);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			driveBackward(-120, -40);
-
-			waitInMilliseconds(200);
-
-			moveLiftUpAuto(100, 25);
-
-			clearDriveEnc();
-
-			driveForward(127, 500);
-
-			waitInMilliseconds(200);
-
-			drive(70, 70);
-			waitInMilliseconds(500);
-			drive(15, 15);
-
-			waitInMilliseconds(400);
-
-			moveMobileGoalOutAuto();
-
-			waitInMilliseconds(200);
-
-			drive(-50, -50);
-			waitInMilliseconds(700);
-			drive(0, 0);
-
-			waitInMilliseconds(200);
-
-			moveMobileGoalInAuto();
-
-			driveBackward(-70, -200);
-
-			} else if (allianceSide == LEFT && allianceColor == RED_ALLIANCE) {
-			motor [roller] = 40;
-
-			//move lift up
-			moveLiftUpAuto(100, 25);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			//mobile goal out
-			moveMobileGoalOutAndDrive(55, 1300);
-
-			//drive forward
-			//driveForward (90, 1100);
-
-			waitInMilliseconds(200);
-
-			//intake the mobile goal
-			//moveMobileGoalIn();
-			moveMobileGoalInDistance(1000);
-			moveMobileGoalInAndDrive(-110, -380);
-			driveBackward(-110, -380);
-
-			motor[mobileGoal] = 5;
-			waitInMilliseconds(150);
-
-			//move lift down
-			motor [liftL] = -90;
-			motor [liftR] = -90;
-			waitInMilliseconds(500);
-			motor [liftL] = 0;
-			motor [liftR] =	0;
-
-			waitInMilliseconds(200);
-
-			SensorValue[rollerEnc] = 0;
-
-			rollerOutakeAuto(-100, 250);
-
-			waitInMilliseconds(200);
-
-			//clearDriveEnc();
-
-			//drive backward
-			//driveBackward(-110, -500);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			turnLeft(115, 85);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			driveBackward(-100, -370);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			turnLeft(100, 315);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			driveBackward(-120, -20);
-
-			waitInMilliseconds(200);
-
-			moveLiftUpAuto(100, 20);
-
-			clearDriveEnc();
-
-			driveForward(127, 500);
-
-			waitInMilliseconds(200);
-
-			drive(70, 70);
-			waitInMilliseconds(200);
-			drive(15, 15);
-
-			waitInMilliseconds(400);
-
-			moveMobileGoalOutAuto();
-
-			waitInMilliseconds(200);
-
-			drive(-50, -50);
-			waitInMilliseconds(700);
-			drive(0, 0);
-
-			waitInMilliseconds(200);
-
-			moveMobileGoalInAuto();
-
-			driveBackward(-70, -200);
-
-			} else if (allianceSide == RIGHT && allianceColor == RED_ALLIANCE) {
-			motor [roller] = 40;
-
-			//move lift up
-			moveLiftUpAuto(100, 25);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			//mobile goal out
-			moveMobileGoalOutAndDrive(55, 1300);
-
-			//drive forward
-			//driveForward (90, 1100);
-
-			waitInMilliseconds(200);
-
-			//intake the mobile goal
-			//moveMobileGoalIn();
-			moveMobileGoalInDistance(1000);
-			moveMobileGoalInAndDrive(-120, -390);
-			driveBackward(-120, -390);
-
-			motor[mobileGoal] = 5;
-			waitInMilliseconds(150);
-
-			//move lift down
-			motor [liftL] = -90;
-			motor [liftR] = -90;
-			waitInMilliseconds(500);
-			motor [liftL] = 0;
-			motor [liftR] =	0;
-
-			waitInMilliseconds(200);
-
-			SensorValue[rollerEnc] = 0;
-
-			rollerOutakeAuto(-100, 250);
-
-			waitInMilliseconds(200);
-
-			//clearDriveEnc();
-
-			//drive backward
-			//driveBackward(-110, -500);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			turnRight(115, 70);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			driveBackward(-100, -330);
-
-			waitInMilliseconds(200);
-
-			clearDriveEnc();
-
-			turnRight(100, 170);
-
-			waitInMilliseconds(300);
-
-			clearDriveEnc();
-
-			//driveBackward(-120, -20);
-
-			//waitInMilliseconds(200);
-
-			moveLiftUpAuto(100, 15);
-
-			clearDriveEnc();
-
-			driveForward(127, 500);
-
-			waitInMilliseconds(200);
-
-			drive(70, 70);
-			waitInMilliseconds(500);
-			drive(15, 15);
-
-			waitInMilliseconds(400);
-
-			moveMobileGoalOutAuto();
-
-			waitInMilliseconds(200);
-
-			drive(-50, -50);
-			waitInMilliseconds(700);
-			drive(0, 0);
-
-			waitInMilliseconds(200);
-
-			moveMobileGoalInAuto();
-
-			driveBackward(-70, -200);
-		}
-		break;
-
-	case AUTONOMOUS_MODE_CUBE_BACK_STAR:
-
-		//Apply passive power to roller
-		motor [roller] = 40;
-
-		//move lift up
-		moveLiftUpAuto(70, 30);
-
-		//drive forward
-		driveForward(80, 220);
-
-		waitInMilliseconds(100);
-
-		//move swinging arm out
-		moveArmOutAuto();
-
-		waitInMilliseconds(200);
-
-		//move lift down
-		moveLiftDown(50, 0);
-
-		driveBackward(-100, -400);
-		break;
-
-	case AUTONOMOUS_MODE_FENCE:
 		if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
 			motor[roller] = 40;
 
@@ -1142,6 +710,120 @@ task autonomousRoutines()
 			theaterChaseTask(127, 0, 0, 50, 15000);
 		}
 
+		break;
+
+	case AUTONOMOUS_MODE_CUBE_BACK_STAR:
+
+		//Apply passive power to roller
+		motor [roller] = 40;
+
+		//move lift up
+		moveLiftUpAuto(70, 30);
+
+		//drive forward
+		driveForward(80, 220);
+
+		waitInMilliseconds(100);
+
+		//move swinging arm out
+		moveArmOutAuto();
+
+		waitInMilliseconds(200);
+
+		//move lift down
+		moveLiftDown(50, 0);
+
+		driveBackward(-100, -400);
+		break;
+
+	case AUTONOMOUS_MODE_FENCE:
+		if (allianceSide == RIGHT && allianceColor == BLUE_ALLIANCE) {
+			motor[roller] = 40;
+
+			clearTimer(T2);
+
+			while (time1(T2) < 3000) {
+
+				moveLiftUp(100, 700);
+
+				//Drive
+				if (time1(T2) > 500) {
+					autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				}
+
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+					} else {
+					motor[mobileGoal] = -50;
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 2300) {
+
+				if (mobileGoalIsOut) {
+					moveMobileGoalInAuto();
+					} else {
+					motor[mobileGoal] = 50;
+				}
+
+				//Drive
+				if (time1(T2) > 1600) {
+					driveBackward(-100, -460);
+					moveLiftDown(50, 400);
+					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
+				}
+
+				if (time1(T2) > 1800) {
+					rollerOutakeAuto(-100, 150);
+				}
+
+				wait1Msec(20);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			wait1Msec(200);
+
+			while (time1(T2) < 2000) {
+				//turn
+				autoGyroPIDControl(-1750, true);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 1500) {
+				moveMobileGoalOut();
+
+				moveLiftUp(100, 500);
+
+				drive(20, 20);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			drive(0, 0);
+			clearTimer(T2);
+			clearDriveEnc();
+
+			while (time1(T2) < 300) {
+				drive(-60, -60);
+				waitInMilliseconds(200);
+				drive(0, 0);
+			}
+
+			moveMobileGoalIn();
+		}
 		break;
 
 	case AUTONOMOUS_MODE_SKILLS:
