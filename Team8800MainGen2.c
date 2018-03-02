@@ -1905,39 +1905,37 @@ task autonomousRoutines()
 					motor[mobileGoal] = 50;
 				}
 
-				if (time1(T2) > 1600 && time1(T2) < 2050) {
-					moveLiftDown(50, 400);
+				if (time1(T2) > 1400 && time1(T2) < 2000) {
+					moveLiftDown(80, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					moveLiftUp(80, 600);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					rollerOutake(-100, 150);
 				}
 
 				wait1Msec(20);
 			}
 
-			motor[liftL] = 0;
-			motor[liftR] = 0;
-
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
+			//Start intaking second cone
 			moveArmOut();
-			motor[roller] = 127;
+			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
 				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
-				if (time1(T2) > 1100) {
+				if (time1(T2) > 1000) {
 					motor[roller] = 40;
 					moveLiftUp(100, 550);
 				}
@@ -1978,7 +1976,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -1995,9 +1993,9 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 3000) {
+			while (time1(T2) < 1750) {
 				moveLiftDown(20, 550);
-				driveBackward(-100, -1300);
+				driveBackward(-100, -700);
 			}
 
 			drive(0, 0);
@@ -2008,20 +2006,20 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1820, true);
+				autoGyroPIDControl(-1750, true);
 			}
 
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 1700) {
+			while (time1(T2) < 1500) {
 				moveMobileGoalOut();
 				moveLiftUp(80, 500);
 				motor[roller] = -100;
 
-				if (time1(T2) < 1100) {
-					drive(25, 80);
+				if (time1(T2) < 1000) {
+					drive(65, 90);
 				} else {
 					drive(0, 0);
 				}
@@ -2030,8 +2028,6 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
-			motor[liftL] = 0;
-			motor[liftR] = 0;
 
 			while (time1(T2) < 300) {
 				drive(-50, -127);
@@ -2083,30 +2079,28 @@ task autonomousRoutines()
 					motor[mobileGoal] = 50;
 				}
 
-				if (time1(T2) > 1600 && time1(T2) < 2050) {
-					moveLiftDown(50, 400);
+				if (time1(T2) > 1400 && time1(T2) < 2000) {
+					moveLiftDown(80, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					moveLiftUp(80, 600);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					rollerOutake(-100, 150);
 				}
 
 				wait1Msec(20);
 			}
 
-			motor[liftL] = 0;
-			motor[liftR] = 0;
-
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
+			//Start intaking second cone
 			moveArmOut();
 			motor[roller] = 120;
 
@@ -2156,7 +2150,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2173,9 +2167,9 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 3000) {
+			while (time1(T2) < 1750) {
 				moveLiftDown(20, 550);
-				driveBackward(-100, -1300);
+				driveBackward(-100, -700);
 			}
 
 			drive(0, 0);
@@ -2186,20 +2180,20 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1820, true);
+				autoGyroPIDControl(1750, true);
 			}
 
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 1700) {
+			while (time1(T2) < 1500) {
 				moveMobileGoalOut();
 				moveLiftUp(80, 500);
 				motor[roller] = -100;
 
-				if (time1(T2) < 1100) {
-					drive(80, 25);
+				if (time1(T2) < 1000) {
+					drive(65, 90);
 				} else {
 					drive(0, 0);
 				}
@@ -2208,8 +2202,6 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
-			motor[liftL] = 0;
-			motor[liftR] = 0;
 
 			while (time1(T2) < 300) {
 				drive(-50, -127);
@@ -2261,39 +2253,37 @@ task autonomousRoutines()
 					motor[mobileGoal] = 50;
 				}
 
-				if (time1(T2) > 1600 && time1(T2) < 2050) {
-					moveLiftDown(50, 400);
+				if (time1(T2) > 1400 && time1(T2) < 2000) {
+					moveLiftDown(80, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					moveLiftUp(80, 600);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					rollerOutake(-100, 150);
 				}
 
 				wait1Msec(20);
 			}
 
-			motor[liftL] = 0;
-			motor[liftR] = 0;
-
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
+			//Start intaking second cone
 			moveArmOut();
-			motor[roller] = 127;
+			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
 				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
-				if (time1(T2) > 1100) {
+				if (time1(T2) > 1000) {
 					motor[roller] = 40;
 					moveLiftUp(100, 550);
 				}
@@ -2334,7 +2324,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2351,9 +2341,9 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 3000) {
+			while (time1(T2) < 1750) {
 				moveLiftDown(20, 550);
-				driveBackward(-100, -1300);
+				driveBackward(-100, -700);
 			}
 
 			drive(0, 0);
@@ -2364,20 +2354,20 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1820, true);
+				autoGyroPIDControl(-1750, true);
 			}
 
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 1700) {
+			while (time1(T2) < 1500) {
 				moveMobileGoalOut();
 				moveLiftUp(80, 500);
 				motor[roller] = -100;
 
-				if (time1(T2) < 1100) {
-					drive(25, 80);
+				if (time1(T2) < 1000) {
+					drive(65, 90);
 				} else {
 					drive(0, 0);
 				}
@@ -2386,8 +2376,6 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
-			motor[liftL] = 0;
-			motor[liftR] = 0;
 
 			while (time1(T2) < 300) {
 				drive(-50, -127);
@@ -2439,30 +2427,28 @@ task autonomousRoutines()
 					motor[mobileGoal] = 50;
 				}
 
-				if (time1(T2) > 1600 && time1(T2) < 2050) {
-					moveLiftDown(50, 400);
+				if (time1(T2) > 1400 && time1(T2) < 2000) {
+					moveLiftDown(80, 400);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					moveLiftUp(80, 600);
 					//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
 				}
 
-				if (time1(T2) > 2050) {
+				if (time1(T2) > 2000) {
 					rollerOutake(-100, 150);
 				}
 
 				wait1Msec(20);
 			}
 
-			motor[liftL] = 0;
-			motor[liftR] = 0;
-
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
+			//Start intaking second cone
 			moveArmOut();
 			motor[roller] = 120;
 
@@ -2512,7 +2498,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2529,9 +2515,9 @@ task autonomousRoutines()
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 3000) {
+			while (time1(T2) < 1750) {
 				moveLiftDown(20, 550);
-				driveBackward(-100, -1300);
+				driveBackward(-100, -700);
 			}
 
 			drive(0, 0);
@@ -2542,20 +2528,20 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1820, true);
+				autoGyroPIDControl(1750, true);
 			}
 
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
 
-			while (time1(T2) < 1700) {
+			while (time1(T2) < 1500) {
 				moveMobileGoalOut();
 				moveLiftUp(80, 500);
 				motor[roller] = -100;
 
-				if (time1(T2) < 1100) {
-					drive(80, 25);
+				if (time1(T2) < 1000) {
+					drive(65, 90);
 				} else {
 					drive(0, 0);
 				}
@@ -2564,8 +2550,6 @@ task autonomousRoutines()
 			drive(0, 0);
 			clearTimer(T2);
 			clearDriveEnc();
-			motor[liftL] = 0;
-			motor[liftR] = 0;
 
 			while (time1(T2) < 300) {
 				drive(-50, -127);
@@ -2578,7 +2562,6 @@ task autonomousRoutines()
 				} else {
 				motor[mobileGoal] = 50;
 			}
-
 
 		}
 
@@ -2773,8 +2756,7 @@ task ProcessController() {
 		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 		//writeDebugStreamLine("arm power,                                                    %d", armPower );
 		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-		writeDebugStreamLine("left enc,                    %d", SensorValue[leftDriveEnc]);
-		writeDebugStreamLine("                right enc,                    %d", SensorValue[rightDriveEnc]);
+		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
@@ -3105,11 +3087,13 @@ void driveForward(int speed, int distance) {
 }
 
 void driveBackward(int speed, int distance) {
-	if (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
+	while (SensorValue[rightDriveEnc] > distance && SensorValue[leftDriveEnc] > distance) {
 		drive(speed, speed);
-	} else {
-		drive(0, 0);
 	}
+	drive(0, 0);
+
+	SensorValue[rightDriveEnc] = 0;
+	SensorValue[leftDriveEnc] = 0;
 }
 
 void turnLeft(int speed, int distance) {
