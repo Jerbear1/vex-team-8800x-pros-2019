@@ -2927,7 +2927,7 @@ task usercontrol()
 {
 	robotMode = USER_CONTROL;
 
-	if (false) UserControlCodePlaceholderForTesting();	// complains if I remove this
+	if (false) CodePlaceholderForTesting();	// complains if I remove this
 
 	writeDebugStreamLine("Starting User Control...");
 	writeDebugStreamLine("Main battery level: %3.2f", nAvgBatteryLevel * 0.001);
@@ -2951,6 +2951,15 @@ void initialize()
 	SensorValue[rightDriveEnc] = 0;
 	SensorValue[leftDriveEnc] = 0;
 	SensorValue[rollerEnc] = 0;
+
+	stacking = false;
+	stackPrev = false;
+	liftLeftAtPosition = false;
+	liftRightAtPosition = false;
+	armIsReallyBack = false;
+	increaseStackLvl = false;
+	justStacked = false;
+	outakeFinished = false;
 
 	datalogClear();
 
