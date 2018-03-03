@@ -2077,7 +2077,7 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1820, true);
+				autoGyroPIDControl(-1850, true);
 			}
 
 			drive(0, 0);
@@ -2090,7 +2090,7 @@ task autonomousRoutines()
 				motor[roller] = -100;
 
 				if (time1(T2) < 1000) {
-					drive(55, 80);
+					drive(45, 85);
 					} else {
 					drive(0, 0);
 				}
@@ -2268,7 +2268,7 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1820, true);
+				autoGyroPIDControl(1840, true);
 			}
 
 			drive(0, 0);
@@ -2281,7 +2281,7 @@ task autonomousRoutines()
 				motor[roller] = -100;
 
 				if (time1(T2) < 700) {
-					drive(80, 30);
+					drive(85, 45);
 					} else {
 					drive(0, 0);
 				}
@@ -2458,7 +2458,7 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1820, true);
+				autoGyroPIDControl(-1840, true);
 			}
 
 			drive(0, 0);
@@ -2471,7 +2471,7 @@ task autonomousRoutines()
 				motor[roller] = -100;
 
 				if (time1(T2) < 1000) {
-					drive(55, 80);
+					drive(45, 85);
 					} else {
 					drive(0, 0);
 				}
@@ -2649,7 +2649,7 @@ task autonomousRoutines()
 
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1820, true);
+				autoGyroPIDControl(1840, true);
 			}
 
 			drive(0, 0);
@@ -2662,7 +2662,7 @@ task autonomousRoutines()
 				motor[roller] = -100;
 
 				if (time1(T2) < 700) {
-					drive(80, 30);
+					drive(85, 45);
 					} else {
 					drive(0, 0);
 				}
