@@ -715,13 +715,25 @@ task autonomousRoutines()
 
 		/////////////////////////////////////////////////////////////////////////////AUTO 2///////////////////////////////////////////////
 		//Apply passive power to roller
+		if (allianceSide == LEFT) {
 		motor [roller] = 40;
 
+		clearTimer(T2);
+
 		//move lift up
-		moveLiftUpAuto(70, 30);
+		while (time1(T2) < 1000) {
+			if (time1(T2) < 1000) {
+			moveLiftUp(70, 800);
+		} else {
+			motor[liftL] = 0;
+			motor[liftL] = 0;
+		}
+	}
+
+		waitInMilliseconds(300);
 
 		//drive forward
-		driveForward(80, 220);
+		driveForward(60, 200);
 
 		waitInMilliseconds(100);
 
@@ -730,10 +742,70 @@ task autonomousRoutines()
 
 		waitInMilliseconds(200);
 
-		//move lift down
-		moveLiftDown(50, 0);
+		moveArmIn();
+		motor[roller] = -127;
 
-		driveBackward(-100, -400);
+		waitInMilliseconds(200);
+
+		driveBackward(-100, -700);
+
+		waitInMilliseconds(200);
+
+		clearTimer(T2);
+
+		while (time1(T2) < 600) {
+		autoDrivePIDControl(-300, true);
+	}
+		waitInMilliseconds(100);
+
+ 		driveForward(100, 3000);
+
+	} else if (allianceSide == RIGHT) {
+	motor [roller] = 40;
+
+		clearTimer(T2);
+
+		//move lift up
+		while (time1(T2) < 1000) {
+			if (time1(T2) < 1000) {
+			moveLiftUp(70, 800);
+		} else {
+			motor[liftL] = 0;
+			motor[liftL] = 0;
+		}
+	}
+
+		waitInMilliseconds(300);
+
+		//drive forward
+		driveForward(60, 200);
+
+		waitInMilliseconds(100);
+
+		//move swinging arm out
+		moveArmOutAuto();
+
+		waitInMilliseconds(200);
+
+		moveArmIn();
+		motor[roller] = -127;
+
+		waitInMilliseconds(200);
+
+		driveBackward(-100, -70);
+
+		waitInMilliseconds(200);
+
+		clearTimer(T2);
+
+		while (time1(T2) < 600) {
+		autoDrivePIDControl(300, true);
+	}
+
+	waitInMilliseconds(100);
+
+ 		driveForward(100, 3000);
+}
 		break;
 
 	case AUTONOMOUS_MODE_FENCE:
@@ -2002,7 +2074,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 280, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 260, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2047,7 +2119,7 @@ task autonomousRoutines()
 			motor[roller] = 127;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 250, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2238,7 +2310,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 250, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2383,7 +2455,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 280, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 260, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2428,7 +2500,7 @@ task autonomousRoutines()
 			motor[roller] = 127;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 250, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2619,7 +2691,7 @@ task autonomousRoutines()
 			motor[roller] = 120;
 
 			while (time1(T2) < 1500) {
-				autoDriveGyroPIDControl(0, 250, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+				autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 				moveLiftDown(50, 300);
 
@@ -2694,6 +2766,42 @@ task autonomousRoutines()
 		break;
 
 	case AUTONOMOUS_MODE_STACK_PIPE:
+		if (allianceSide == LEFT) {
+			clearTimer(T2);
+			while (time1(T2) < 800) {
+				autoGyroPIDControl(-250, true);
+			}
+
+			clearTimer(T2);
+			drive(0, 0);
+
+			while (time1(T2) < 2400) {
+				drive(127, 127);
+			}
+
+			drive(0, 0);
+
+		} else if (allianceSide == RIGHT) {
+			clearTimer(T2);
+			while (time1(T2) < 800) {
+				autoGyroPIDControl(250, true);
+			}
+
+			clearTimer(T2);
+			drive(0, 0);
+
+			while (time1(T2) < 2400) {
+				drive(127, 127);
+			}
+
+			drive(0, 0);
+		}
+
+		if (allianceColor == BLUE_ALLIANCE) {
+			theaterChaseTask(0, 0, 127, 50, 15000);
+			} else {
+			theaterChaseTask(127, 0, 0, 50, 15000);
+		}
 
 		break;
 
