@@ -2909,7 +2909,7 @@ task ProcessController() {
 				} else if (isButtonPressed(Btn6UXmtr2)) {
 				motor[roller] = 127;
 				} else {
-				motor[roller] = 30;
+				motor[roller] = 25;
 			}
 		}
 
@@ -3243,10 +3243,10 @@ void initializeGyro() {
 }
 
 void moveArmOut () {
-	if (SensorValue[armPot] > 2000) {
+	if (SensorValue[armPot] > 1500) {
 		motor[swingingArm] = 120;
 		armPower = 120;
-		} else if (SensorValue[armPot] <= 2000) {
+		} else if (SensorValue[armPot] <= 1500) {
 		motor[swingingArm] = 0;
 		armPower = 0;
 		armIsReallyBack = false;
@@ -3254,11 +3254,11 @@ void moveArmOut () {
 }
 
 void moveArmIn () {
-	if (SensorValue[armPot] < 3500) {
+	if (SensorValue[armPot] < 3200) {
 		motor[swingingArm] = -120;
 		armPower = -120;
-		//writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
-		} else if (SensorValue[armPot] >= 3500) {
+		writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
+		} else if (SensorValue[armPot] >= 3200) {
 		motor[swingingArm] = 0;
 		armPower = 0;
 		armIsReallyBack = true;
@@ -3361,11 +3361,11 @@ void clearDriveEnc() {
 }
 
 void  moveMobileGoalIn() {
-	if (SensorValue[mobilePot] > 230) {
+	if (SensorValue[mobilePot] < 3100) {
 		motor[mobileGoal] = 127;
 		mobileGoalIsOut = true;
 		} else {
-		motor[mobileGoal] = 50;
+		motor[mobileGoal] = 40;
 		mobileGoalIsOut = false;
 	}
 }
@@ -3385,11 +3385,11 @@ void moveMobileGoalInDistance(int distance) {
 }
 
 void moveMobileGoalOut() {
-	if (SensorValue[mobilePot] < 2000) {
+	if (SensorValue[mobilePot] > 2000) {
 		motor[mobileGoal] = -127;
 		mobileGoalIsOut = false;
 		} else {
-		motor[mobileGoal] = -50;
+		motor[mobileGoal] = -20;
 		mobileGoalIsOut = true;
 	}
 }
