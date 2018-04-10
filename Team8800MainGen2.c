@@ -88,7 +88,7 @@ void moveArm(bool forward);
 void moveLiftUp(int speed, int distance);
 void moveLiftUpAuto(int speed, int distance);
 void rollerIntake(int speed);
-void rollerOutake(int speed, int distance);
+void rollerOutake(int speed, int time);
 
 void liftPIDControl(int position);
 void autoDrivePIDControl (int distance, bool drive);
@@ -2634,10 +2634,10 @@ while(true) {
 	//writeDebugStreamLine("Prev stack level, %d", prevStackLevel);
 	//writeDebugStreamLine("mobile,                                                                           %d", SensorValue[mobilePot]);
 	//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
-	writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
+	//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 	//writeDebugStreamLine("arm power,                                                    %d", armPower );
-	//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-	//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+	writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+	writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 	//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 
@@ -2648,8 +2648,8 @@ while(true) {
 	//writeDebugStreamLine("Lift right pot,      %d", SensorValue(liftRightPot));
 	//writeDebugStreamLine("						Lift Left pot,      %d", SensorValue(liftLeftPot));
 
-	datalogAddValueWithTimeStamp(6, SensorValue[armPot]);
-	datalogAddValueWithTimeStamp(5, armPower);
+	datalogAddValueWithTimeStamp(6, SensorValue[liftLeftPot]);
+	datalogAddValueWithTimeStamp(5, SensorValue[liftRightPot]);
 	//datalogAddValueWithTimeStamp(2, SensorValue[armPot]);
 
 	//datalogAddValueWithTimeStamp(0, SensorValue[liftLeftPot]);
@@ -2895,10 +2895,10 @@ writeDebugStreamLine("Gyro after initialize %d", SensorValue[in8]);
 }
 
 void moveArmOut () {
-if (SensorValue[armPot] > 1500) {
+if (SensorValue[armPot] < 2700) {
 	motor[swingingArm] = 120;
 	armPower = 120;
-	} else if (SensorValue[armPot] <= 1500) {
+	} else if (SensorValue[armPot] >= 2700) {
 	motor[swingingArm] = 0;
 	armPower = 0;
 	armIsReallyBack = false;
@@ -2906,11 +2906,11 @@ if (SensorValue[armPot] > 1500) {
 }
 
 void moveArmIn () {
-if (SensorValue[armPot] < 3200) {
+if (SensorValue[armPot] > 800) {
 	motor[swingingArm] = -120;
 	armPower = -120;
 	writeDebugStreamLine("swinging arm pot %d", SensorValue[armPot]);
-	} else if (SensorValue[armPot] >= 3200) {
+	} else if (SensorValue[armPot] <= 800) {
 	motor[swingingArm] = 0;
 	armPower = 0;
 	armIsReallyBack = true;
@@ -2938,8 +2938,8 @@ rollerSpeed = speed;
 //	writeDebugStreamLine("Set speed %d", rollerSpeed);
 }
 
-void rollerOutake(int speed, int distance) {
-if (distance > SensorValue[rollerEnc]) {
+void rollerOutake(int speed, int time) {
+if (time1[T3] < time) {
 	motor[roller] = speed;
 	} else {
 	motor [roller] = 0;
@@ -3249,6 +3249,7 @@ void autoStackStep(int liftPos) {
 			} else if (time1[T1] <= 400) {
 			motor[liftL] = -60;
 			motor[liftR] = -60;
+			clearTimer(T3);
 			} else if (time1[T1] >= 400) {
 			rollerOutake(-127, 500);
 			liftPIDControl(liftPos + 100);
