@@ -90,6 +90,7 @@ void moveLiftUpAuto(int speed, int distance);
 void rollerIntake(int speed);
 void rollerOutake(int speed, int time);
 
+void liftPIDCalculate (int position);
 void liftPIDControl(int position);
 void autoDrivePIDControl (int distance, bool drive);
 void autoGyroPIDControl (int setAngle, bool turn);
@@ -3108,7 +3109,7 @@ void moveLiftDown(int speed, int distance) {
 	}
 }
 
-void liftPIDControl (int position) {
+void liftPIDCalculate (int position) {
 	float leftCurrent;
 	float rightCurrent;
 
@@ -3122,8 +3123,7 @@ void liftPIDControl (int position) {
 
 	float liftLeftError;
 	float liftRightError;
-	float leftErrorT;
-	float rightErrorT;
+	float errorT;
 	float liftLeftLastError;
 	float liftRightLastError;
 
@@ -3137,53 +3137,23 @@ void liftPIDControl (int position) {
 	leftProportion = liftLeftError * liftLeftkp;
 	rightProportion = liftRightError * liftRightkp;
 
-	sharedIntegral = leftErrorT * liftSharedki;
+	sharedIntegral = errorT * liftSharedki;
 
 	leftDerivative = (liftLeftError - liftLeftLastError) * liftLeftkd;
 	rightDerivative = (liftRightError - liftRightLastError) * liftRightkd;
 
-	//left
+	//Integral
 	if (abs(liftLeftError) < integralAcitveZone) {
-		leftErrorT += liftLeftError;
+		errorT += liftLeftError;
 		} else {
-		leftErrorT = 0;
+		errorT = 0;
 	}
-	/*if (leftErrorT > 50/leftki) {
-	leftErrorT = 50/leftki;
-	}*/
-
-	//right
-	if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
-		rightErrorT += liftRightError;
-		} else {
-		rightErrorT = 0;
-	}
-	/*if (rightErrorT > 50/rightki) {
-	rightErrorT = 50/rightki;
-	}*/
-
-	/*if (abs(liftLeftError) <= leftPositionError) {
-	leftDerivative = 0;
-	}
-	if (abs(liftRightError) <= rightPositionError) {
-	rightDerivative = 0;
-	}*/
 
 	liftLeftLastError = liftLeftError;
 	liftRightLastError = liftRightError;
 
 	leftCurrent = leftProportion + sharedIntegral + leftDerivative;
 	rightCurrent = rightProportion + sharedIntegral + rightDerivative;
-
-	//left
-	/*if (leftPot >= position + liftError && leftPot < position - liftError) {
-	leftCurrent = 0;
-	}
-
-	//right
-	if (rightPot >= position + liftError && rightPot < position - liftError) {
-	rightCurrent = 0;
-	}*/
 
 	if (abs(liftLeftError) <= liftLeftPositionError) {
 		leftCurrent = 0;
@@ -3230,6 +3200,13 @@ void liftPIDControl (int position) {
 	//writeDebugStreamLine("                  right error %d", liftRightError);
 	writeDebugStreamLine("                     left curent %d", leftCurrent);
 	writeDebugStreamLine("                                    right curent %d", rightCurrent);
+}
+
+void liftPIDControl (int position) {
+	if (time1[T4] > 20) {
+		liftPIDCalculate(position);
+	}
+	clearTimer(T4);
 }
 
 void autoStackStep(int liftPos) {
