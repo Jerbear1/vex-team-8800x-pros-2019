@@ -221,12 +221,9 @@ int driveTurnPositionError = 200;
 int armError = 2;
 
 //Lift PID values
-float liftLeftkp = 0.4;
-float liftSharedki = 0.008;
-float liftLeftkd = 2;
-
-float liftRightkp = 0.4;
-float liftRightkd = 2;
+float liftkp = 0.3;
+float liftki = 0.04;
+float liftkd = 0.65;
 
 //Drive PID values
 float drivekp = 0.63;
@@ -2569,15 +2566,15 @@ while(true) {
 	//Move lift
 	if (!stacking) {
 		if (isButtonPressed(Btn5UXmtr2)) {
-			motor[liftL] = 127;
-			motor[liftR] = 127;
-			//liftPIDControl(1000);
+			//motor[liftL] = 127;
+			//motor[liftR] = 127;
+			liftPIDControl(1000);
 			} else if (isButtonPressed(Btn5DXmtr2)) {
-			motor[liftL] = -90;
-			motor[liftR] = -90;
-			//liftPIDControl(500);
+			//motor[liftL] = -90;
+			//motor[liftR] = -90;
+			liftPIDControl(500);
 			} else if (isButtonPressed(Btn7LXmtr2)) {
-			liftPIDControl(600);
+			liftPIDControl(2000);
 			} else {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
@@ -3134,13 +3131,13 @@ void liftPIDCalculate (int position) {
 	liftLeftError = position - leftPot;
 	liftRightError = position - rightPot;
 
-	leftProportion = liftLeftError * liftLeftkp;
-	rightProportion = liftRightError * liftRightkp;
+	leftProportion = liftLeftError * liftkp;
+	rightProportion = liftRightError * liftkp;
 
-	sharedIntegral = errorT * liftSharedki;
+	sharedIntegral = errorT * liftki;
 
-	leftDerivative = (liftLeftError - liftLeftLastError) * liftLeftkd;
-	rightDerivative = (liftRightError - liftRightLastError) * liftRightkd;
+	leftDerivative = (liftLeftError - liftLeftLastError) * liftkd;
+	rightDerivative = (liftRightError - liftRightLastError) * liftkd;
 
 	//Integral
 	if (abs(liftLeftError) < integralAcitveZone) {
@@ -3174,21 +3171,21 @@ void liftPIDCalculate (int position) {
 		liftRightAtPosition = false;
 	}
 
-	if (leftCurrent > 100) {
-		leftCurrent = 100;
+	if (leftCurrent > 127) {
+		leftCurrent = 127;
 	}
-	if (rightCurrent > 100) {
-		rightCurrent = 100;
+	if (rightCurrent > 127) {
+		rightCurrent = 127;
 	}
-	if (leftCurrent < -100) {
-		leftCurrent = -100;
+	if (leftCurrent < -127) {
+		leftCurrent = -127;
 	}
-	if (rightCurrent < -100) {
-		rightCurrent = -100;
+	if (rightCurrent < -127) {
+		rightCurrent = -127;
 	}
 
 	motor[liftL] = leftCurrent;
-	motor[liftR] = rightCurrent;
+	motor[liftR] = leftCurrent;
 
 	writeDebugStreamLine("left pot %d", leftPot);
 	writeDebugStreamLine("             right pot %d", rightPot);
@@ -3200,6 +3197,9 @@ void liftPIDCalculate (int position) {
 	//writeDebugStreamLine("                  right error %d", liftRightError);
 	writeDebugStreamLine("                     left curent %d", leftCurrent);
 	writeDebugStreamLine("                                    right curent %d", rightCurrent);
+
+	datalogAddValueWithTimeStamp(0, liftLeftError);
+	datalogAddValueWithTimeStamp(1, liftRightError);
 }
 
 void liftPIDControl (int position) {
@@ -3411,7 +3411,7 @@ void autoDrivePIDControl (int distance, bool drive) {
 	datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);*/
-	datalogAddValueWithTimeStamp(5, error);
+	//datalogAddValueWithTimeStamp(5, error);
 }
 
 void autoGyroPIDControl (int setAngle, bool turn) {
@@ -3564,113 +3564,4 @@ void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float tu
 	datalogAddValueWithTimeStamp(1, gyroCurrent);
 	datalogAddValueWithTimeStamp(2, overallCurrentLeft);
 	datalogAddValueWithTimeStamp(3, overallCurrentRight);
-}
-
-void autoLiftPIDControl (int position, int kp, int ki, int kd) {
-	float leftCurrent;
-	float rightCurrent;
-
-	float integralAcitveZone = 100;
-
-	float leftProportion;
-	float sharedIntegral;
-	float leftDerivative;
-	float rightProportion;
-	float rightDerivative;
-
-	float liftLeftError;
-	float liftRightError;
-	float leftErrorT;
-	float rightErrorT;
-	float liftLeftLastError;
-	float liftRightLastError;
-
-	float leftPot = SensorValue[liftLeftPot];
-	float rightPot = SensorValue[liftRightPot];
-
-	//Find lift error
-	liftLeftError = position - leftPot;
-	liftRightError = position - rightPot;
-
-	leftProportion = liftLeftError * kp;
-	rightProportion = liftRightError * kp;
-
-	sharedIntegral = leftErrorT * ki;
-
-	leftDerivative = (liftLeftError - liftLeftLastError) * kd;
-	rightDerivative = (liftRightError - liftRightLastError) * kd;
-
-	//left
-	if (abs(liftLeftError) < integralAcitveZone) {
-		leftErrorT += liftLeftError;
-		} else {
-		leftErrorT = 0;
-	}
-
-	//right
-	if (abs(liftRightError) < integralAcitveZone && abs(liftRightError) >= 10) {
-		rightErrorT += liftRightError;
-		} else {
-		rightErrorT = 0;
-	}
-
-	liftLeftLastError = liftLeftError;
-	liftRightLastError = liftRightError;
-
-	leftCurrent = leftProportion + sharedIntegral + leftDerivative;
-	rightCurrent = rightProportion + sharedIntegral + rightDerivative;
-
-	if (abs(liftLeftError) <= liftLeftPositionError) {
-		leftCurrent = 0;
-	}
-	if (abs(liftRightError) <= liftRightPositionError) {
-		rightCurrent = 0;
-	}
-
-	//Check that lift has stopped
-	if (abs(liftLeftError) <= liftLeftPositionError) {
-		liftLeftAtPosition = true;
-		} else {
-		liftLeftAtPosition = false;
-	}
-	if (abs(liftRightError) <= liftRightPositionError) {
-		liftRightAtPosition = true;
-		} else {
-		liftRightAtPosition = false;
-	}
-
-	if (leftCurrent > 100) {
-		leftCurrent = 100;
-	}
-	if (rightCurrent > 100) {
-		rightCurrent = 100;
-	}
-	if (leftCurrent < -100) {
-		leftCurrent = -100;
-	}
-	if (rightCurrent < -100) {
-		rightCurrent = -100;
-	}
-
-	motor[liftL] = leftCurrent;
-	motor[liftR] = rightCurrent;
-
-	/*writeDebugStreamLine("left pot %d", leftPot);
-	writeDebugStreamLine("             right pot %d", rightPot);
-	//writeDebugStreamLine("arm %d", armIsReallyBack);
-	writeDebugStreamLine("  integral %d", sharedIntegral);
-	//writeDebugStreamLine("                          right integral %d", rightIntegral);
-	//writeDebugStreamLine("position %d", position);
-	//writeDebugStreamLine("          left error %d", liftLeftError);
-	//writeDebugStreamLine("                  right error %d", liftRightError);
-	writeDebugStreamLine("                     left curent %d", leftCurrent);
-	writeDebugStreamLine("                                    right curent %d", rightCurrent);
-
-	datalogAddValueWithTimeStamp(0, leftCurrent);
-	datalogAddValueWithTimeStamp(1, rightCurrent);
-	datalogAddValueWithTimeStamp(2, leftPot);
-	datalogAddValueWithTimeStamp(3, rightPot);
-	datalogAddValueWithTimeStamp(4, sharedIntegral);
-	datalogAddValueWithTimeStamp(5, liftLeftError);
-	datalogAddValueWithTimeStamp(6, liftLeftError);*/
 }
