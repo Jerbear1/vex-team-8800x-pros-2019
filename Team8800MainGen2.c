@@ -406,9 +406,9 @@ task autonomousRoutines()
 
 case AUTONOMOUS_MODE_CUBE_BACK_STAR:
 
-	/////////////////////////////////////////////////////////////////////////////AUTO 2///////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////AUTO 2///////////////////////////////////////////
 	//Apply passive power to roller
-	if (allianceSide == LEFT) {
+
 		motor [roller] = 40;
 
 		clearTimer(T2);
@@ -440,7 +440,11 @@ case AUTONOMOUS_MODE_CUBE_BACK_STAR:
 
 		waitInMilliseconds(200);
 
-		driveBackward(-100, -700);
+		if (allianceSide == LEFT) {
+			driveBackward(-100, -700);
+		} else if (allianceSide == RIGHT) {
+			driveBackward(-700, -100);
+		}
 
 		waitInMilliseconds(200);
 
@@ -453,52 +457,7 @@ case AUTONOMOUS_MODE_CUBE_BACK_STAR:
 
 		driveForward(100, 3000);
 
-		} else if (allianceSide == RIGHT) {
-		motor [roller] = 40;
-
-		clearTimer(T2);
-
-		//move lift up
-		while (time1(T2) < 1000) {
-			if (time1(T2) < 1000) {
-				moveLiftUp(70, 800);
-				} else {
-				motor[liftL] = 0;
-				motor[liftL] = 0;
-			}
-		}
-
-		waitInMilliseconds(300);
-
-		//drive forward
-		driveForward(60, 200);
-
-		waitInMilliseconds(100);
-
-		//move swinging arm out
-		moveArmOutAuto();
-
-		waitInMilliseconds(200);
-
-		moveArmIn();
-		motor[roller] = -127;
-
-		waitInMilliseconds(200);
-
-		driveBackward(-100, -70);
-
-		waitInMilliseconds(200);
-
-		clearTimer(T2);
-
-		while (time1(T2) < 600) {
-			autoDrivePIDControl(300, true);
-		}
-
-		waitInMilliseconds(100);
-
-		driveForward(100, 3000);
-	}
+		//////////////////////////////////////////////////////End of auto 2/////////////////////////////////
 	break;
 
 case AUTONOMOUS_MODE_FENCE:
@@ -630,7 +589,7 @@ case AUTONOMOUS_MODE_FENCE:
 			} else {
 			motor[mobileGoal] = 50;
 		}
-
+		//////////////////////////////////////////////////////End of auto 3/////////////////////////////////////////////////////
 		} else if (allianceSide == LEFT && allianceColor == BLUE_ALLIANCE) {
 		motor[roller] = 40;
 
