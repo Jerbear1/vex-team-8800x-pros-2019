@@ -221,9 +221,9 @@ int driveTurnPositionError = 200;
 int armError = 2;
 
 //Lift PID values
-float liftkp = 0.3;
+float liftkp = 0.43;
 float liftki = 0.04;
-float liftkd = 0.65;
+float liftkd = -0.03;
 
 //Drive PID values
 float drivekp = 0.63;
@@ -2559,7 +2559,8 @@ while(true) {
 			} else if (isButtonPressed(Btn6UXmtr2)) {
 			motor[roller] = 127;
 			} else {
-			motor[roller] = 25;
+			//motor[roller] = 25;
+			motor[roller] = 0;
 		}
 	}
 
@@ -2574,7 +2575,7 @@ while(true) {
 			//motor[liftR] = -90;
 			liftPIDControl(500);
 			} else if (isButtonPressed(Btn7LXmtr2)) {
-			liftPIDControl(2000);
+			liftPIDControl(15000);
 			} else {
 			motor[liftL] = 0;
 			motor[liftR] = 0;
@@ -2634,8 +2635,8 @@ while(true) {
 	//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
 	//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 	//writeDebugStreamLine("arm power,                                                    %d", armPower );
-	writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-	writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+	//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+	//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 	//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 
@@ -3121,8 +3122,8 @@ void liftPIDCalculate (int position) {
 	float liftLeftError;
 	float liftRightError;
 	float errorT;
-	float liftLeftLastError;
-	float liftRightLastError;
+	float leftLastPot;
+	float rightLastPot;
 
 	float leftPot = SensorValue[liftLeftPot];
 	float rightPot = SensorValue[liftRightPot];
@@ -3134,38 +3135,49 @@ void liftPIDCalculate (int position) {
 	leftProportion = liftLeftError * liftkp;
 	rightProportion = liftRightError * liftkp;
 
-	sharedIntegral = errorT * liftki;
+	sharedIntegral = errorT * liftki * 0.025;
 
-	leftDerivative = (liftLeftError - liftLeftLastError) * liftkd;
-	rightDerivative = (liftRightError - liftRightLastError) * liftkd;
+	leftDerivative = ((leftPot - leftLastPot) * liftkd)/0.025;
+	rightDerivative = ((rightPot - rightLastPot) * liftkd)/0.025;
 
 	//Integral
-	if (abs(liftLeftError) < integralAcitveZone) {
-		errorT += liftLeftError;
-		} else {
-		errorT = 0;
+	errorT += liftLeftError;
+	if (sharedIntegral > 80) {
+		sharedIntegral = 80;
+	} else if (sharedIntegral < -80) {
+		sharedIntegral = -80;
 	}
 
-	liftLeftLastError = liftLeftError;
-	liftRightLastError = liftRightError;
+	leftLastPot = leftPot;
+	rightLastPot = rightPot;
 
 	leftCurrent = leftProportion + sharedIntegral + leftDerivative;
 	rightCurrent = rightProportion + sharedIntegral + rightDerivative;
 
-	if (abs(liftLeftError) <= liftLeftPositionError) {
+	/*if (abs(liftLeftError) <= liftLeftPositionError) {
 		leftCurrent = 0;
 	}
 	if (abs(liftRightError) <= liftRightPositionError) {
 		rightCurrent = 0;
-	}
+	}*/
 
 	//Check that lift has stopped
-	if (abs(liftLeftError) <= liftLeftPositionError) {
+	/*if (abs(liftLeftError) <= liftLeftPositionError) {
 		liftLeftAtPosition = true;
 		} else {
 		liftLeftAtPosition = false;
 	}
 	if (abs(liftRightError) <= liftRightPositionError) {
+		liftRightAtPosition = true;
+		} else {
+		liftRightAtPosition = false;
+	}*/
+	if ((leftPot - leftLastPot) <= 2) {
+		liftLeftAtPosition = true;
+		} else {
+		liftLeftAtPosition = false;
+	}
+	if ((leftPot - leftLastPot) <= 2) {
 		liftRightAtPosition = true;
 		} else {
 		liftRightAtPosition = false;
@@ -3187,26 +3199,34 @@ void liftPIDCalculate (int position) {
 	motor[liftL] = leftCurrent;
 	motor[liftR] = leftCurrent;
 
-	writeDebugStreamLine("left pot %d", leftPot);
-	writeDebugStreamLine("             right pot %d", rightPot);
+	//writeDebugStreamLine("left pot %d", leftPot);
+	//writeDebugStreamLine("             right pot %d", rightPot);
 	//writeDebugStreamLine("arm %d", armIsReallyBack);
 	//writeDebugStreamLine("  left integral %d", sharedIntegral);
 	//writeDebugStreamLine("                          right integral %d", rightIntegral);
 	//writeDebugStreamLine("position %d", position);
 	//writeDebugStreamLine("          left error %d", liftLeftError);
 	//writeDebugStreamLine("                  right error %d", liftRightError);
-	writeDebugStreamLine("                     left curent %d", leftCurrent);
-	writeDebugStreamLine("                                    right curent %d", rightCurrent);
+	//writeDebugStreamLine("                     left curent %d", leftCurrent);
+	//writeDebugStreamLine("                                    right curent %d", rightCurrent);
+	writeDebugStreamLine("  liftLeftAtPosition %d", liftLeftAtPosition);
+	writeDebugStreamLine("  curent %d", leftCurrent);
+	writeDebugStreamLine("  derivative %f", leftDerivative);
+	writeDebugStreamLine("  integral %f", sharedIntegral);
+	writeDebugStreamLine("  proportion %f", leftProportion);
 
-	datalogAddValueWithTimeStamp(0, liftLeftError);
-	datalogAddValueWithTimeStamp(1, liftRightError);
+	datalogAddValueWithTimeStamp(0, leftPot);
+	datalogAddValueWithTimeStamp(1, rightPot);
+	datalogAddValueWithTimeStamp(2, position);
+	datalogAddValueWithTimeStamp(3, leftCurrent);
+
+	clearTimer(T4);
 }
 
 void liftPIDControl (int position) {
-	if (time1[T4] > 20) {
+	if (time1[T4] > 25) {
 		liftPIDCalculate(position);
 	}
-	clearTimer(T4);
 }
 
 void autoStackStep(int liftPos) {
@@ -3247,7 +3267,7 @@ void autoStackStep(int liftPos) {
 void autoStack(int level) {
 	switch (level) {
 	case PRESET_LEVEL_ONE:
-		autoStackStep(500);
+		autoStackStep(600);
 		break;
 
 	case PRESET_LEVEL_TWO:
@@ -3304,16 +3324,16 @@ void postStacking() {
 	moveArmOut();
 	//armIsBack = true;
 	if (!armIsReallyBack) {
-		if (SensorValue[liftLeftPot] > 270 && SensorValue[liftRightPot] > 270) {
+		if (SensorValue[liftLeftPot] > 340 && SensorValue[liftRightPot] > 340) {
 			/*motor[liftL] = -70;
 			motor[liftL] = -70;*/
-			liftPIDControl(260);
+			liftPIDControl(350);
 		}
 		} else {
 		motor[liftL] = 0;
 		motor[liftR] = 0;
 	}
-	if (SensorValue[liftLeftPot] <= 300 && SensorValue[liftRightPot] <= 300) {
+	if (SensorValue[liftLeftPot] <= 300 && SensorValue[liftRightPot] <= 370) {
 		justStacked = false;
 	}
 	outakeFinished = false;
