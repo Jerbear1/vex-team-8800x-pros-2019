@@ -209,24 +209,24 @@ bool timeUp = false;
 
 bool mobileGoalIsOut;
 
-int h1 = 525;
-int h2 = 600;
-int h3 = 800;
-int h4 = 960;
+int h1 = 480;
+int h2 = 560;
+int h3 = 680;
+int h4 = 760;
 int h5 = 1020;
 int h6 = 1080;
-int h7 = 1150;
-int h8 = 1320;
-int h9 = 1470;
+int h7 = 1140;
+int h8 = 1310;
+int h9 = 1460;
 int h10 = 1550;
 int h11 = 1750;
 int h12 = 1970;
 int h13 = 2020;
 int h14 = 2040;
 
-int autoStackExraHeight = 30;
-int autoStackOutTime = 300;
-int autoStackDownTime = 400;
+int autoStackExraHeight = 100;
+int autoStackOutTime = 450;
+int autoStackDownTime = 300;
 
 
 int armPower;
@@ -243,9 +243,9 @@ int driveTurnPositionError = 200;
 int armError = 2;
 
 //Lift PID values
-float liftkp = 0.43;
+float liftkp = 0.63;
 float liftki = 0.04;
-float liftkd = -0.03;
+float liftkd = -0.05;
 
 //Drive PID values
 float drivekp = 0.63;
@@ -1135,9 +1135,25 @@ task ProcessController() {
 		/*
 		Main Controller:
 		joysticks = drive
+		8U mobile goal full out
+		8D mobile goal full in
+		8L mobile goal partial in
+		8R mobile goal partial out
 
 		Partner Contorller:
-		right joystick = catapult
+		5U lift up
+		5D lift down
+		6D roller out
+		6U roller in
+		7U
+		7D stop auto stacking and reset to level 1
+		7L lift at mobile goal height
+		7R
+		8U acivate current level
+		8D activate last level
+		8L arm out
+		8R arm in
+
 		*/
 
 		// --- Joysticks to control robot driving (main controller only)
@@ -1220,11 +1236,17 @@ task ProcessController() {
 				motor[liftL] = 127;
 				motor[liftR] = 127;
 				//liftPIDControl(1000);
-				} else if (isButtonPressed(Btn5DXmtr2)) {
+				stacking = false;
+				justStacked = false;
+				stackPrev = false;
+			} else if (isButtonPressed(Btn5DXmtr2)) {
 				motor[liftL] = -90;
 				motor[liftR] = -90;
 				//liftPIDControl(500);
-				} else if (isButtonPressed(Btn7LXmtr2)) {
+				stacking = false;
+				justStacked = false;
+				stackPrev = false;
+			} else if (isButtonPressed(Btn7LXmtr2)) {
 				liftPIDControl(700);
 				} else {
 				motor[liftL] = 0;
@@ -1275,8 +1297,8 @@ task ProcessController() {
 			stacking = false;
 			justStacked = false;
 			stackPrev = false;
-			stackLevel = 1;
-			prevStackLevel = 0;
+			stackLevel = 0;
+			prevStackLevel = -1;
 		}
 
 		//writeDebugStreamLine("stack level %d", stackLevel);
@@ -1285,8 +1307,8 @@ task ProcessController() {
 		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
 		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 		//writeDebugStreamLine("arm power,                                                    %d", armPower );
-		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+		writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+		writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 
@@ -1863,12 +1885,12 @@ void liftPIDControl (int position) {
 }
 
 void checkLiftPos (int height) {
-	if (SensorValue[liftLeftPot] >= height - 300) {
+	if (SensorValue[liftLeftPot] >= height - 500) {
 		liftLeftAtPosition = true;
 	} else {
 		liftLeftAtPosition = false;
 	}
-	if (SensorValue[liftRightPot] >= height - 300) {
+	if (SensorValue[liftRightPot] >= height - 500) {
 		liftRightAtPosition = true;
 	} else {
 		liftRightAtPosition = false;
@@ -1904,6 +1926,7 @@ void autoStackStep(int liftPos) {
 
 		if (liftLeftAtPosition /*&& liftRightAtPosition*/ && !armIsReallyBack) {
 			moveArmIn();
+			liftPIDControl(liftPos);
 			//Not auto stacking stuff
 			//armIsBack = false;
 			writeDebugStreamLine("stage 2");
@@ -1976,16 +1999,18 @@ void postStacking() {
 	moveArmOut();
 	//armIsBack = true;
 	if (!armIsReallyBack) {
-		if (SensorValue[liftLeftPot] > 340 && SensorValue[liftRightPot] > 340) {
-			/*motor[liftL] = -70;
-			motor[liftL] = -70;*/
-			liftPIDControl(350);
+		if (SensorValue[liftLeftPot] > 500 && SensorValue[liftRightPot] > 500) {
+			motor[liftL] = -127;
+			motor[liftR] = -127;
+			//liftPIDControl(350);
 		}
-		} else {
+	} else {
+		motor[liftL] = -15;
+		motor[liftR] = -15;
+	}
+	if (SensorValue[liftLeftPot] <= 370 && SensorValue[liftRightPot] <= 370) {
 		motor[liftL] = 0;
 		motor[liftR] = 0;
-	}
-	if (SensorValue[liftLeftPot] <= 300 && SensorValue[liftRightPot] <= 370) {
 		justStacked = false;
 	}
 	outakeFinished = false;
