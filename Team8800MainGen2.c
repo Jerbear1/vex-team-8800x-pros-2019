@@ -212,8 +212,8 @@ bool mobileGoalIsOut;
 int h1 = 480;
 int h2 = 560;
 int h3 = 680;
-int h4 = 760;
-int h5 = 1020;
+int h4 = 840;
+int h5 = 1000;
 int h6 = 1080;
 int h7 = 1140;
 int h8 = 1310;
@@ -248,9 +248,9 @@ float liftki = 0.04;
 float liftkd = -0.05;
 
 //Drive PID values
-float drivekp = 0.63;
-float driveki = 0.0000009;
-float drivekd = 75;
+float drivekp = 0.28;
+float driveki = 0.004;
+float drivekd = -0.015;
 
 //Turn PID values
 float turnkp = 0.83;
@@ -1106,7 +1106,10 @@ task autonomousRoutines()
 		break;
 
 	case AUTONOMOUS_MODE_STACK_BACK:
-
+		clearDriveEnc();
+		while(true) {
+			autoDrivePIDControl(500, true);
+		}
 		break;
 
 	case AUTONOMOUS_MODE_DRIVE_BLOCK:
@@ -1307,13 +1310,13 @@ task ProcessController() {
 		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
 		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 		//writeDebugStreamLine("arm power,                                                    %d", armPower );
-		writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-		writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 
-		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
-		//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
+		writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
+		writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
 
 		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
 		//writeDebugStreamLine("Lift right pot,      %d", SensorValue(liftRightPot));
@@ -1999,7 +2002,7 @@ void postStacking() {
 	moveArmOut();
 	//armIsBack = true;
 	if (!armIsReallyBack) {
-		if (SensorValue[liftLeftPot] > 500 && SensorValue[liftRightPot] > 500) {
+		if (SensorValue[liftLeftPot] > 500 /*&& SensorValue[liftRightPot] > 500*/) {
 			motor[liftL] = -127;
 			motor[liftR] = -127;
 			//liftPIDControl(350);
@@ -2008,7 +2011,7 @@ void postStacking() {
 		motor[liftL] = -15;
 		motor[liftR] = -15;
 	}
-	if (SensorValue[liftLeftPot] <= 370 && SensorValue[liftRightPot] <= 370) {
+	if (SensorValue[liftLeftPot] <= 370 /*&& SensorValue[liftRightPot] <= 370*/) {
 		motor[liftL] = 0;
 		motor[liftR] = 0;
 		justStacked = false;
@@ -2092,24 +2095,27 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 		motor[driveFR] = current;
 	}
 
-	lastError = error;
-
 	//writeDebugStreamLine("Current Angle %d", encAverage);
-	//writeDebugStreamLine("           drive  error %d", error);
-	/*writeDebugStreamLine("             integral %d", integral);
-	writeDebugStreamLine("             error total %d", errorT);
+	writeDebugStreamLine("            error %d", error);
+	writeDebugStreamLine("            last error %d", lastError);
+	writeDebugStreamLine("             integral %d", integral);
+	//writeDebugStreamLine("             error total %d", errorT);
 	writeDebugStreamLine("             derivative %d", derivative);
-	writeDebugStreamLine("           last error %d", lastError);*/
+	//writeDebugStreamLine("           last error %d", lastError);
 	//writeDebugStreamLine("             drive current 2/ %d", current);
 	writeDebugStreamLine("             proportion %d", proportion);
-	writeDebugStreamLine("             error %d", error);
+	//writeDebugStreamLine("             error %d", error);
+	//writeDebugStreamLine("             distance %d", distance);
 
-	/*datalogAddValueWithTimeStamp(0, error);
-	datalogAddValueWithTimeStamp(1, encAverage);
-	datalogAddValueWithTimeStamp(2, integral);
-	datalogAddValueWithTimeStamp(3, derivative);
-	datalogAddValueWithTimeStamp(4, current);*/
+	//datalogAddValueWithTimeStamp(0, error);
+	datalogAddValueWithTimeStamp(0, encAverage);
+	/*datalogAddValueWithTimeStamp(2, integral);
+	datalogAddValueWithTimeStamp(3, derivative);*/
+	datalogAddValueWithTimeStamp(2, distance);
+	datalogAddValueWithTimeStamp(3, current);
 	//datalogAddValueWithTimeStamp(5, error);
+
+	lastError = error;
 
 	//Make sure the loop happens consistantly
 	clearTimer(T1);
