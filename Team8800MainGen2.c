@@ -93,10 +93,12 @@ void rollerOutake(int speed, int time);
 void liftPIDCalculate (int position);
 void liftPIDControl(int position);
 void checkLiftPos (int height);
-void autoDrivePIDCalculate (int distance, bool drive);
-void autoDrivePIDControl (int distance, bool drive);
-void autoGyroPIDControl (int setAngle, bool turn);
-void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd);
+void autoDrivePIDCalculate (int distance);
+void autoDrivePIDControl (int distance, bool time);
+void autoGyroPIDCalculate (int setAngle);
+void autoGyroPIDControl (int setAngle);
+void autoDriveGyroPIDCalculate (int setAngle, int distance);
+void autoDriveGyroPIDControl (int setAngle, int distance);
 void autoLiftPIDControl (int position, int kp, int ki, int kd);
 
 //Auto Functions
@@ -249,7 +251,7 @@ float liftkd = -0.05;
 
 //Drive PID values
 float drivekp = 0.25;
-float driveki = 0.00009;
+float driveki = 0.0036;
 float drivekd = 0.06;
 
 //Turn PID values
@@ -263,7 +265,7 @@ float turnDriveki;
 float turnDrivekd;
 
 //Drive Turn PID values
-float driveTurnkp;
+float driveTurnkp = 0.65;
 float driveTurnki;
 float driveTurnkd;
 
@@ -274,7 +276,7 @@ int gyroCurrent;
 int overallCurrentLeft;
 int overallCurrentRight;
 
-int turnPower = 35;
+int maxTurnPower = 15;
 
 int rollerSpeed;
 
@@ -306,7 +308,7 @@ task autonomousRoutines()
 
 			//Drive
 			if (time1(T2) > 500) {
-				autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				//autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
 			//Move mobile goal lifter out
@@ -350,12 +352,12 @@ task autonomousRoutines()
 		if (allianceSide == RIGHT) {
 			while (time1(T2) < 1000) {
 				//turn
-				autoGyroPIDControl(-300, true);
+				autoGyroPIDControl(-300);
 			}
 			} else if (allianceSide == LEFT) {
 			while (time1(T2) < 1000) {
 				//turn
-				autoGyroPIDControl(300, true);
+				autoGyroPIDControl(300);
 			}
 		}
 
@@ -374,12 +376,12 @@ task autonomousRoutines()
 		if (allianceSide == RIGHT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1500, true);
+				autoGyroPIDControl(-1500);
 			}
 			} else if (allianceSide == LEFT) {
 			while (time1(T2) < 1000) {
 				//turn
-				autoGyroPIDControl(1500, true);
+				autoGyroPIDControl(1500);
 			}
 		}
 
@@ -499,7 +501,7 @@ task autonomousRoutines()
 
 			//Drive
 			if (time1(T2) > 500) {
-				autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				//autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
 			//Move mobile goal lifter out
@@ -541,7 +543,7 @@ task autonomousRoutines()
 		clearDriveEnc();
 
 		while (time1(T2) < 1500) {
-			autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+			//autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 			moveLiftDown(50, 300);
 
@@ -593,12 +595,12 @@ task autonomousRoutines()
 		if (allianceSide == LEFT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1700, true);
+				autoGyroPIDControl(-1700);
 			}
 			} else if (allianceSide == RIGHT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1700, true);
+				autoGyroPIDControl(1700);
 			}
 		}
 
@@ -666,7 +668,7 @@ task autonomousRoutines()
 			}
 			//Drive
 			if (time1(T2) > 700) {
-				autoDriveGyroPIDControl(0, 1300, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				//autoDriveGyroPIDControl(0, 1300, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
 			//Move mobile goal lifter out
@@ -723,7 +725,7 @@ task autonomousRoutines()
 		motor[roller] = 120;
 
 		while (time1(T2) < 1500) {
-			autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+			//autoDriveGyroPIDControl(0, 300, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 			moveLiftDown(50, 300);
 
@@ -761,12 +763,12 @@ task autonomousRoutines()
 		if (allianceSide == LEFT) {
 			while (time1(T2) < 1000) {
 				//turn
-				autoGyroPIDControl(300, true);
+				autoGyroPIDControl(300);
 			}
 			} else if (allianceSide == RIGHT) {
 			while (time1(T2) < 1000) {
 				//turn
-				autoGyroPIDControl(-300, true);
+				autoGyroPIDControl(-300);
 			}
 		}
 
@@ -786,12 +788,12 @@ task autonomousRoutines()
 		if (allianceSide == LEFT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1400, true);
+				autoGyroPIDControl(1400);
 			}
 			} else if (allianceSide == RIGHT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1400, true);
+				autoGyroPIDControl(-1400);
 			}
 		}
 
@@ -859,7 +861,7 @@ task autonomousRoutines()
 			}
 			//Drive
 			if (time1(T2) > 700) {
-				autoDriveGyroPIDControl(0, 1300, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
+				//autoDriveGyroPIDControl(0, 1300, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
 			}
 
 			//Move mobile goal lifter out
@@ -917,7 +919,7 @@ task autonomousRoutines()
 		motor[roller] = 120;
 
 		while (time1(T2) < 1500) {
-			autoDriveGyroPIDControl(0, 260, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+			//autoDriveGyroPIDControl(0, 260, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 			moveLiftDown(50, 300);
 
@@ -962,7 +964,7 @@ task autonomousRoutines()
 		motor[roller] = 127;
 
 		while (time1(T2) < 1500) {
-			autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
+			//autoDriveGyroPIDControl(0, 230, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
 
 			moveLiftDown(50, 300);
 
@@ -993,12 +995,12 @@ task autonomousRoutines()
 		if (allianceSide == LEFT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(1850, true);
+				autoGyroPIDControl(1850);
 			}
 			} else if (allianceSide == RIGHT) {
 			while (time1(T2) < 2000) {
 				//turn
-				autoGyroPIDControl(-1850, true);
+				autoGyroPIDControl(-1850);
 			}
 		}
 
@@ -1069,7 +1071,7 @@ task autonomousRoutines()
 		if (allianceSide == LEFT) {
 			clearTimer(T2);
 			while (time1(T2) < 800) {
-				autoGyroPIDControl(-250, true);
+				autoGyroPIDControl(-250);
 			}
 
 			clearTimer(T2);
@@ -1084,7 +1086,7 @@ task autonomousRoutines()
 			} else if (allianceSide == RIGHT) {
 			clearTimer(T2);
 			while (time1(T2) < 800) {
-				autoGyroPIDControl(250, true);
+				autoGyroPIDControl(250);
 			}
 
 			clearTimer(T2);
@@ -1107,9 +1109,16 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_STACK_BACK:
 		clearDriveEnc();
+		//clearTimer(T2);
 		while(true) {
-			autoDrivePIDControl(500, true);
+			autoDriveGyroPIDControl(0, 2000);
 		}
+
+		/*clearDriveEnc();
+
+		while (true) {
+			autoDriveGyroPIDControl(0, -2000);
+		}*/
 		break;
 
 	case AUTONOMOUS_MODE_DRIVE_BLOCK:
@@ -1870,10 +1879,10 @@ void liftPIDCalculate (int position) {
 	//writeDebugStreamLine("  integral %f", sharedIntegral);
 	//writeDebugStreamLine("  proportion %f", leftProportion);
 
-	datalogAddValueWithTimeStamp(0, leftPot);
-	datalogAddValueWithTimeStamp(1, rightPot);
-	datalogAddValueWithTimeStamp(2, position);
-	datalogAddValueWithTimeStamp(3, leftCurrent);
+	//datalogAddValueWithTimeStamp(0, leftPot);
+	//datalogAddValueWithTimeStamp(1, rightPot);
+	//datalogAddValueWithTimeStamp(2, position);
+	//datalogAddValueWithTimeStamp(3, leftCurrent);
 
 	leftLastPot = leftPot;
 	rightLastPot = rightPot;
@@ -2019,7 +2028,7 @@ void postStacking() {
 	outakeFinished = false;
 }
 
-void autoDrivePIDCalculate (int distance, bool drive) {
+void autoDrivePIDCalculate (int distance) {
 	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
 
 	float integralAcitveZone = 100;
@@ -2037,21 +2046,13 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 	//Find Distance error
 	error = distance - encAverage;
 
-	if (drive) {
-		//Set proportion
-		proportion = error * drivekp;
+	//Set proportion
+	proportion = error * drivekp;
 
-		integral = errorT * driveki;
+	integral = errorT * driveki * 0.025;
 
-		derivative = ((error - lastError) * drivekd)/0.025;
-		} else if (!drive) {
-		//Set proportion for turn drive
-		proportion = error * driveTurnkp;
+	derivative = ((error - lastError) * drivekd)/0.025;
 
-		integral = errorT * driveTurnki;
-
-		derivative = ((error - lastError) * driveTurnkd)/0.025;
-	}
 
 	//Calculate integral
 	//left
@@ -2088,12 +2089,11 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 		current = -127;
 	}
 
-	if (drive) {
-		motor[driveBL] = current;
-		motor[driveFL] = current;
-		motor[driveBR] = current;
-		motor[driveFR] = current;
-	}
+
+	motor[driveBL] = current;
+	motor[driveFL] = current;
+	motor[driveBR] = current;
+	motor[driveFR] = current;
 
 	//writeDebugStreamLine("Current Angle %d", encAverage);
 	//writeDebugStreamLine("            error %d", error);
@@ -2108,11 +2108,11 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 	//writeDebugStreamLine("             distance %d", distance);
 
 	//datalogAddValueWithTimeStamp(0, error);
-	datalogAddValueWithTimeStamp(0, encAverage);
+	//datalogAddValueWithTimeStamp(0, encAverage);
 	/*datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);*/
-	datalogAddValueWithTimeStamp(2, distance);
-	datalogAddValueWithTimeStamp(3, current);
+	//datalogAddValueWithTimeStamp(1, distance);
+	//datalogAddValueWithTimeStamp(2, current);
 	//datalogAddValueWithTimeStamp(5, error);
 
 	lastError = error;
@@ -2121,14 +2121,18 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 	clearTimer(T1);
 }
 
-void autoDrivePIDControl (int distance, bool drive) {
-	if (time1[T1] > 25) {
-		autoDrivePIDCalculate(distance, drive);
+void autoDrivePIDControl (int distance, bool time) {
+	if (time) {
+		if (time1[T1] > 25) {
+			autoDrivePIDCalculate(distance);
+		}
+	} else {
+		autoDrivePIDCalculate(distance);
 	}
 }
 
-void autoGyroPIDControl (int setAngle, bool turn) {
-	float currentAngle = SensorValue(driveGyro);
+void autoGyroPIDCalculate (int setAngle) {
+	float angle = SensorValue(driveGyro);
 
 	float integralAcitveZone = 1000;
 
@@ -2142,61 +2146,49 @@ void autoGyroPIDControl (int setAngle, bool turn) {
 	float current;
 
 	//Find Angle error
-	turnError = setAngle - currentAngle;
+	turnError = setAngle - angle;
 
-	if (turn) {
-		//Set proportion
-		proportion = turnError * turnkp;
+	//Set proportion
+	proportion = turnError * turnkp;
 
-		integral = errorT * turnki;
+	integral = errorT * turnki * 0.025;
 
-		derivative = (turnError - lastError) * turnkd;
-		} else if (!turn) {
-		//Set proportion for turn drive
-		proportion = turnError * turnDrivekp;
-
-		integral = errorT * turnDriveki;
-
-		derivative = (turnError - lastError) * turnDrivekd;
-	}
+	derivative = ((turnError - lastError) * turnkd)/0.025;
 
 	//Calculate integral
-	if (turnError < integralAcitveZone) {
-		errorT += turnError;
-		} else {
-		errorT = 0;
+	errorT += turnError;
+	if (integral > 80) {
+		integral = 80;
+	} else if (integral < -80) {
+		integral = -80;
 	}
-
-	//Calculate derivative
-	lastError = turnError;
 
 	//Set current
 	current = proportion + integral + derivative;
-	gyroCurrent = proportion + integral + derivative;
 
-	if (abs(turnError) <= turnPositionError) {
+	/*if (abs(turnError) <= turnPositionError) {
 		current = 0;
-	}
+	}*/
 
-	//Check that lift has stopped
-	if (abs(turnError) <= turnPositionError) {
+	//Check that turn has stopped
+	/*if (abs(turnError) <= turnPositionError) {
 		turnAtPosition = true;
 		} else {
 		turnAtPosition = false;
+	}*/
+
+	if (current > 127) {
+		current = 127;
+	}
+	if (current < -127) {
+		current = -127;
 	}
 
-	if (current > 90) {
-		current = 90;
-	}
-	if (current < -90) {
-		current = -90;
-	}
-	if (turn) {
-		motor[driveBL] = -current;
-		motor[driveFL] = -current;
-		motor[driveBR] = current;
-		motor[driveFR] = current;
-	}
+	//Send to motors
+	motor[driveBL] = -current;
+	motor[driveFL] = -current;
+	motor[driveBR] = current;
+	motor[driveFR] = current;
 
 	//writeDebugStreamLine("Current Angle %d", currentAngle);
 	//writeDebugStreamLine("            turn error %d", turnError);
@@ -2206,65 +2198,60 @@ void autoGyroPIDControl (int setAngle, bool turn) {
 	writeDebugStreamLine("           last error %d", lastError);*/
 	//writeDebugStreamLine("             angle current 2/ %d", current);
 
-	datalogAddValueWithTimeStamp(4, turnError);
-	/*datalogAddValueWithTimeStamp(1, currentAngle);
-	datalogAddValueWithTimeStamp(2, integral);
+	//datalogAddValueWithTimeStamp(4, turnError);
+	datalogAddValueWithTimeStamp(0, angle);
+	datalogAddValueWithTimeStamp(1, setAngle);
+	datalogAddValueWithTimeStamp(2, current);
+	/*datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);
 	datalogAddValueWithTimeStamp(4, current);*/
 	//datalogAddValueWithTimeStamp(4, turnError);
+
+	lastError = turnError;
+
+	clearTimer(T1);
 }
 
-void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float turnki, float turnkd, float drivekp, float driveki, float drivekd) {
-	turnDrivekp = turnkp;
-	turnDriveki = turnki;
-	turnDrivekd = turnkd;
+void autoGyroPIDControl (int setAngle) {
+	if (time1[T1] > 25) {
+		autoGyroPIDCalculate(setAngle);
+	}
+}
 
-	driveTurnkp = drivekp;
-	driveTurnki = driveki;
-	driveTurnkd = drivekd;
+void autoDriveGyroPIDCalculate (int setAngle, int distance) {
+	autoDrivePIDControl(distance, false);
 
-	autoDrivePIDCalculate(distance, false);
-	autoGyroPIDControl(setAngle, false);
+	float angle = SensorValue(driveGyro);
+	float gyroCurrent;
+
+	//Find Angle error
+	turnError = setAngle - angle;
+
+	gyroCurrent = turnError * driveTurnkp;
 
 	//Assign power to motors
-	overallCurrentLeft = driveCurrent - gyroCurrent;
-	overallCurrentRight = driveCurrent + gyroCurrent;
-
-	motor[driveBL] = overallCurrentLeft;
-	motor[driveFL] = overallCurrentLeft;
-	motor[driveBR] = overallCurrentRight;
-	motor[driveFR] = overallCurrentRight;
+	motor[driveBL] = driveCurrent - gyroCurrent;
+	motor[driveFL] = driveCurrent - gyroCurrent;
+	motor[driveBR] = driveCurrent + gyroCurrent;
+	motor[driveFR] = driveCurrent + gyroCurrent;
 
 	//Limit power to motors
-	if (gyroCurrent > turnPower) {
-		gyroCurrent = turnPower;
+	if (gyroCurrent > maxTurnPower) {
+		gyroCurrent = maxTurnPower;
 	}
-	if (gyroCurrent < -turnPower) {
-		gyroCurrent = -turnPower;
+	if (gyroCurrent < -maxTurnPower) {
+		gyroCurrent = -maxTurnPower;
 	}
 
-	if (abs(turnError) <= turnDrivePositionError) {
+	/*if (abs(turnError) <= turnDrivePositionError) {
 		gyroCurrent = 0;
-	}
+	}*/
 
-	if (driveCurrent > 127 - turnPower) {
-		driveCurrent = 127 - turnPower;
+	if (driveCurrent > 127 - maxTurnPower) {
+		driveCurrent = (127 - maxTurnPower);
 	}
-	if (driveCurrent < -(127 - turnPower)) {
-		driveCurrent = -(127 - turnPower);
-	}
-
-	if (overallCurrentLeft > 127) {
-		overallCurrentLeft = 127;
-	}
-	if (overallCurrentLeft < -127) {
-		overallCurrentLeft = -127;
-	}
-	if (overallCurrentRight > 127) {
-		overallCurrentRight = 127;
-	}
-	if (overallCurrentRight < -127) {
-		overallCurrentRight = -127;
+	if (driveCurrent < -(127 - maxTurnPower)) {
+		driveCurrent = -(127 - maxTurnPower);
 	}
 
 	/*writeDebugStreamLine("Angle current %d", gyroCurrent);
@@ -2273,8 +2260,15 @@ void autoDriveGyroPIDControl (int setAngle, int distance, float turnkp, float tu
 	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
 	//writeDebugStreamLine("             gyro %d", SensorValue[driveGyro]);
 
-	datalogAddValueWithTimeStamp(0, driveCurrent);
-	datalogAddValueWithTimeStamp(1, gyroCurrent);
-	datalogAddValueWithTimeStamp(2, overallCurrentLeft);
-	datalogAddValueWithTimeStamp(3, overallCurrentRight);
+	//datalogAddValueWithTimeStamp(3, setAngle);
+	//datalogAddValueWithTimeStamp(4, angle);
+	//datalogAddValueWithTimeStamp(5, gyroCurrent);
+
+	clearTimer(T1);
+}
+
+void autoDriveGyroPIDControl (int setAngle, int distance) {
+	if (time1[T1] > 25) {
+			autoDriveGyroPIDCalculate(setAngle, distance);
+	}
 }
