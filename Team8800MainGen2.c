@@ -248,9 +248,9 @@ float liftki = 0.04;
 float liftkd = -0.05;
 
 //Drive PID values
-float drivekp = 0.28;
-float driveki = 0.004;
-float drivekd = -0.015;
+float drivekp = 0.25;
+float driveki = 0.00009;
+float drivekd = 0.06;
 
 //Turn PID values
 float turnkp = 0.83;
@@ -2096,14 +2096,14 @@ void autoDrivePIDCalculate (int distance, bool drive) {
 	}
 
 	//writeDebugStreamLine("Current Angle %d", encAverage);
-	writeDebugStreamLine("            error %d", error);
-	writeDebugStreamLine("            last error %d", lastError);
-	writeDebugStreamLine("             integral %d", integral);
+	//writeDebugStreamLine("            error %d", error);
+	//writeDebugStreamLine("            last error %d", lastError);
+	writeDebugStreamLine("        integral %d", integral);
 	//writeDebugStreamLine("             error total %d", errorT);
-	writeDebugStreamLine("             derivative %d", derivative);
+	writeDebugStreamLine("                      derivative %d", derivative);
 	//writeDebugStreamLine("           last error %d", lastError);
 	//writeDebugStreamLine("             drive current 2/ %d", current);
-	writeDebugStreamLine("             proportion %d", proportion);
+	writeDebugStreamLine("proportion %d", proportion);
 	//writeDebugStreamLine("             error %d", error);
 	//writeDebugStreamLine("             distance %d", distance);
 
