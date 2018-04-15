@@ -117,6 +117,9 @@ void moveMobileGoalOut();
 void moveMobileGoalIn();
 void moveMobileGoalInDistance(int distance);
 void rollerOutakeAuto(int speed, int distance);
+void collectMobileGoal();
+void intakeMobileGoalAndStackFirstCone();
+void stackSecondConeAndCollectThirdCone();
 
 void autoStackStep(int liftPos);
 
@@ -136,7 +139,7 @@ byte allianceSide = RIGHT;
 
 const byte AUTONOMOUS_MODE_MOBILE_GOAL_20 = 1;
 const byte AUTONOMOUS_MODE_STATIONARY = 2;
-const byte AUTONOMOUS_MODE_2_20 = 3;
+const byte AUTONOMOUS_MODE_4_20 = 3;
 const byte AUTONOMOUS_MODE_SKILLS = 4;
 const byte AUTONOMOUS_MODE_3_10 = 5;
 const byte AUTONOMOUS_MODE_STACK_PIPE = 6;
@@ -255,9 +258,9 @@ float driveki = 0.0036;
 float drivekd = 0.06;
 
 //Turn PID values
-float turnkp = 0.83;
-float turnki = 0.000008;
-float turnkd = 100;
+float turnkp = 0.6;
+float turnki = 0.000003;
+float turnkd = 0.1;
 
 //Turn Drive PID values
 float turnDrivekp;
@@ -488,14 +491,33 @@ task autonomousRoutines()
 		//////////////////////////////////////////////////////End of auto 2/////////////////////////////////
 		break;
 
-	case AUTONOMOUS_MODE_2_20:
+	case AUTONOMOUS_MODE_4_20:
 
 		////////////////////////////////////////////////////////////////////////////////AUTO 3/////////////////////////////////////////////////
 		motor[roller] = 40;
 
+		clearDriveEnc();
 		clearTimer(T2);
 
-		while (time1(T2) < 3000) {
+		collectMobileGoal();
+
+		waitInMilliseconds(100);
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		intakeMobileGoalAndStackFirstCone();
+
+		waitInMilliseconds(100);
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		stackSecondConeAndCollectThirdCone();
+
+
+
+		/*while (time1(T2) < 3000) {
 
 			moveLiftUp(100, 700);
 
@@ -632,7 +654,7 @@ task autonomousRoutines()
 			moveMobileGoalInAuto();
 			} else {
 			motor[mobileGoal] = 50;
-		}
+		}*/
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -718,7 +740,6 @@ task autonomousRoutines()
 		}
 
 		drive(0, 0);
-		clearTimer(T2);
 		clearDriveEnc();
 
 		moveArmOut();
@@ -1111,7 +1132,9 @@ task autonomousRoutines()
 		clearDriveEnc();
 		//clearTimer(T2);
 		while(true) {
-			autoDriveGyroPIDControl(0, 2000);
+			autoGyroPIDControl(940);
+			writeDebugStreamLine("Turn Value gyro %d", SensorValue[driveGyro]);
+
 		}
 
 		/*clearDriveEnc();
@@ -1520,7 +1543,7 @@ void selectTeamAlliance()
 			break;
 
 		case 3:
-			scrolledAuto = AUTONOMOUS_MODE_2_20;
+			scrolledAuto = AUTONOMOUS_MODE_4_20;
 			displayLCDString(1, 0, " 1 2[3]4 5 6 7 8 ");
 			wait1Msec(200);
 			break;
@@ -2270,5 +2293,86 @@ void autoDriveGyroPIDCalculate (int setAngle, int distance) {
 void autoDriveGyroPIDControl (int setAngle, int distance) {
 	if (time1[T1] > 25) {
 			autoDriveGyroPIDCalculate(setAngle, distance);
+	}
+}
+void collectMobileGoal() {
+	while (time1[T2] < 3000) {
+
+		moveLiftUp(90, 400);
+
+		//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+				} else {
+				motor[mobileGoal] = -50;
+			}
+
+		if (time1[T2] > 100) {
+			autoDriveGyroPIDControl(0, 1850);
+		}
+	}
+}
+
+void intakeMobileGoalAndStackFirstCone() {
+	while (time1[T2] < 2000) {
+
+		//Move mobile goal lifter out
+		if (mobileGoalIsOut) {
+			moveMobileGoalIn();
+			} else {
+			motor[mobileGoal] = 40;
+		}
+
+		if (time1[T2] > 700) {
+			moveLiftDown(60, 400);
+		}
+
+		if (time1[T2] > 700 && time1[T2] < 900) {
+				motor[roller] = -100;
+			}
+
+		if (time1[T2] > 1000) {
+				motor[roller] = 127;
+				moveArmOut();
+				autoDriveGyroPIDControl(0, 200);
+			}
+
+		if (time1[T2] > 1400) {
+			motor[roller] = 40;
+			moveLiftUp(80, 450);
+		}
+
+		if (time1[T2] > 1550) {
+			moveArmIn();
+		}
+
+	}
+}
+
+void stackSecondConeAndCollectThirdCone() {
+	while (time1[T2] < 2000) {
+
+		moveLiftDown(80, 350);
+
+		if (time1[T2] > 300) {
+			motor[roller] = -100;
+			moveLiftUp(80, 450);
+		}
+
+		if (time1[T2] > 400) {
+			autoDriveGyroPIDControl(0, 200);
+			moveArmOut();
+			motor[roller] = 100;
+		}
+
+		if (time1[T2] > 1000) {
+			motor[roller] = 40;
+			moveLiftUp(80, 450);
+		}
+
+		if (time1[T2] > 1250) {
+			moveArmIn();
+		}
+
 	}
 }
