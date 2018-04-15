@@ -513,7 +513,7 @@ task autonomousRoutines()
 		clearDriveEnc();
 		clearTimer(T2);
 
-		stackSecondConeAndCollectThirdCone();
+		//stackSecondConeAndCollectThirdCone();
 
 
 
@@ -2296,7 +2296,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 3000) {
+	while (time1[T2] < 2500) {
 
 		moveLiftUp(90, 400);
 
@@ -2307,14 +2307,18 @@ void collectMobileGoal() {
 				motor[mobileGoal] = -50;
 			}
 
-		if (time1[T2] > 100) {
+		if (time1[T2] > 250) {
 			autoDriveGyroPIDControl(0, 1850);
 		}
 	}
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 2000) {
+	while (time1[T2] < 4000) {
+
+		if (time1[T2] < 1300) {
+				autoDriveGyroPIDControl(0, 0);
+			}
 
 		//Move mobile goal lifter out
 		if (mobileGoalIsOut) {
@@ -2323,26 +2327,28 @@ void intakeMobileGoalAndStackFirstCone() {
 			motor[mobileGoal] = 40;
 		}
 
-		if (time1[T2] > 700) {
-			moveLiftDown(60, 400);
+		if (time1[T2] > 1300) {
+			moveLiftDown(60, 250);
 		}
 
-		if (time1[T2] > 700 && time1[T2] < 900) {
+		if (time1[T2] > 1300 && time1[T2] < 1500) {
 				motor[roller] = -100;
+				moveLiftUp(70, 350);
 			}
 
-		if (time1[T2] > 1000) {
+		if (time1[T2] > 1500) {
 				motor[roller] = 127;
 				moveArmOut();
-				autoDriveGyroPIDControl(0, 200);
+				autoDriveGyroPIDControl(0, 300);
+				moveLiftDown(50, 280);
 			}
 
-		if (time1[T2] > 1400) {
+		if (time1[T2] > 2500) {
 			motor[roller] = 40;
 			moveLiftUp(80, 450);
 		}
 
-		if (time1[T2] > 1550) {
+		if (time1[T2] > 2800) {
 			moveArmIn();
 		}
 
