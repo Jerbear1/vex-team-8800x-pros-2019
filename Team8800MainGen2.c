@@ -501,8 +501,6 @@ task autonomousRoutines()
 
 		collectMobileGoal();
 
-		waitInMilliseconds(100);
-
 		clearDriveEnc();
 		clearTimer(T2);
 
@@ -514,147 +512,6 @@ task autonomousRoutines()
 		clearTimer(T2);
 
 		//stackSecondConeAndCollectThirdCone();
-
-
-
-		/*while (time1(T2) < 3000) {
-
-			moveLiftUp(100, 700);
-
-			//Drive
-			if (time1(T2) > 500) {
-				//autoDriveGyroPIDControl(0, 1350, 1, 0.00015, 0.5, 0.00002, 0.000000000079, 1.3);
-			}
-
-			//Move mobile goal lifter out
-			if (!mobileGoalIsOut) {
-				moveMobileGoalOut();
-				} else {
-				motor[mobileGoal] = -50;
-			}
-
-			wait1Msec(20);
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-		while (time1(T2) < 2200) {
-
-			if (mobileGoalIsOut) {
-				moveMobileGoalInAuto();
-				} else {
-				motor[mobileGoal] = 50;
-			}
-
-			if (time1(T2) > 1600) {
-				moveLiftDown(50, 400);
-				//autoDriveGyroPIDControl(0, -1200, 1, 0.00015, 1.0, 1, 0.0000002, 0.4);
-			}
-
-			if (time1(T2) > 2050) {
-				rollerOutake(-100, 150);
-			}
-
-			wait1Msec(20);
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-		while (time1(T2) < 1500) {
-			//autoDriveGyroPIDControl(0, 200, 1, 0.00015, 0.5, 1, 0.000079, 0.000003);
-
-			moveLiftDown(50, 300);
-
-			moveArmOut();
-
-			motor[roller] = 120;
-			if (time1(T2) > 1000) {
-				motor[roller] = 40;
-				moveLiftUp(100, 550);
-			}
-			if (time1(T2) > 1300) {
-				moveArmIn();
-			}
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-
-		if (allianceSide == LEFT) {
-			while (time1(T2) < 1000) {
-				moveLiftDown(20, 550);
-				driveBackward(-100, -580);
-				if (time1(T2) > 200) {
-					motor[roller] = -100;
-					waitInMilliseconds(400);
-					motor[roller] = 0;
-				}
-			}
-			} else if (allianceSide == RIGHT) {
-			while (time1(T2) < 1000) {
-				moveLiftDown(20, 550);
-				driveBackward( -580, -100);
-				if (time1(T2) > 200) {
-					motor[roller] = -100;
-					waitInMilliseconds(400);
-					motor[roller] = 0;
-				}
-			}
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-		wait1Msec(200);
-
-		if (allianceSide == LEFT) {
-			while (time1(T2) < 2000) {
-				//turn
-				autoGyroPIDControl(-1700);
-			}
-			} else if (allianceSide == RIGHT) {
-			while (time1(T2) < 2000) {
-				//turn
-				autoGyroPIDControl(1700);
-			}
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-		while (time1(T2) < 1500) {
-			moveMobileGoalOut();
-			moveLiftUp(80, 500);
-			motor[roller] = -100;
-
-			drive(50, 50);
-			waitInMilliseconds(200);
-			drive(0, 0);
-		}
-
-		drive(0, 0);
-		clearTimer(T2);
-		clearDriveEnc();
-
-		while (time1(T2) < 300) {
-			drive(-60, -60);
-			waitInMilliseconds(200);
-			drive(0, 0);
-		}
-
-		if (mobileGoalIsOut) {
-			moveMobileGoalInAuto();
-			} else {
-			motor[mobileGoal] = 50;
-		}*/
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -1130,11 +987,9 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_STACK_BACK:
 		clearDriveEnc();
-		//clearTimer(T2);
+		clearTimer(T2);
 		while(true) {
-			autoGyroPIDControl(940);
-			writeDebugStreamLine("Turn Value gyro %d", SensorValue[driveGyro]);
-
+			liftPIDControl(1000);
 		}
 
 		/*clearDriveEnc();
@@ -1828,7 +1683,7 @@ void liftPIDCalculate (int position) {
 
 	float liftLeftError;
 	float liftRightError;
-	float errorT;
+	float liftErrorT;
 	float leftLastPot;
 	float rightLastPot;
 
@@ -1842,13 +1697,13 @@ void liftPIDCalculate (int position) {
 	leftProportion = liftLeftError * liftkp;
 	rightProportion = liftRightError * liftkp;
 
-	sharedIntegral = errorT * liftki * 0.025;
+	sharedIntegral = liftErrorT * liftki * 0.025;
 
 	leftDerivative = ((leftPot - leftLastPot) * liftkd)/0.025;
 	rightDerivative = ((rightPot - rightLastPot) * liftkd)/0.025;
 
 	//Integral
-	errorT += liftLeftError;
+	liftErrorT += liftLeftError;
 	if (sharedIntegral > 80) {
 		sharedIntegral = 80;
 		} else if (sharedIntegral < -80) {
@@ -1895,16 +1750,16 @@ void liftPIDCalculate (int position) {
 	//writeDebugStreamLine("                  right error %d", liftRightError);
 	//writeDebugStreamLine("                     left curent %d", leftCurrent);
 	//writeDebugStreamLine("                                    right curent %d", rightCurrent);
-	writeDebugStreamLine("                               Change in position %d", (leftPot - leftLastPot));
-	writeDebugStreamLine("  liftLeftAtPosition %d", liftLeftAtPosition);
+	//writeDebugStreamLine("                               Change in position %d", (leftPot - leftLastPot));
+	//writeDebugStreamLine("  liftLeftAtPosition %d", liftLeftAtPosition);
 	//writeDebugStreamLine("  curent %d", leftCurrent);
 	//writeDebugStreamLine("  derivative %f", leftDerivative);
 	//writeDebugStreamLine("  integral %f", sharedIntegral);
 	//writeDebugStreamLine("  proportion %f", leftProportion);
 
-	//datalogAddValueWithTimeStamp(0, leftPot);
-	//datalogAddValueWithTimeStamp(1, rightPot);
-	//datalogAddValueWithTimeStamp(2, position);
+	datalogAddValueWithTimeStamp(0, leftPot);
+	//datalogAddValueWithTimeStamp(1, leftLastPot);
+	//datalogAddValueWithTimeStamp(2, liftkd);
 	//datalogAddValueWithTimeStamp(3, leftCurrent);
 
 	leftLastPot = leftPot;
@@ -2054,7 +1909,7 @@ void postStacking() {
 void autoDrivePIDCalculate (int distance) {
 	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
 
-	float integralAcitveZone = 100;
+	//float integralAcitveZone = 100;
 
 	float error;
 	float proportion;
@@ -2131,12 +1986,12 @@ void autoDrivePIDCalculate (int distance) {
 	//writeDebugStreamLine("             distance %d", distance);
 
 	//datalogAddValueWithTimeStamp(0, error);
-	//datalogAddValueWithTimeStamp(0, encAverage);
+	datalogAddValueWithTimeStamp(1, encAverage);
 	/*datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);*/
-	//datalogAddValueWithTimeStamp(1, distance);
-	//datalogAddValueWithTimeStamp(2, current);
-	//datalogAddValueWithTimeStamp(5, error);
+	//datalogAddValueWithTimeStamp(3, lastError);
+	//datalogAddValueWithTimeStamp(4, lastError);
+	//datalogAddValueWithTimeStamp(5, drivekd);
 
 	lastError = error;
 
@@ -2164,7 +2019,7 @@ void autoGyroPIDCalculate (int setAngle) {
 	float derivative;
 
 	float errorT;
-	float lastError;
+	float lastTurnError;
 
 	float current;
 
@@ -2176,7 +2031,7 @@ void autoGyroPIDCalculate (int setAngle) {
 
 	integral = errorT * turnki * 0.025;
 
-	derivative = ((turnError - lastError) * turnkd)/0.025;
+	derivative = ((turnError - lastTurnError) * turnkd)/0.025;
 
 	//Calculate integral
 	errorT += turnError;
@@ -2218,7 +2073,7 @@ void autoGyroPIDCalculate (int setAngle) {
 	/*writeDebugStreamLine("             integral %d", integral);
 	writeDebugStreamLine("             error total %d", errorT);
 	writeDebugStreamLine("             derivative %d", derivative);
-	writeDebugStreamLine("           last error %d", lastError);*/
+	writeDebugStreamLine("           last error %d", lastTurnError);*/
 	//writeDebugStreamLine("             angle current 2/ %d", current);
 
 	//datalogAddValueWithTimeStamp(4, turnError);
@@ -2230,7 +2085,7 @@ void autoGyroPIDCalculate (int setAngle) {
 	datalogAddValueWithTimeStamp(4, current);*/
 	//datalogAddValueWithTimeStamp(4, turnError);
 
-	lastError = turnError;
+	lastTurnError = turnError;
 
 	clearTimer(T1);
 }
@@ -2296,9 +2151,9 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 2500) {
+	while (time1[T2] < 3000) {
 
-		moveLiftUp(90, 400);
+		liftPIDControl(900);
 
 		//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
@@ -2307,7 +2162,7 @@ void collectMobileGoal() {
 				motor[mobileGoal] = -50;
 			}
 
-		if (time1[T2] > 250) {
+		if (time1[T2] > 500) {
 			autoDriveGyroPIDControl(0, 1850);
 		}
 	}
@@ -2316,39 +2171,35 @@ void collectMobileGoal() {
 void intakeMobileGoalAndStackFirstCone() {
 	while (time1[T2] < 4000) {
 
-		if (time1[T2] < 1300) {
-				autoDriveGyroPIDControl(0, 0);
-			}
+		if (time1[T2] < 1800) {
+			autoDriveGyroPIDControl(0, 0);
+			liftPIDControl(900);
+		}
 
 		//Move mobile goal lifter out
 		if (mobileGoalIsOut) {
 			moveMobileGoalIn();
-			} else {
+		} else {
 			motor[mobileGoal] = 40;
 		}
 
-		if (time1[T2] > 1300) {
-			moveLiftDown(60, 250);
-		}
-
-		if (time1[T2] > 1300 && time1[T2] < 1500) {
+		if (time1[T2] > 1800 && time1[T2] < 2000) {
 				motor[roller] = -100;
-				moveLiftUp(70, 350);
 			}
 
-		if (time1[T2] > 1500) {
+		if (time1[T2] > 2000 && time1[T2] < 3000) {
 				motor[roller] = 127;
 				moveArmOut();
 				autoDriveGyroPIDControl(0, 300);
 				moveLiftDown(50, 280);
 			}
 
-		if (time1[T2] > 2500) {
+		if (time1[T2] > 3000) {
 			motor[roller] = 40;
 			moveLiftUp(80, 450);
 		}
 
-		if (time1[T2] > 2800) {
+		if (time1[T2] > 3400) {
 			moveArmIn();
 		}
 
