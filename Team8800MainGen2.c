@@ -120,6 +120,7 @@ void rollerOutakeAuto(int speed, int distance);
 void collectMobileGoal();
 void intakeMobileGoalAndStackFirstCone();
 void stackSecondConeAndCollectThirdCone();
+void stackThirdConeAndCollectFourthCone();
 
 void autoStackStep(int liftPos);
 
@@ -511,7 +512,22 @@ task autonomousRoutines()
 		clearDriveEnc();
 		clearTimer(T2);
 
-		//stackSecondConeAndCollectThirdCone();
+		/*stackSecondConeAndCollectThirdCone();
+
+		waitInMilliseconds(100);
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		stackThirdConeAndCollectFourthCone();
+
+		waitInMilliseconds(100);
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		//drive backward
+		autoDriveGyroPIDControl(0, -2000);*/
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -2169,7 +2185,7 @@ void collectMobileGoal() {
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 4000) {
+	while (time1[T2] < 4800) {
 
 		if (time1[T2] < 1800) {
 			autoDriveGyroPIDControl(0, 0);
@@ -2194,12 +2210,12 @@ void intakeMobileGoalAndStackFirstCone() {
 				moveLiftDown(50, 280);
 			}
 
-		if (time1[T2] > 3000) {
+		if (time1[T2] > 4000) {
 			motor[roller] = 40;
 			moveLiftUp(80, 450);
 		}
 
-		if (time1[T2] > 3400) {
+		if (time1[T2] > 4000) {
 			moveArmIn();
 		}
 
@@ -2209,27 +2225,60 @@ void intakeMobileGoalAndStackFirstCone() {
 void stackSecondConeAndCollectThirdCone() {
 	while (time1[T2] < 2000) {
 
-		moveLiftDown(80, 350);
+		if (time1[T2] < 250) {
+			moveLiftDown(80, 350);
+		}
 
-		if (time1[T2] > 300) {
+		if (time1[T2] > 300 && time1[T2] < 800) {
 			motor[roller] = -100;
 			moveLiftUp(80, 450);
 		}
 
-		if (time1[T2] > 400) {
+		if (time1[T2] > 800 && time1[T2] < 1700) {
 			autoDriveGyroPIDControl(0, 200);
 			moveArmOut();
 			motor[roller] = 100;
+			moveLiftDown(100, 250);
 		}
 
-		if (time1[T2] > 1000) {
+		if (time1[T2] > 1700) {
 			motor[roller] = 40;
 			moveLiftUp(80, 450);
 		}
 
-		if (time1[T2] > 1250) {
+		if (time1[T2] > 1700) {
 			moveArmIn();
 		}
 
+	}
+}
+
+void stackThirdConeAndCollectFourthCone() {
+	while (time1[T2] < 2000) {
+
+		if (time1[T2] < 250) {
+			moveLiftDown(80, 350);
+		}
+
+		if (time1[T2] > 300 && time1[T2] < 800) {
+			motor[roller] = -100;
+			moveLiftUp(80, 450);
+		}
+
+		if (time1[T2] > 800 && time1[T2] < 1700) {
+			autoDriveGyroPIDControl(0, 200);
+			moveArmOut();
+			motor[roller] = 100;
+			moveLiftDown(100, 250);
+		}
+
+		if (time1[T2] > 1700) {
+			motor[roller] = 40;
+			moveLiftUp(80, 450);
+		}
+
+		if (time1[T2] > 1700) {
+			moveArmIn();
+		}
 	}
 }
