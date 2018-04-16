@@ -90,16 +90,16 @@ void moveLiftUpAuto(int speed, int distance);
 void rollerIntake(int speed);
 void rollerOutake(int speed, int time);
 
+void autoLiftPIDControl (int position);
 void liftPIDCalculate (int position);
 void liftPIDControl(int position);
 void checkLiftPos (int height);
-void autoDrivePIDCalculate (int distance);
+void autoDrivePIDCalculate (int distance, bool time);
 void autoDrivePIDControl (int distance, bool time);
 void autoGyroPIDCalculate (int setAngle);
 void autoGyroPIDControl (int setAngle);
 void autoDriveGyroPIDCalculate (int setAngle, int distance);
 void autoDriveGyroPIDControl (int setAngle, int distance);
-void autoLiftPIDControl (int position, int kp, int ki, int kd);
 
 //Auto Functions
 void moveMobileGoalOutAndDrive(int speed, int distance);
@@ -233,7 +233,6 @@ int autoStackExraHeight = 100;
 int autoStackOutTime = 450;
 int autoStackDownTime = 300;
 
-
 int armPower;
 
 int stackLevel = 1;
@@ -246,6 +245,9 @@ int turnPositionError = 1;
 int turnDrivePositionError = 2;
 int driveTurnPositionError = 200;
 int armError = 2;
+
+//Lift Auto Proportional
+float autoLiftkp = 0.45;
 
 //Lift PID values
 float liftkp = 0.63;
@@ -989,7 +991,7 @@ task autonomousRoutines()
 		clearDriveEnc();
 		clearTimer(T2);
 		while(true) {
-			liftPIDControl(1000);
+			autoLiftPIDControl(1000);
 		}
 
 		/*clearDriveEnc();
@@ -1669,6 +1671,68 @@ void moveLiftDown(int speed, int distance) {
 	}
 }
 
+void autoLiftPIDControl (int position) {
+	float leftCurrent;
+	float rightCurrent;
+
+	float leftProportion;
+	float rightProportion;
+
+	float liftLeftError;
+	float liftRightError;
+
+	float leftPot = SensorValue[liftLeftPot];
+	float rightPot = SensorValue[liftRightPot];
+
+	//Find lift error
+	liftLeftError = position - leftPot;
+	liftRightError = position - rightPot;
+
+	leftProportion = liftLeftError * autoLiftkp;
+	rightProportion = liftRightError * autoLiftkp;
+
+	leftCurrent = leftProportion;
+	rightCurrent = rightProportion;
+
+	if (leftCurrent > 127) {
+		leftCurrent = 127;
+	}
+	if (rightCurrent > 127) {
+		rightCurrent = 127;
+	}
+	if (leftCurrent < -127) {
+		leftCurrent = -127;
+	}
+	if (rightCurrent < -127) {
+		rightCurrent = -127;
+	}
+
+	motor[liftL] = leftCurrent;
+	motor[liftR] = leftCurrent;
+
+	//writeDebugStreamLine("left pot %d", leftPot);
+	//writeDebugStreamLine("             right pot %d", rightPot);
+	//writeDebugStreamLine("arm %d", armIsReallyBack);
+	//writeDebugStreamLine("  left integral %d", sharedIntegral);
+	//writeDebugStreamLine("                          right integral %d", rightIntegral);
+	//writeDebugStreamLine("position %d", position);
+	//writeDebugStreamLine("          left error %d", liftLeftError);
+	//writeDebugStreamLine("                  right error %d", liftRightError);
+	//writeDebugStreamLine("                     left curent %d", leftCurrent);
+	//writeDebugStreamLine("                                    right curent %d", rightCurrent);
+	//writeDebugStreamLine("                               Change in position %d", (leftPot - leftLastPot));
+	//writeDebugStreamLine("  liftLeftAtPosition %d", liftLeftAtPosition);
+	//writeDebugStreamLine("  curent %d", leftCurrent);
+	//writeDebugStreamLine("  derivative %f", leftDerivative);
+	//writeDebugStreamLine("  integral %f", sharedIntegral);
+	//writeDebugStreamLine("  proportion %f", leftProportion);
+
+	datalogAddValueWithTimeStamp(0, time1(T4));
+	//datalogAddValueWithTimeStamp(1, leftLastPot);
+	//datalogAddValueWithTimeStamp(2, liftkd);
+	//datalogAddValueWithTimeStamp(3, leftCurrent);
+}
+
 void liftPIDCalculate (int position) {
 	float leftCurrent;
 	float rightCurrent;
@@ -1757,7 +1821,7 @@ void liftPIDCalculate (int position) {
 	//writeDebugStreamLine("  integral %f", sharedIntegral);
 	//writeDebugStreamLine("  proportion %f", leftProportion);
 
-	datalogAddValueWithTimeStamp(0, leftPot);
+	datalogAddValueWithTimeStamp(0, time1(T4));
 	//datalogAddValueWithTimeStamp(1, leftLastPot);
 	//datalogAddValueWithTimeStamp(2, liftkd);
 	//datalogAddValueWithTimeStamp(3, leftCurrent);
@@ -1906,7 +1970,7 @@ void postStacking() {
 	outakeFinished = false;
 }
 
-void autoDrivePIDCalculate (int distance) {
+void autoDrivePIDCalculate (int distance, bool time) {
 	float encAverage = (SensorValue[leftDriveEnc]+SensorValue[rightDriveEnc])/2;
 
 	//float integralAcitveZone = 100;
@@ -1996,16 +2060,18 @@ void autoDrivePIDCalculate (int distance) {
 	lastError = error;
 
 	//Make sure the loop happens consistantly
-	clearTimer(T1);
+	if (time) {
+		clearTimer(T1);
+	}
 }
 
 void autoDrivePIDControl (int distance, bool time) {
 	if (time) {
 		if (time1[T1] > 25) {
-			autoDrivePIDCalculate(distance);
+			autoDrivePIDCalculate(distance, time);
 		}
 	} else {
-		autoDrivePIDCalculate(distance);
+		autoDrivePIDCalculate(distance, time);
 	}
 }
 
@@ -2136,9 +2202,9 @@ void autoDriveGyroPIDCalculate (int setAngle, int distance) {
 	writeDebugStreamLine("Drive current %d", driveCurrent);
 	writeDebugStreamLine("             overall  current left %d", overallCurrentLeft);
 	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
-	//writeDebugStreamLine("             gyro %d", SensorValue[driveGyro]);
+	//writeDebugStreamLine("             timer %d", SensorValue[driveGyro]);
 
-	//datalogAddValueWithTimeStamp(3, setAngle);
+	datalogAddValueWithTimeStamp(1, time1[T1]);
 	//datalogAddValueWithTimeStamp(4, angle);
 	//datalogAddValueWithTimeStamp(5, gyroCurrent);
 
@@ -2153,7 +2219,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 void collectMobileGoal() {
 	while (time1[T2] < 3000) {
 
-		liftPIDControl(900);
+		autoLiftPIDControl(900);
 
 		//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
