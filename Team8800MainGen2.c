@@ -121,6 +121,8 @@ void collectMobileGoal();
 void intakeMobileGoalAndStackFirstCone();
 void stackSecondConeAndCollectThirdCone();
 void stackThirdConeAndCollectFourthCone();
+void autoDriveBackward();
+void autoAlignWithZones();
 
 void autoStackStep(int liftPos);
 
@@ -514,7 +516,7 @@ task autonomousRoutines()
 		clearDriveEnc();
 		clearTimer(T2);
 
-		/*stackSecondConeAndCollectThirdCone();
+		stackSecondConeAndCollectThirdCone();
 
 		waitInMilliseconds(100);
 
@@ -529,7 +531,12 @@ task autonomousRoutines()
 		clearTimer(T2);
 
 		//drive backward
-		autoDriveGyroPIDControl(0, -2000);*/
+		autoDriveBackward();
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		autoAlignWithZones();
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -2233,9 +2240,9 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 3000) {
+	while (time1[T2] < 2300) {
 
-		autoLiftPIDControl(900);
+		autoLiftPIDControl(600);
 
 		//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
@@ -2251,11 +2258,11 @@ void collectMobileGoal() {
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 4800) {
+	while (time1[T2] < 3800) {
 
 		if (time1[T2] < 1800) {
 			autoDriveGyroPIDControl(0, 0);
-			liftPIDControl(900);
+			autoLiftPIDControl(600);
 		}
 
 		//Move mobile goal lifter out
@@ -2269,82 +2276,97 @@ void intakeMobileGoalAndStackFirstCone() {
 				motor[roller] = -100;
 			}
 
-		if (time1[T2] > 2000 && time1[T2] < 3000) {
+		if (time1[T2] > 2000 && time1[T2] < 2800) {
 				motor[roller] = 127;
 				moveArmOut();
-				autoDriveGyroPIDControl(0, 300);
-				moveLiftDown(50, 280);
+				autoLiftPIDControl(320);
 			}
 
-		if (time1[T2] > 4000) {
-			motor[roller] = 40;
-			moveLiftUp(80, 450);
-		}
+			if (time1[T2] > 2000) {
+				autoDriveGyroPIDControl(0, 200);
+			}
 
-		if (time1[T2] > 4000) {
+		if (time1[T2] > 2800) {
+			motor[roller] = 40;
+			autoLiftPIDControl(600);
 			moveArmIn();
 		}
-
 	}
 }
 
 void stackSecondConeAndCollectThirdCone() {
-	while (time1[T2] < 2000) {
+	while (time1[T2] < 2500) {
 
-		if (time1[T2] < 250) {
-			moveLiftDown(80, 350);
-		}
+		if (time1[T2] > 0 && time1[T2] < 500) {
+				motor[roller] = -100;
+				autoLiftPIDControl(750);
+			}
 
-		if (time1[T2] > 300 && time1[T2] < 800) {
-			motor[roller] = -100;
-			moveLiftUp(80, 450);
-		}
+		if (time1[T2] > 500 && time1[T2] < 1600) {
+				motor[roller] = 127;
+				moveArmOut();
+			}
 
-		if (time1[T2] > 800 && time1[T2] < 1700) {
-			autoDriveGyroPIDControl(0, 200);
-			moveArmOut();
-			motor[roller] = 100;
-			moveLiftDown(100, 250);
-		}
+		if (time1[T2] > 800 && time1[T2] < 1600) {
+				autoLiftPIDControl(320);
+			}
 
-		if (time1[T2] > 1700) {
+			if (time1[T2] > 500) {
+				autoDriveGyroPIDControl(0, 130);
+			}
+
+		if (time1[T2] > 1600) {
 			motor[roller] = 40;
-			moveLiftUp(80, 450);
-		}
-
-		if (time1[T2] > 1700) {
+			autoLiftPIDControl(620);
 			moveArmIn();
 		}
-
 	}
 }
 
 void stackThirdConeAndCollectFourthCone() {
-	while (time1[T2] < 2000) {
+	while (time1[T2] < 3200) {
 
-		if (time1[T2] < 250) {
-			moveLiftDown(80, 350);
+		if (time1[T2] > 200 && time1[T2] < 900) {
+				motor[roller] = -100;
+				autoLiftPIDControl(1000);
+			}
+
+		if (time1[T2] > 900 && time1[T2] < 2000) {
+				motor[roller] = 127;
+				moveArmOut();
+			}
+
+		if (time1[T2] > 1200 && time1[T2] < 2000) {
+			autoLiftPIDControl(320);
 		}
 
-		if (time1[T2] > 300 && time1[T2] < 800) {
-			motor[roller] = -100;
-			moveLiftUp(80, 450);
-		}
+			if (time1[T2] > 900) {
+				autoDriveGyroPIDControl(0, 50);
+			}
 
-		if (time1[T2] > 800 && time1[T2] < 1700) {
-			autoDriveGyroPIDControl(0, 200);
-			moveArmOut();
-			motor[roller] = 100;
-			moveLiftDown(100, 250);
-		}
-
-		if (time1[T2] > 1700) {
+		if (time1[T2] > 2000) {
 			motor[roller] = 40;
-			moveLiftUp(80, 450);
+			autoLiftPIDControl(800);
 		}
 
-		if (time1[T2] > 1700) {
+		if (time1[T2] > 2200) {
 			moveArmIn();
+			autoLiftPIDControl(800);
 		}
+	}
+}
+
+void autoDriveBackward() {
+	while (time1[T2] < 2500) {
+		autoLiftPIDControl(800);
+		autoDriveGyroPIDControl(0, -2700);
+	}
+}
+
+void autoAlignWithZones() {
+	while (time1[T2] < 3000) {
+
+		autoGyroPIDControl(-600);
+
 	}
 }
