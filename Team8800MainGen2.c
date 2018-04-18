@@ -123,6 +123,7 @@ void stackSecondConeAndCollectThirdCone();
 void stackThirdConeAndCollectFourthCone();
 void autoDriveBackward();
 void autoAlignWithZones();
+void scoreMobileGoalInZones();
 
 void autoStackStep(int liftPos);
 
@@ -272,8 +273,8 @@ float drivekd = 0.06;
 
 //Turn PID values
 float turnkp = 0.6;
-float turnki = 0.000003;
-float turnkd = 0.1;
+float turnki = 0.000004;
+float turnkd = 0.06;
 
 //Turn Drive PID values
 float turnDrivekp;
@@ -316,7 +317,7 @@ task autonomousRoutines()
 		//////////////////////////////////////////////////////////////Mobile Goal 5////////////////////////
 
 		while (true) {
-			autoGyroPIDControl(1000);
+			drive(127, 127);
 		}
 
 		if (allianceColor == BLUE_ALLIANCE) {
@@ -377,6 +378,11 @@ task autonomousRoutines()
 				clearTimer(T2);
 
 				autoAlignWithZones();
+
+				clearDriveEnc();
+				clearTimer(T2);
+
+				scoreMobileGoalInZones();
 
 
 		if (allianceColor == BLUE_ALLIANCE) {
@@ -1700,7 +1706,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 2900) {
+	while (time1[T2] < 2650) {
 
 		autoLiftPIDControl(600);
 
@@ -1718,7 +1724,7 @@ void collectMobileGoal() {
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 4000) {
+	while (time1[T2] < 3800) {
 
 		if (time1[T2] < 1800) {
 			autoDriveGyroPIDControl(0, 0);
@@ -1736,124 +1742,168 @@ void intakeMobileGoalAndStackFirstCone() {
 			motor[roller] = -100;
 		}
 
-		if (time1[T2] > 2300 && time1[T2] < 3100) {
+		if (time1[T2] > 2300 && time1[T2] < 3300) {
 			motor[roller] = 127;
 			moveArmOut();
-			autoLiftPIDControl(320);
+			autoLiftPIDControl(300);
 		}
 
 		if (time1[T2] > 2000) {
-			autoDriveGyroPIDControl(0, 550);
+			autoDriveGyroPIDControl(0, 480);
 		}
 
-		if (time1[T2] > 3100) {
-			motor[roller] = 40;
-			autoLiftPIDControl(600);
+		if (time1[T2] > 3300) {
 			moveArmIn();
+		}
+
+		if (time1[T2] > 3400) {
+			motor[roller] = 40;
+			autoLiftPIDControl(580);
 		}
 	}
 }
 
 void stackSecondConeAndCollectThirdCone() {
-	while (time1[T2] < 2500) {
+	while (time1[T2] < 2300) {
 
-		if (time1[T2] > 150 && time1[T2] < 500) {
+		if (time1[T2] > 150 && time1[T2] < 400) {
 			motor[roller] = -100;
-			autoLiftPIDControl(750);
+			autoLiftPIDControl(680);
 		}
 
-		if (time1[T2] > 500 && time1[T2] < 1600) {
+		if (time1[T2] > 400 && time1[T2] < 1600) {
+			autoLiftPIDControl(680);
 			motor[roller] = 127;
 			moveArmOut();
 		}
 
-		if (time1[T2] > 800 && time1[T2] < 1600) {
-			autoLiftPIDControl(320);
+		if (time1[T2] > 550 && time1[T2] < 1600) {
+			autoLiftPIDControl(300);
 		}
 
-		if (time1[T2] > 500) {
+		if (time1[T2] > 400) {
 			autoDriveGyroPIDControl(0, 475);
 		}
 
 		if (time1[T2] > 1600) {
+			moveArmIn();
+			autoLiftPIDControl(690);
+		}
+
+		if (time1[T2] > 1800) {
 			motor[roller] = 40;
-			autoLiftPIDControl(700);
+			autoLiftPIDControl(690);
 			moveArmIn();
 		}
 	}
 }
 
 void stackThirdConeAndCollectFourthCone() {
-	while (time1[T2] < 3200) {
+	while (time1[T2] < 2900) {
 
-		if (time1[T2] > 200 && time1[T2] < 600) {
+		if (time1[T2] < 400) {
 			motor[roller] = -100;
-			autoLiftPIDControl(700);
+			autoLiftPIDControl(690);
 		}
 
-		if (time1[T2] > 600 && time1[T2] < 1700) {
+		if (time1[T2] > 400 && time1[T2] < 1900) {
+			autoLiftPIDControl(760);
 			motor[roller] = 127;
 			moveArmOut();
 		}
 
-		if (time1[T2] > 900 && time1[T2] < 1700) {
-			autoLiftPIDControl(320);
+		if (time1[T2] > 490 && time1[T2] < 1900) {
+			autoLiftPIDControl(300);
 		}
 
-		if (time1[T2] > 800) {
-			autoDriveGyroPIDControl(0, 200);
+		if (time1[T2] > 400) {
+			autoDriveGyroPIDControl(0, 220);
 		}
 
-		if (time1[T2] > 1700) {
+		if (time1[T2] > 1900) {
+			moveArmIn();
+			autoLiftPIDControl(740);
+		}
+
+		if (time1[T2] > 2000) {
 			motor[roller] = 40;
 			moveArmIn();
-			autoLiftPIDControl(700);
+			autoLiftPIDControl(740);
 		}
 	}
 }
 
 
 void autoAlignWithZones() {
-	while (time1[T2] < 9000) {
+	while (time1[T2] < 5900) {
 		//autoLiftPIDControl(800);
-		motor[liftL] = 15;
-		motor[liftR] = 15;
+		motor[liftL] = -15;
+		motor[liftR] = -15;
 
-		if (time1[T2] < 3500) {
-			if (AUTONOMOUS_MODE_MOBILE_GOAL_20 == true) {
-					autoDriveGyroPIDControl(0, -3200);
-			} else if (AUTONOMOUS_MODE_MOBILE_GOAL_10 == true) {
+		if (time1[T2] < 2700) {
+			if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_20) {
+					//autoDriveGyroPIDControl(0, -3200);
 					autoDriveGyroPIDControl(0, -2700);
-			} else if (AUTONOMOUS_MODE_MOBILE_GOAL_5 == true) {
+			} else if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
+					autoDriveGyroPIDControl(0, -2700);
+			} else if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_5) {
 					autoDriveGyroPIDControl(0, -2600);
 			}
 	}
 
 		if (allianceSide == RIGHT) {
-			if (time1[T2] > 3500 && time1[T2] < 4700) {
+			if (time1[T2] > 2700 && time1[T2] < 3400) {
 				autoGyroPIDControl(-550);
 				clearDriveEnc();
 			}
 
-			if (time1[T2] > 4700 && time1[T2] < 6000) {
-				autoDriveGyroPIDControl(-550, -1200);
+			if (time1[T2] > 3400 && time1[T2] < 4700) {
+				autoDriveGyroPIDControl(-550, -960);
 			}
 
-			if (time1[T2] > 6000) {
-				autoGyroPIDControl(-1600);
+			if (time1[T2] > 4700) {
+				autoGyroPIDControl(-1720);
 			}
 		} else if (allianceSide == LEFT) {
-			if (time1[T2] > 2500 && time1[T2] < 3700) {
-				autoGyroPIDControl(600);
+			if (time1[T2] > 2700 && time1[T2] < 3400) {
+				autoGyroPIDControl(550);
 			}
 
-			if (time1[T2] > 3700 && time1[T2] < 5000) {
-				autoDriveGyroPIDControl(600, -700);
+			if (time1[T2] > 3400 && time1[T2] < 4400) {
+				autoDriveGyroPIDControl(550, 960);
 			}
 
-			if (time1[T2] > 5000) {
-				autoGyroPIDControl(920);
+			if (time1[T2] > 4400) {
+				autoGyroPIDControl(1740);
 			}
+		}
+	}
+}
+
+void scoreMobileGoalInZones() {
+	while (time1[T2] < 2801) {
+
+		if (time1[T2] > 580) {
+			motor[roller] = -127;
+			autoLiftPIDControl(1000);
+		}
+
+		if (time1[T2] < 2300) {
+			drive(127, 127);
+		}
+
+		if (time1[T2] > 600) {
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+			} else {
+				motor[mobileGoal] = -50;
+			}
+		}
+
+		if (time1[T2] > 2300 && time1[T2] < 2800) {
+			drive(-100, -100);
+		} else {
+			drive(0, 0);
 		}
 	}
 }
