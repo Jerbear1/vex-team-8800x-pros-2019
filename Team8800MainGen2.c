@@ -1707,7 +1707,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 3050) {
+	while (time1[T2] < 2500) {
 
 		autoLiftPIDControl(600);
 
@@ -1718,16 +1718,16 @@ void collectMobileGoal() {
 			motor[mobileGoal] = -50;
 		}
 
-		if (time1[T2] > 650) {
+		if (time1[T2] > 600) {
 			autoDriveGyroPIDControl(0, 1850);
 		}
 	}
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 4800) {
+	while (time1[T2] < 3500) {
 
-		if (time1[T2] < 2100) {
+		if (time1[T2] < 1600) {
 			autoDriveGyroPIDControl(0, 0);
 			autoLiftPIDControl(600);
 		}
@@ -1739,25 +1739,27 @@ void intakeMobileGoalAndStackFirstCone() {
 			motor[mobileGoal] = 40;
 		}
 
-		if (time1[T2] > 2100 && time1[T2] < 2500) {
-			motor[roller] = -100;
+		if (time1[T2] > 1600 && time1[T2] < 2000) {
+			if (!mobileGoalIsOut) {
+			 motor[roller] = -100;
+			}
 		}
 
-		if (time1[T2] > 2500 && time1[T2] < 4000) {
+		if (time1[T2] > 2000 && time1[T2] < 3000) {
 			motor[roller] = 127;
 			moveArmOut();
 			autoLiftPIDControl(300);
 		}
 
-		if (time1[T2] > 2300) {
-			autoDriveGyroPIDControl(0, 400);
+		if (time1[T2] > 2000) {
+			autoDriveGyroPIDControl(0, 440);
 		}
 
-		if (time1[T2] > 4100) {
+		if (time1[T2] > 3000) {
 			moveArmIn();
 		}
 
-		if (time1[T2] > 4100) {
+		if (time1[T2] > 3000) {
 			motor[roller] = 40;
 			autoLiftPIDControl(580);
 		}
@@ -1765,32 +1767,32 @@ void intakeMobileGoalAndStackFirstCone() {
 }
 
 void stackSecondConeAndCollectThirdCone() {
-	while (time1[T2] < 4800) {
+	while (time1[T2] < 2500) {
 
-		if (time1[T2] > 150 && time1[T2] < 1000) {
+		if (time1[T2] > 150 && time1[T2] < 800) {
 			motor[roller] = -100;
 			autoLiftPIDControl(780);
 		}
 
-		if (time1[T2] > 1000 && time1[T2] < 3600) {
+		if (time1[T2] > 800 && time1[T2] < 1800) {
 			motor[roller] = 127;
 			moveArmOut();
 		}
 
-		if (time1[T2] > 1260 && time1[T2] < 3600) {
+		if (time1[T2] > 1060 && time1[T2] < 1800) {
 			autoLiftPIDControl(280);
 		}
 
-		if (time1[T2] > 1000) {
+		if (time1[T2] > 800) {
 			autoDriveGyroPIDControl(0, 430);
 		}
 
-		if (time1[T2] > 3600) {
+		if (time1[T2] > 1800) {
 			moveArmIn();
 			autoLiftPIDControl(690);
 		}
 
-		if (time1[T2] > 3600) {
+		if (time1[T2] > 1800) {
 			motor[roller] = 40;
 			autoLiftPIDControl(690);
 			moveArmIn();
@@ -1834,12 +1836,13 @@ void stackThirdConeAndCollectFourthCone() {
 
 
 void autoAlignWithZones() {
-	while (time1[T2] < 5900) {
+	while (time1[T2] < 5000) {
 		//autoLiftPIDControl(800);
 		motor[liftL] = -15;
 		motor[liftR] = -15;
 
-		if (time1[T2] < 2700) {
+		if (time1[T2] < 2300) {
+			moveArmIn();
 			if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_20 && autonomousConeNumber == CONE_NUMBER_4) {
 					//autoDriveGyroPIDControl(0, -3200);
 					autoDriveGyroPIDControl(0, -2700);
@@ -1853,28 +1856,28 @@ void autoAlignWithZones() {
 	}
 
 		if (allianceSide == RIGHT) {
-			if (time1[T2] > 2700 && time1[T2] < 3400) {
+			if (time1[T2] > 2300 && time1[T2] < 3000) {
 				autoGyroPIDControl(-550);
 				clearDriveEnc();
 			}
 
-			if (time1[T2] > 3400 && time1[T2] < 4700) {
-				autoDriveGyroPIDControl(-550, -850);
+			if (time1[T2] > 3000 && time1[T2] < 4100) {
+				autoDriveGyroPIDControl(-550, -855);
 			}
 
-			if (time1[T2] > 4700) {
+			if (time1[T2] > 4100) {
 				autoGyroPIDControl(-1580);
 			}
 		} else if (allianceSide == LEFT) {
-			if (time1[T2] > 2700 && time1[T2] < 3400) {
+			if (time1[T2] > 2300 && time1[T2] < 3000) {
 				autoGyroPIDControl(550);
 			}
 
-			if (time1[T2] > 3400 && time1[T2] < 4400) {
-				autoDriveGyroPIDControl(550, -850);
+			if (time1[T2] > 3000 && time1[T2] < 4100) {
+				autoDriveGyroPIDControl(550, -855);
 			}
 
-			if (time1[T2] > 4400) {
+			if (time1[T2] > 4100) {
 				autoGyroPIDControl(1580);
 			}
 		}
@@ -1882,18 +1885,18 @@ void autoAlignWithZones() {
 }
 
 void scoreMobileGoalInZones() {
-	while (time1[T2] < 2801) {
+	while (time1[T2] < 2601) {
 
-		if (time1[T2] > 880) {
+		if (time1[T2] > 620) {
 			motor[roller] = -127;
 			autoLiftPIDControl(900);
 		}
 
-		if (time1[T2] < 2300) {
+		if (time1[T2] < 2000) {
 			drive(127, 127);
 		}
 
-		if (time1[T2] > 880) {
+		if (time1[T2] > 620) {
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
 			} else {
@@ -1901,7 +1904,7 @@ void scoreMobileGoalInZones() {
 			}
 		}
 
-		if (time1[T2] > 2300 && time1[T2] < 2800) {
+		if (time1[T2] > 2000 && time1[T2] < 2600) {
 			drive(-100, -100);
 		} else {
 			drive(0, 0);
