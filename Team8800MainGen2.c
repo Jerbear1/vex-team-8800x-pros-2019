@@ -272,9 +272,9 @@ float driveki = 0.0036;
 float drivekd = 0.06;
 
 //Turn PID values
-float turnkp = 0.6;
+float turnkp = 0.7;
 float turnki = 0.000004;
-float turnkd = 0.06;
+float turnkd = 0.04;
 
 //Turn Drive PID values
 float turnDrivekp;
@@ -317,7 +317,8 @@ task autonomousRoutines()
 		//////////////////////////////////////////////////////////////Mobile Goal 5////////////////////////
 
 		while (true) {
-			drive(127, 127);
+			autoGyroPIDControl(800);
+			writeDebugStreamLine(" desired point %d", SensorValue[driveGyro]);
 		}
 
 		if (allianceColor == BLUE_ALLIANCE) {
@@ -1706,7 +1707,7 @@ void autoDriveGyroPIDControl (int setAngle, int distance) {
 	}
 }
 void collectMobileGoal() {
-	while (time1[T2] < 2650) {
+	while (time1[T2] < 3050) {
 
 		autoLiftPIDControl(600);
 
@@ -1724,9 +1725,9 @@ void collectMobileGoal() {
 }
 
 void intakeMobileGoalAndStackFirstCone() {
-	while (time1[T2] < 3800) {
+	while (time1[T2] < 4800) {
 
-		if (time1[T2] < 1800) {
+		if (time1[T2] < 2100) {
 			autoDriveGyroPIDControl(0, 0);
 			autoLiftPIDControl(600);
 		}
@@ -1738,25 +1739,25 @@ void intakeMobileGoalAndStackFirstCone() {
 			motor[mobileGoal] = 40;
 		}
 
-		if (time1[T2] > 1800 && time1[T2] < 2000) {
+		if (time1[T2] > 2100 && time1[T2] < 2500) {
 			motor[roller] = -100;
 		}
 
-		if (time1[T2] > 2300 && time1[T2] < 3300) {
+		if (time1[T2] > 2500 && time1[T2] < 4000) {
 			motor[roller] = 127;
 			moveArmOut();
 			autoLiftPIDControl(300);
 		}
 
-		if (time1[T2] > 2000) {
-			autoDriveGyroPIDControl(0, 480);
+		if (time1[T2] > 2300) {
+			autoDriveGyroPIDControl(0, 400);
 		}
 
-		if (time1[T2] > 3300) {
+		if (time1[T2] > 4100) {
 			moveArmIn();
 		}
 
-		if (time1[T2] > 3400) {
+		if (time1[T2] > 4100) {
 			motor[roller] = 40;
 			autoLiftPIDControl(580);
 		}
@@ -1764,33 +1765,32 @@ void intakeMobileGoalAndStackFirstCone() {
 }
 
 void stackSecondConeAndCollectThirdCone() {
-	while (time1[T2] < 2300) {
+	while (time1[T2] < 4800) {
 
-		if (time1[T2] > 150 && time1[T2] < 400) {
+		if (time1[T2] > 150 && time1[T2] < 1000) {
 			motor[roller] = -100;
-			autoLiftPIDControl(680);
+			autoLiftPIDControl(780);
 		}
 
-		if (time1[T2] > 400 && time1[T2] < 1600) {
-			autoLiftPIDControl(680);
+		if (time1[T2] > 1000 && time1[T2] < 3600) {
 			motor[roller] = 127;
 			moveArmOut();
 		}
 
-		if (time1[T2] > 550 && time1[T2] < 1600) {
-			autoLiftPIDControl(300);
+		if (time1[T2] > 1260 && time1[T2] < 3600) {
+			autoLiftPIDControl(280);
 		}
 
-		if (time1[T2] > 400) {
-			autoDriveGyroPIDControl(0, 475);
+		if (time1[T2] > 1000) {
+			autoDriveGyroPIDControl(0, 430);
 		}
 
-		if (time1[T2] > 1600) {
+		if (time1[T2] > 3600) {
 			moveArmIn();
 			autoLiftPIDControl(690);
 		}
 
-		if (time1[T2] > 1800) {
+		if (time1[T2] > 3600) {
 			motor[roller] = 40;
 			autoLiftPIDControl(690);
 			moveArmIn();
@@ -1799,36 +1799,35 @@ void stackSecondConeAndCollectThirdCone() {
 }
 
 void stackThirdConeAndCollectFourthCone() {
-	while (time1[T2] < 2900) {
+	while (time1[T2] < 3900) {
 
-		if (time1[T2] < 400) {
+		if (time1[T2] < 600) {
 			motor[roller] = -100;
-			autoLiftPIDControl(690);
+			autoLiftPIDControl(840);
 		}
 
-		if (time1[T2] > 400 && time1[T2] < 1900) {
-			autoLiftPIDControl(760);
+		if (time1[T2] > 600 && time1[T2] < 2600) {
 			motor[roller] = 127;
 			moveArmOut();
 		}
 
-		if (time1[T2] > 490 && time1[T2] < 1900) {
-			autoLiftPIDControl(300);
+		if (time1[T2] > 850 && time1[T2] < 2600) {
+			autoLiftPIDControl(280);
 		}
 
-		if (time1[T2] > 400) {
-			autoDriveGyroPIDControl(0, 220);
+		if (time1[T2] > 600) {
+			autoDriveGyroPIDControl(0, 300);
 		}
 
-		if (time1[T2] > 1900) {
+		if (time1[T2] > 2600) {
 			moveArmIn();
-			autoLiftPIDControl(740);
+			autoLiftPIDControl(840);
 		}
 
-		if (time1[T2] > 2000) {
+		if (time1[T2] > 2800) {
 			motor[roller] = 40;
 			moveArmIn();
-			autoLiftPIDControl(740);
+			autoLiftPIDControl(840);
 		}
 	}
 }
@@ -1841,9 +1840,11 @@ void autoAlignWithZones() {
 		motor[liftR] = -15;
 
 		if (time1[T2] < 2700) {
-			if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_20) {
+			if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_20 && autonomousConeNumber == CONE_NUMBER_4) {
 					//autoDriveGyroPIDControl(0, -3200);
 					autoDriveGyroPIDControl(0, -2700);
+			} else if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_20 && autonomousConeNumber == CONE_NUMBER_3) {
+				autoDriveGyroPIDControl(0, -2400);
 			} else if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
 					autoDriveGyroPIDControl(0, -2700);
 			} else if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_5) {
@@ -1858,11 +1859,11 @@ void autoAlignWithZones() {
 			}
 
 			if (time1[T2] > 3400 && time1[T2] < 4700) {
-				autoDriveGyroPIDControl(-550, -960);
+				autoDriveGyroPIDControl(-550, -850);
 			}
 
 			if (time1[T2] > 4700) {
-				autoGyroPIDControl(-1720);
+				autoGyroPIDControl(-1580);
 			}
 		} else if (allianceSide == LEFT) {
 			if (time1[T2] > 2700 && time1[T2] < 3400) {
@@ -1870,11 +1871,11 @@ void autoAlignWithZones() {
 			}
 
 			if (time1[T2] > 3400 && time1[T2] < 4400) {
-				autoDriveGyroPIDControl(550, 960);
+				autoDriveGyroPIDControl(550, -850);
 			}
 
 			if (time1[T2] > 4400) {
-				autoGyroPIDControl(1740);
+				autoGyroPIDControl(1580);
 			}
 		}
 	}
@@ -1883,16 +1884,16 @@ void autoAlignWithZones() {
 void scoreMobileGoalInZones() {
 	while (time1[T2] < 2801) {
 
-		if (time1[T2] > 580) {
+		if (time1[T2] > 880) {
 			motor[roller] = -127;
-			autoLiftPIDControl(1000);
+			autoLiftPIDControl(900);
 		}
 
 		if (time1[T2] < 2300) {
 			drive(127, 127);
 		}
 
-		if (time1[T2] > 600) {
+		if (time1[T2] > 880) {
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
 			} else {
