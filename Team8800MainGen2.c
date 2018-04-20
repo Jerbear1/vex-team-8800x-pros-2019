@@ -124,11 +124,14 @@ void stackThirdConeAndCollectFourthCone();
 void autoDriveBackward();
 void autoAlignWithZones();
 void scoreMobileGoalInZones();
+void autoAutoStackControl (int maxConeNum);
+void autoLoader();
 
 void autoStackStep(int liftPos);
 
 void autoStack (int level);
 void postStacking();
+void autoPostStacking();
 
 // Constants and global vars
 const byte MIN_JOYSTICK_THRESHOLD = 30;
@@ -194,6 +197,7 @@ bool stackPrev = false;
 bool justStacked = false;
 
 bool increaseStackLvl;
+bool increaseAutoStackLvl;
 
 bool armIsBack = false;
 bool armIsReallyBack;
@@ -248,6 +252,7 @@ int autoStackDownTime = 300;
 int armPower;
 
 int stackLevel = 1;
+int autoStacklvl = 4;
 int prevStackLevel = 0;
 
 int liftLeftPositionError = 65;
@@ -282,7 +287,7 @@ float turnDriveki;
 float turnDrivekd;
 
 //Drive Turn PID values
-float driveTurnkp = 0.65;
+float driveTurnkp = 0.75;
 float driveTurnki;
 float driveTurnkd;
 
@@ -316,10 +321,8 @@ task autonomousRoutines()
 	case AUTONOMOUS_MODE_MOBILE_GOAL_5:
 		//////////////////////////////////////////////////////////////Mobile Goal 5////////////////////////
 
-		while (true) {
-			autoGyroPIDControl(800);
-			writeDebugStreamLine(" desired point %d", SensorValue[driveGyro]);
-		}
+		clearTimer(T2);
+		autoLoader();
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -879,49 +882,49 @@ void selectTeamAlliance()
 		switch (scrollCountNumber) {
 		case 1:
 			scrolledAutoNumber = CONE_NUMBER_1;
-			displayLCDString(1, 0, "[1]2 3 4 5 6 7 8");
+			displayLCDString(1, 0, "[1]2 3 4 L 6 7 8");
 			wait1Msec(200);
 			break;
 
 		case 2:
 			scrolledAutoNumber = CONE_NUMBER_2;
-			displayLCDString(1, 0, " 1[2]3 4 5 6 7 8");
+			displayLCDString(1, 0, " 1[2]3 4 L 6 7 8");
 			wait1Msec(200);
 			break;
 
 		case 3:
 			scrolledAutoNumber = CONE_NUMBER_3;
-			displayLCDString(1, 0, " 1 2[3]4 5 6 7 8");
+			displayLCDString(1, 0, " 1 2[3]4 L 6 7 8");
 			wait1Msec(200);
 			break;
 
 		case 4:
 			scrolledAutoNumber = CONE_NUMBER_4;
-			displayLCDString(1, 0, " 1 2 3[4]5 6 7 8");
+			displayLCDString(1, 0, " 1 2 3[4]L 6 7 8");
 			wait1Msec(200);
 			break;
 
 		case 5:
 			scrolledAutoNumber = CONE_NUMBER_5;
-			displayLCDString(1, 0, " 1 2 3 4[5]6 7 8");
+			displayLCDString(1, 0, " 1 2 3 4[L]6 7 8");
 			wait1Msec(200);
 			break;
 
 		case 6:
 			scrolledAutoNumber = CONE_NUMBER_6;
-			displayLCDString(1, 0, " 1 2 3 4 5[6]7 8");
+			displayLCDString(1, 0, " 1 2 3 4 L[6]7 8");
 			wait1Msec(200);
 			break;
 
 		case 7:
 			scrolledAutoNumber = CONE_NUMBER_7;
-			displayLCDString(1, 0, " 1 2 3 4 5 6[7]8");
+			displayLCDString(1, 0, " 1 2 3 4 L 6[7]8");
 			wait1Msec(200);
 			break;
 
 		case 8:
 			scrolledAutoNumber = CONE_NUMBER_8;
-			displayLCDString(1, 0, " 1 2 3 4 5 6 7[8");
+			displayLCDString(1, 0, " 1 2 3 4 L 6 7[8");
 			wait1Msec(200);
 			break;
 		}
@@ -1540,12 +1543,12 @@ void autoDrivePIDCalculate (int distance, bool time) {
 	//writeDebugStreamLine("             distance %d", distance);
 
 	//datalogAddValueWithTimeStamp(0, error);
-	datalogAddValueWithTimeStamp(1, encAverage);
+	datalogAddValueWithTimeStamp(0, encAverage);
 	/*datalogAddValueWithTimeStamp(2, integral);
 	datalogAddValueWithTimeStamp(3, derivative);*/
 	//datalogAddValueWithTimeStamp(3, lastError);
-	//datalogAddValueWithTimeStamp(4, lastError);
-	//datalogAddValueWithTimeStamp(5, drivekd);
+	datalogAddValueWithTimeStamp(2, current);
+	datalogAddValueWithTimeStamp(1, distance);
 
 	lastError = error;
 
@@ -1694,9 +1697,10 @@ void autoDriveGyroPIDCalculate (int setAngle, int distance) {
 	writeDebugStreamLine("             overall  current right %d", overallCurrentRight);*/
 	//writeDebugStreamLine("             timer %d", SensorValue[driveGyro]);
 
-	datalogAddValueWithTimeStamp(1, time1[T1]);
-	//datalogAddValueWithTimeStamp(4, angle);
-	//datalogAddValueWithTimeStamp(5, gyroCurrent);
+	datalogAddValueWithTimeStamp(3, setAngle);
+	datalogAddValueWithTimeStamp(4, angle);
+	datalogAddValueWithTimeStamp(5, gyroCurrent);
+	datalogAddValueWithTimeStamp(6, (driveCurrent + gyroCurrent));
 
 	clearTimer(T1);
 }
@@ -1908,16 +1912,16 @@ void autoAlignWithZones() {
 			}
 			} else if (allianceSide == LEFT) {
 			if (time1[T2] > 2300 && time1[T2] < 3000) {
-				autoGyroPIDControl(550);
+				autoGyroPIDControl(500);
 				clearDriveEnc();
 			}
 
 			if (time1[T2] > 3000 && time1[T2] < 4100) {
-				autoDriveGyroPIDControl(550, -875);
+				autoDriveGyroPIDControl(500, -875);
 			}
 
 			if (time1[T2] > 4100) {
-				autoGyroPIDControl(1580);
+				autoGyroPIDControl(1475);
 			}
 		}
 	}
@@ -1946,5 +1950,100 @@ void scoreMobileGoalInZones() {
 			} else {
 			drive(0, 0);
 		}
+	}
+}
+
+void autoPostStacking() {
+	moveArmOut();
+	//armIsBack = true;
+	if (!armIsReallyBack) {
+		if (SensorValue[liftLeftPot] > 800 /*&& SensorValue[liftRightPot] > 500*/) {
+			clearTimer(T1);
+			motor[liftL] = -127;
+			motor[liftR] = -127;
+			//liftPIDControl(350);
+		}
+	}
+	if (SensorValue[liftLeftPot] <= 800 /*&& SensorValue[liftRightPot] <= 370*/) {
+		if (time1[T1] < 800) {
+			motor[roller] = 127;
+			motor[liftL] = -15;
+			motor[liftR] = -15;
+			writeDebugStreamLine("working");
+		}
+		if (time1[T1] > 800) {
+			motor[liftL] = 0;
+			motor[liftR] = 0;
+			increaseAutoStackLvl = true;
+			stacking = true;
+			justStacked = false;
+			increaseAutoStackLvl = false;
+			armIsReallyBack = false;
+			writeDebugStreamLine("working  2");
+		}
+	}
+	outakeFinished = false;
+}
+
+void autoAutoStackControl (int maxConeNum) {
+	if (stacking) {
+		autoStack(autoStacklvl);
+	}
+	if (justStacked) {
+		autoPostStacking();
+	}
+
+	if (increaseAutoStackLvl) {
+		autoStacklvl ++;
+	}
+}
+
+void autoLoader () {
+	while (time1[T2] < 25000) {
+		//Cone #2
+		if (time1[T2] < 800) {
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+		if (time1[T2] > 500 && time1[T2] < 1400) {
+			moveArmIn();
+			liftPIDControl(600);
+		}
+		if (time1[T2] > 1200 && time1[T2] < 1400) {
+			motor[roller] = -127;
+			liftPIDControl(600);
+		}
+
+		//Cone #3
+		if (time1[T2] > 1400 && time1[T2] < 2200) {
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+		if (time1[T2] > 2200 && time1[T2] < 3100) {
+			moveArmIn();
+			liftPIDControl(800);
+		}
+		if (time1[T2] > 3100 && time1[T2] < 3300) {
+			motor[roller] = -127;
+			liftPIDControl(800);
+		}
+
+		if (time1[T2] > 3300 && time1[T2] < 4100) {
+			stacking = true;
+			justStacked = false;
+			increaseAutoStackLvl = false;
+			armIsReallyBack = false;
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+
+		//Stack other cones
+		if (time1[T2] > 4100) {
+			autoAutoStackControl(6);
+		}
+		//autoAutoStackControl(6);
 	}
 }
