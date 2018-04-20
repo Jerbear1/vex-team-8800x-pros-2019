@@ -2098,6 +2098,7 @@ void autoLoader () {
 		if (time1[T2] > 500 && time1[T2] < 1400) {
 			moveArmIn();
 			liftPIDControl(600);
+			motor[roller] = 40;
 		}
 		if (time1[T2] > 1200 && time1[T2] < 1400) {
 			motor[roller] = -127;
@@ -2110,29 +2111,88 @@ void autoLoader () {
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 2200 && time1[T2] < 3100) {
+		if (time1[T2] > 2200 && time1[T2] < 2900) {
 			moveArmIn();
-			liftPIDControl(750);
+			liftPIDControl(675);
+			motor[roller] = 40;
 		}
-		if (time1[T2] > 3100 && time1[T2] < 3300) {
+		if (time1[T2] > 2900 && time1[T2] < 3100) {
 			motor[roller] = -127;
-			liftPIDControl(750);
+			liftPIDControl(675);
 		}
 
-		if (time1[T2] > 3300 && time1[T2] < 4100) {
-			stacking = true;
+		//Cone #4
+		if (time1[T2] > 3100 && time1[T2] < 3900) {
+			/*stacking = true;
 			justStacked = false;
 			increaseAutoStackLvl = false;
-			armIsReallyBack = false;
+			armIsReallyBack = false;*/
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
+		if (time1[T2] > 3900 && time1[T2] < 4800) {
+			moveArmIn();
+			liftPIDControl(800);
+			motor[roller] = 40;
+		}
+		if (time1[T2] > 4800 && time1[T2] < 5000) {
+			motor[roller] = -127;
+			liftPIDControl(800);
+		}
+
+		//Cone #5
+		if (time1[T2] > 5000 && time1[T2] < 5800) {
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+		if (time1[T2] > 5800 && time1[T2] < 6700) {
+			moveArmIn();
+			liftPIDControl(925);
+			motor[roller] = 40;
+		}
+		if (time1[T2] > 6700 && time1[T2] < 6900) {
+			motor[roller] = -127;
+			liftPIDControl(925);
+		}
+
+		//Cone #6
+		if (time1[T2] > 6900 && time1[T2] < 7700) {
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+		if (time1[T2] > 7700 && time1[T2] < 8600) {
+			moveArmIn();
+			liftPIDControl(1050);
+			motor[roller] = 40;
+		}
+		if (time1[T2] > 8600 && time1[T2] < 8800) {
+			motor[roller] = -127;
+			liftPIDControl(1050);
+		}
+
+		//Cone #7
+		if (time1[T2] > 8800 && time1[T2] < 9600) {
+			moveArmOut();
+			motor[roller] = 127;
+			liftPIDControl(850);
+		}
+		if (time1[T2] > 9600 && time1[T2] < 10500) {
+			moveArmIn();
+			liftPIDControl(1150);
+			motor[roller] = 40;
+		}
+		if (time1[T2] > 10500 && time1[T2] < 10700) {
+			motor[roller] = -127;
+			liftPIDControl(1150);
+		}
 
 		//Stack other cones
-		if (time1[T2] > 4100) {
+		/*if (time1[T2] > 4100) {
 			autoAutoStackControl(6);
-		}
+		}*/
 		//autoAutoStackControl(6);
 	}
 }
