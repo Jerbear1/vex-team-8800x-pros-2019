@@ -132,6 +132,7 @@ void stationaryBlock();
 void autoStackStep(int liftPos);
 
 void autoStack (int level);
+void autoAutoStack(int level);
 void postStacking();
 void autoPostStacking();
 
@@ -246,6 +247,21 @@ int h11 = 1750;
 int h12 = 1970;
 int h13 = 2020;
 int h14 = 2040;
+
+int ah1 = 480;
+int ah2 = 560;
+int ah3 = 680;
+int ah4 = 840;
+int ah5 = 1000;
+int ah6 = 1180;
+int ah7 = 1140;
+int ah8 = 1310;
+int ah9 = 1460;
+int ah10 = 1550;
+int ah11 = 1750;
+int ah12 = 1970;
+int ah13 = 2020;
+int ah14 = 2040;
 
 int autoStackExraHeight = 100;
 int autoStackOutTime = 450;
@@ -412,7 +428,7 @@ task autonomousRoutines()
 		clearDriveEnc();
 		clearTimer(T2);
 
-		//stationaryBlock();
+		stationaryBlock();
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -1966,6 +1982,66 @@ void scoreMobileGoalInZones() {
 	}
 }
 
+void autoAutoStack(int level) {
+	switch (level) {
+	case PRESET_LEVEL_ONE:
+		autoStackStep(ah1);
+		break;
+
+	case PRESET_LEVEL_TWO:
+		autoStackStep(ah2);
+		break;
+
+	case PRESET_LEVEL_THREE:
+		autoStackStep(ah3);
+		break;
+
+	case PRESET_LEVEL_FOUR:
+		autoStackStep(ah4);
+		break;
+
+	case PRESET_LEVEL_FIVE:
+		autoStackStep(ah5);
+		break;
+
+	case PRESET_LEVEL_SIX:
+		autoStackStep(ah6);
+		break;
+
+	case PRESET_LEVEL_SEVEN:
+		autoStackStep(ah7);
+		break;
+
+	case PRESET_LEVEL_EIGHT:
+		autoStackStep(ah8);
+		break;
+
+	case PRESET_LEVEL_NINE:
+		autoStackStep(ah9);
+		break;
+
+	case PRESET_LEVEL_TEN:
+		autoStackStep(h10);
+		break;
+
+	case PRESET_LEVEL_ELEVEN:
+		autoStackStep(h11);
+		break;
+
+	case PRESET_LEVEL_TWELVE:
+		autoStackStep(h12);
+		break;
+
+	case PRESET_LEVEL_THIRTEEN:
+		autoStackStep(h13);
+		break;
+
+	case PRESET_LEVEL_FOURTEEN:
+		autoStackStep(h14);
+		break;
+	}
+}
+
 void autoPostStacking() {
 	moveArmOut();
 	//armIsBack = true;
@@ -2000,7 +2076,7 @@ void autoPostStacking() {
 
 void autoAutoStackControl (int maxConeNum) {
 	if (stacking) {
-		autoStack(autoStacklvl);
+		autoAutoStack(autoStacklvl);
 	}
 	if (justStacked) {
 		autoPostStacking();
@@ -2036,11 +2112,11 @@ void autoLoader () {
 		}
 		if (time1[T2] > 2200 && time1[T2] < 3100) {
 			moveArmIn();
-			liftPIDControl(800);
+			liftPIDControl(750);
 		}
 		if (time1[T2] > 3100 && time1[T2] < 3300) {
 			motor[roller] = -127;
-			liftPIDControl(800);
+			liftPIDControl(750);
 		}
 
 		if (time1[T2] > 3300 && time1[T2] < 4100) {
@@ -2062,44 +2138,48 @@ void autoLoader () {
 }
 
 void scoreConeOnStationaryGoal() {
-	while (time1[T2] < 5000) {
-		if (time1[T2] < 2000) {
-			autoLiftPIDControl(1000);
-			autoDriveGyroPIDControl(0, 900);
+	while (time1[T2] < 3000) {
+		if (time1[T2] < 1300) {
+			autoLiftPIDControl(1200);
+			autoDriveGyroPIDControl(0, 525);
 		}
 
-		if (time1[T2] > 2000 && time1[T2] < 3000) {
+		if (time1[T2] > 1300 && time1[T2] < 1800) {
 			moveArmOut();
-			autoLiftPIDControl(1000);
+			autoLiftPIDControl(1200);
 		}
 
-		if (time1[T2] > 3000) {
+		if (time1[T2] > 1800) {
 			motor[roller] = -120;
 			moveArmIn();
 		}
 
-		if (time1[T2] > 3500) {
-			autoDriveGyroPIDControl(0, 500);
+		if (time1[T2] > 2300) {
+			autoDriveGyroPIDControl(0, 100);
 		}
 
 	}
 }
 
 void stationaryBlock() {
-	while (time1[T2] < 5000) {
-		if (time1[T2] < 900) {
+	while (time1[T2] < 3000) {
+		if (time1[T2] < 1000) {
 			if (allianceSide == RIGHT) {
-				autoGyroPIDControl(-600);
+				motor[liftL] = -80;
+				motor[liftR] = -80;
+				autoGyroPIDControl(-800);
 				clearDriveEnc();
 			} else if (allianceSide == LEFT) {
+				motor[liftL] = -80;
+				motor[liftR] = -80;
 				autoGyroPIDControl(600);
 				clearDriveEnc();
 			}
 		}
 
-		if (time1[T2] > 900) {
+		if (time1[T2] > 1000) {
 			if (allianceSide == RIGHT) {
-				autoDriveGyroPIDControl(-600, 3000);
+				autoDriveGyroPIDControl(-800, 3000);
 			} else if (allianceSide == LEFT) {
 				autoDriveGyroPIDControl(600, 3000);
 			}
