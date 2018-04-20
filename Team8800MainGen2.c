@@ -126,6 +126,8 @@ void autoAlignWithZones();
 void scoreMobileGoalInZones();
 void autoAutoStackControl (int maxConeNum);
 void autoLoader();
+void scoreConeOnStationaryGoal();
+void stationaryBlock();
 
 void autoStackStep(int liftPos);
 
@@ -400,6 +402,17 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_STATIONARY:
 		//////////////////////////////////////////////////////////Stationary/////////////////////////////////////
+		motor[roller] = 40;
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		scoreConeOnStationaryGoal();
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		//stationaryBlock();
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -2045,5 +2058,51 @@ void autoLoader () {
 			autoAutoStackControl(6);
 		}
 		//autoAutoStackControl(6);
+	}
+}
+
+void scoreConeOnStationaryGoal() {
+	while (time1[T2] < 5000) {
+		if (time1[T2] < 2000) {
+			autoLiftPIDControl(1000);
+			autoDriveGyroPIDControl(0, 900);
+		}
+
+		if (time1[T2] > 2000 && time1[T2] < 3000) {
+			moveArmOut();
+			autoLiftPIDControl(1000);
+		}
+
+		if (time1[T2] > 3000) {
+			motor[roller] = -120;
+			moveArmIn();
+		}
+
+		if (time1[T2] > 3500) {
+			autoDriveGyroPIDControl(0, 500);
+		}
+
+	}
+}
+
+void stationaryBlock() {
+	while (time1[T2] < 5000) {
+		if (time1[T2] < 900) {
+			if (allianceSide == RIGHT) {
+				autoGyroPIDControl(-600);
+				clearDriveEnc();
+			} else if (allianceSide == LEFT) {
+				autoGyroPIDControl(600);
+				clearDriveEnc();
+			}
+		}
+
+		if (time1[T2] > 900) {
+			if (allianceSide == RIGHT) {
+				autoDriveGyroPIDControl(-600, 3000);
+			} else if (allianceSide == LEFT) {
+				autoDriveGyroPIDControl(600, 3000);
+			}
+		}
 	}
 }
