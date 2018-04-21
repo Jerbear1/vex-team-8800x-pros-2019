@@ -342,6 +342,12 @@ task autonomousRoutines()
 		clearTimer(T2);
 		autoLoader();
 
+		collectMobileGoal();
+
+		clearTimer(T2);
+
+
+
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
 			} else {
@@ -1757,6 +1763,10 @@ void collectMobileGoal() {
 	}
 }
 
+void intakeMobileGoalAndStackFirstConeMoving() {
+
+}
+
 void intakeMobileGoalAndStackFirstCone() {
 	int timeReq = 3000;
 	while (time1[T2] < timeReq) {
@@ -2090,12 +2100,12 @@ void autoAutoStackControl (int maxConeNum) {
 void autoLoader () {
 	while (time1[T2] < 25000) {
 		//Cone #2
-		if (time1[T2] < 800) {
+		if (time1[T2] < 500) {
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 500 && time1[T2] < 1400) {
+		if (time1[T2] > 500 && time1[T2] < 1200) {
 			moveArmIn();
 			liftPIDControl(600);
 			motor[roller] = 40;
@@ -2106,23 +2116,23 @@ void autoLoader () {
 		}
 
 		//Cone #3
-		if (time1[T2] > 1400 && time1[T2] < 2200) {
+		if (time1[T2] > 1400 && time1[T2] < 1900) {
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 2200 && time1[T2] < 2900) {
+		if (time1[T2] > 1900 && time1[T2] < 2500) {
 			moveArmIn();
 			liftPIDControl(675);
 			motor[roller] = 40;
 		}
-		if (time1[T2] > 2900 && time1[T2] < 3100) {
+		if (time1[T2] > 2500 && time1[T2] < 2700) {
 			motor[roller] = -127;
 			liftPIDControl(675);
 		}
 
 		//Cone #4
-		if (time1[T2] > 3100 && time1[T2] < 3900) {
+		if (time1[T2] > 2700 && time1[T2] < 3200) {
 			/*stacking = true;
 			justStacked = false;
 			increaseAutoStackLvl = false;
@@ -2131,60 +2141,60 @@ void autoLoader () {
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 3900 && time1[T2] < 4800) {
+		if (time1[T2] > 3200 && time1[T2] < 3800) {
 			moveArmIn();
 			liftPIDControl(800);
 			motor[roller] = 40;
 		}
-		if (time1[T2] > 4800 && time1[T2] < 5000) {
+		if (time1[T2] > 3800 && time1[T2] < 4000) {
 			motor[roller] = -127;
 			liftPIDControl(800);
 		}
 
 		//Cone #5
-		if (time1[T2] > 5000 && time1[T2] < 5800) {
+		if (time1[T2] > 4000 && time1[T2] < 4500) {
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 5800 && time1[T2] < 6700) {
+		if (time1[T2] > 4500 && time1[T2] < 5100) {
 			moveArmIn();
 			liftPIDControl(925);
 			motor[roller] = 40;
 		}
-		if (time1[T2] > 6700 && time1[T2] < 6900) {
+		if (time1[T2] > 5100 && time1[T2] < 5300) {
 			motor[roller] = -127;
 			liftPIDControl(925);
 		}
 
 		//Cone #6
-		if (time1[T2] > 6900 && time1[T2] < 7700) {
+		if (time1[T2] > 5300 && time1[T2] < 5800) {
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 7700 && time1[T2] < 8600) {
+		if (time1[T2] > 5800 && time1[T2] < 6400) {
 			moveArmIn();
-			liftPIDControl(1050);
+			liftPIDControl(1100);
 			motor[roller] = 40;
 		}
-		if (time1[T2] > 8600 && time1[T2] < 8800) {
+		if (time1[T2] > 6400 && time1[T2] < 6600) {
 			motor[roller] = -127;
-			liftPIDControl(1050);
+			liftPIDControl(1100);
 		}
 
 		//Cone #7
-		if (time1[T2] > 8800 && time1[T2] < 9600) {
+		if (time1[T2] > 6600 && time1[T2] < 7100) {
 			moveArmOut();
 			motor[roller] = 127;
 			liftPIDControl(850);
 		}
-		if (time1[T2] > 9600 && time1[T2] < 10500) {
+		if (time1[T2] > 7100 && time1[T2] < 7700) {
 			moveArmIn();
 			liftPIDControl(1150);
 			motor[roller] = 40;
 		}
-		if (time1[T2] > 10500 && time1[T2] < 10700) {
+		if (time1[T2] > 7700 && time1[T2] < 7900) {
 			motor[roller] = -127;
 			liftPIDControl(1150);
 		}
