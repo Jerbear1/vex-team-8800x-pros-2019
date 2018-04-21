@@ -128,6 +128,7 @@ void autoAutoStackControl (int maxConeNum);
 void autoLoader();
 void scoreConeOnStationaryGoal();
 void stationaryBlock();
+void skillsFirstMobileGoal();
 
 void autoStackStep(int liftPos);
 
@@ -437,6 +438,8 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_SKILLS:
 		/////////////////////////////////////////////////////////////////////////////Skills////////////////////////////////
+
+
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -2104,5 +2107,83 @@ void stationaryBlock() {
 				autoDriveGyroPIDControl(600, 3000);
 			}
 		}
+	}
+}
+
+void skillsFirstMobileGoal() {
+	while (time1[T2] < 10000) {
+		motor[roller] = 40;
+
+		if (time1[T2] < 2000) {
+			autoLiftPIDControl(600);
+			//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+			} else {
+				motor[mobileGoal] = -50;
+			}
+		}
+
+		if (time1[T2] > 800 && time1[T2] < 2000) {
+			autoDriveGyroPIDControl(0, 1500);
+		}
+
+		if (time1[T2] > 2000) {
+			autoLiftPIDControl(600);
+
+			//Move mobile goal lifter in
+			if (mobileGoalIsOut) {
+				moveMobileGoalIn();
+				} else {
+				motor[mobileGoal] = 40;
+			}
+		}
+
+		if (time1[T2] > 2500 && time1[T2] < 3500) {
+			autoGyroPIDControl(1860);
+			clearDriveEnc();
+		}
+
+		if (time1[T2] > 3500 && time1[T2] < 5000) {
+			autoDriveGyroPIDControl(940, 1500);
+		}
+
+		if (time1[T2] > 5000 && time1[T2] < 6500) {
+			autoGyroPIDControl(2700);
+			clearDriveEnc();
+		}
+
+		if (time1[T2] > 6500 && time1[T2] < 7000) {
+			autoDriveGyroPIDControl(2700, 700);
+		}
+
+		if (time1[T2] > 7000 && time1[T2] < 8500) {
+			autoGyroPIDControl(1860);
+			clearDriveEnc();
+		}
+
+		if (time1[T2] > 8500) {
+			autoLiftPIDControl(700);
+			motor[roller] = -127
+			autoDriveGyroPIDControl(1860, 900);
+			//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+			} else {
+				motor[mobileGoal] = -50;
+			}
+		}
+	}
+}
+
+void skillsSecondMobileGoal() {
+	while (time1[T2] < 5000) {
+
+		if (time1[T2] < 1000 {
+			autoDriveGyroPIDControl(0, -1000);
+		}
+
+
+
 	}
 }
