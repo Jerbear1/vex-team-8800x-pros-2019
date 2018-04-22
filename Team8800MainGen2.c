@@ -2375,7 +2375,6 @@ void stationaryBlock() {
 	}
 }
 
-<<<<<<< HEAD
 void skillsFirstMobileGoal() {
 	while (time1[T2] < 14000) {
 		if (time1[T2] < 11000) {
@@ -2454,10 +2453,10 @@ void skillsSecondMobileGoal() {
 		if (time1[T2] < 1000) {
 			autoDriveGyroPIDControl(0, -1000);
 		}
+	}
+}
 
 
-
-=======
 void loaderPlacement() {
 	int timeReq = 4400;
 	while (time1[T2] < timeReq) {
@@ -2583,6 +2582,5 @@ void loaderPlacement() {
 				}
 			}
 		}
->>>>>>> ab5ca1354d1862a8cf99442e2037d8ac5b9e8742
 	}
 }
