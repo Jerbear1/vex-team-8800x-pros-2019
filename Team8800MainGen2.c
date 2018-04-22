@@ -1852,10 +1852,10 @@ void intakeMobileGoalAlignLoader() {
 
 		if (time1[T2] > 2300 && time1[T2] < 2800) {
 			if (allianceSide == RIGHT) {
-				autoDriveGyroPIDControl(-900, -300);
+				autoDriveGyroPIDControl(-900, -340);
 			}
 			if (allianceSide == LEFT) {
-				autoDriveGyroPIDControl(900, -300);
+				autoDriveGyroPIDControl(900, -340);
 			}
 			//autoLiftPIDControl(600);
 			if (time1[T2] > 2600) {
@@ -2273,12 +2273,12 @@ void autoLoader () {
 		}
 		if (time1[T2] > 4500 && time1[T2] < 5100) {
 			moveArmIn();
-			liftPIDControl(925);
+			liftPIDControl(975);
 			motor[roller] = 40;
 		}
 		if (time1[T2] > 5100 && time1[T2] < 5300) {
 			motor[roller] = -127;
-			liftPIDControl(925);
+			liftPIDControl(975);
 		}
 
 		//Cone #6
@@ -2467,7 +2467,7 @@ void loaderPlacement() {
 					autoGyroPIDControl(-1600);
 				}
 				if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-					autoGyroPIDControl(-1900);
+					autoGyroPIDControl(-1800);
 				}
 			}
 			if (allianceSide == LEFT) {
@@ -2499,13 +2499,13 @@ void loaderPlacement() {
 		}
 
 		if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-			if (time1[T2] > 200 && time1[T2] < 500) {
+			if (time1[T2] > 200 && time1[T2] < 550) {
 				moveArmIn();
 				motor[liftL] = 127;
 				motor[liftR] = 127;
 				motor[roller] = 40;
 			}
-			if (time1[T2] > 500) {
+			if (time1[T2] > 550) {
 				motor[liftL] = 0;
 				motor[liftR] = 0;
 			}
@@ -2516,7 +2516,7 @@ void loaderPlacement() {
 		}
 
 		if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_5) {
-			if (time1[T2] > 900 && time1[T2] < 1900) {
+			if (time1[T2] > 800 && time1[T2] < 1800) {
 				if (!mobileGoalIsOut) {
 					moveMobileGoalOut();
 					} else {
@@ -2544,8 +2544,8 @@ void loaderPlacement() {
 		}
 
 		if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-			timeReq = 4900;
-			if (time1[T2] > 1400 && time1[T2] < 2300) {
+			timeReq = 3700;
+			if (time1[T2] > 1000 && time1[T2] < 2100) {
 				if (!mobileGoalIsOut) {
 					moveMobileGoalOut();
 					} else {
@@ -2553,16 +2553,16 @@ void loaderPlacement() {
 				}
 			}
 
-			if (time1[T2] > 900 && time1[T2] < 2300 ) {
+			if (time1[T2] > 900 && time1[T2] < 2100 ) {
 				if (allianceSide == RIGHT) {
-					autoDriveGyroPIDControl(-1900, 1200);
+					autoDriveGyroPIDControl(-1800, 1200);
 				}
 				if (allianceSide == LEFT) {
 					autoDriveGyroPIDControl(1700, 1200);
 				}
 			}
 
-			if (time1[T2] > 2300 && time1[T2] < 2900 ) {
+			if (time1[T2] > 2100 && time1[T2] < 2700 ) {
 				if (allianceSide == RIGHT) {
 					drive(25, 127);
 					clearDriveEnc();
@@ -2573,12 +2573,12 @@ void loaderPlacement() {
 				}
 			}
 
-			if (time1[T2] > 2900 && time1[T2] < 4900) {
+			if (time1[T2] > 2700 && time1[T2] < 3700) {
 				if (allianceSide == RIGHT) {
-					autoDriveGyroPIDControl(-1900, -700);
+					drive(-127, -127);
 				}
 				if (allianceSide == LEFT) {
-					autoDriveGyroPIDControl(1700, -700);
+					drive(-127, -127);
 				}
 			}
 		}
