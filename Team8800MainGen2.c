@@ -1852,10 +1852,10 @@ void intakeMobileGoalAlignLoader() {
 
 		if (time1[T2] > 2300 && time1[T2] < 2800) {
 			if (allianceSide == RIGHT) {
-				autoDriveGyroPIDControl(-900, -240);
+				autoDriveGyroPIDControl(-900, -300);
 			}
 			if (allianceSide == LEFT) {
-				autoDriveGyroPIDControl(900, -240);
+				autoDriveGyroPIDControl(900, -300);
 			}
 			//autoLiftPIDControl(600);
 			if (time1[T2] > 2600) {
@@ -2467,7 +2467,7 @@ void loaderPlacement() {
 					autoGyroPIDControl(-1600);
 				}
 				if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-					autoGyroPIDControl(-1700);
+					autoGyroPIDControl(-1900);
 				}
 			}
 			if (allianceSide == LEFT) {
@@ -2499,13 +2499,13 @@ void loaderPlacement() {
 		}
 
 		if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-			if (time1[T2] > 200 && time1[T2] < 600) {
+			if (time1[T2] > 200 && time1[T2] < 500) {
 				moveArmIn();
 				motor[liftL] = 127;
 				motor[liftR] = 127;
 				motor[roller] = 40;
 			}
-			if (time1[T2] > 650) {
+			if (time1[T2] > 500) {
 				motor[liftL] = 0;
 				motor[liftR] = 0;
 			}
@@ -2544,8 +2544,8 @@ void loaderPlacement() {
 		}
 
 		if (autonomousMode == AUTONOMOUS_MODE_MOBILE_GOAL_10) {
-			timeReq = 5400;
-			if (time1[T2] > 1900 && time1[T2] < 2800) {
+			timeReq = 4900;
+			if (time1[T2] > 1400 && time1[T2] < 2300) {
 				if (!mobileGoalIsOut) {
 					moveMobileGoalOut();
 					} else {
@@ -2553,16 +2553,16 @@ void loaderPlacement() {
 				}
 			}
 
-			if (time1[T2] > 900 && time1[T2] < 2800 ) {
+			if (time1[T2] > 900 && time1[T2] < 2300 ) {
 				if (allianceSide == RIGHT) {
-					autoDriveGyroPIDControl(-1700, 1100);
+					autoDriveGyroPIDControl(-1900, 1200);
 				}
 				if (allianceSide == LEFT) {
-					autoDriveGyroPIDControl(1700, 1100);
+					autoDriveGyroPIDControl(1700, 1200);
 				}
 			}
 
-			if (time1[T2] > 2800 && time1[T2] < 3400 ) {
+			if (time1[T2] > 2300 && time1[T2] < 2900 ) {
 				if (allianceSide == RIGHT) {
 					drive(25, 127);
 					clearDriveEnc();
@@ -2573,9 +2573,9 @@ void loaderPlacement() {
 				}
 			}
 
-			if (time1[T2] > 3400 && time1[T2] < 5400) {
+			if (time1[T2] > 2900 && time1[T2] < 4900) {
 				if (allianceSide == RIGHT) {
-					autoDriveGyroPIDControl(-1700, -700);
+					autoDriveGyroPIDControl(-1900, -700);
 				}
 				if (allianceSide == LEFT) {
 					autoDriveGyroPIDControl(1700, -700);
