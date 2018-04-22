@@ -427,6 +427,11 @@ task autonomousRoutines()
 	case AUTONOMOUS_MODE_BLOCK:
 		/////////////////////////////////////////////////////////////Block/////////////////////////////////////////////////////
 
+			clearDriveEnc();
+			clearTimer(T2);
+
+			skillsFirstMobileGoal();
+
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
 			} else {
@@ -438,7 +443,14 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_SKILLS:
 		/////////////////////////////////////////////////////////////////////////////Skills////////////////////////////////
+		if (allianceSide == RIGHT) {
 
+			clearDriveEnc();
+			clearTimer(T2);
+
+			skillsFirstMobileGoal();
+
+		}
 
 
 		if (allianceColor == BLUE_ALLIANCE) {
@@ -2111,11 +2123,11 @@ void stationaryBlock() {
 }
 
 void skillsFirstMobileGoal() {
-	while (time1[T2] < 10000) {
-		motor[roller] = 40;
-
+	while (time1[T2] < 14000) {
+		if (time1[T2] < 11000) {
+			motor[roller] = 40;
+		}
 		if (time1[T2] < 2000) {
-			autoLiftPIDControl(600);
 			//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
@@ -2124,13 +2136,15 @@ void skillsFirstMobileGoal() {
 			}
 		}
 
-		if (time1[T2] > 800 && time1[T2] < 2000) {
-			autoDriveGyroPIDControl(0, 1500);
+		if (time1[T2] < 2000) {
+			autoLiftPIDControl(600);
 		}
 
-		if (time1[T2] > 2000) {
-			autoLiftPIDControl(600);
+		if (time1[T2] > 800 && time1[T2] < 4000) {
+			autoDriveGyroPIDControl(0, 1000);
+		}
 
+		if (time1[T2] > 4000) {
 			//Move mobile goal lifter in
 			if (mobileGoalIsOut) {
 				moveMobileGoalIn();
@@ -2139,33 +2153,33 @@ void skillsFirstMobileGoal() {
 			}
 		}
 
-		if (time1[T2] > 2500 && time1[T2] < 3500) {
-			autoGyroPIDControl(1860);
+		if (time1[T2] > 5000 && time1[T2] < 7500) {
+			autoGyroPIDControl(1800);
 			clearDriveEnc();
 		}
 
-		if (time1[T2] > 3500 && time1[T2] < 5000) {
-			autoDriveGyroPIDControl(940, 1500);
+		if (time1[T2] > 7500 && time1[T2] < 9000) {
+			autoDriveGyroPIDControl(1800, 900);
 		}
 
-		if (time1[T2] > 5000 && time1[T2] < 6500) {
-			autoGyroPIDControl(2700);
+		if (time1[T2] > 9000 && time1[T2] < 10000) {
+			autoGyroPIDControl(1000);
 			clearDriveEnc();
 		}
 
-		if (time1[T2] > 6500 && time1[T2] < 7000) {
-			autoDriveGyroPIDControl(2700, 700);
+		if (time1[T2] > 10000 && time1[T2] < 11000) {
+			autoDriveGyroPIDControl(1000, 500);
 		}
 
-		if (time1[T2] > 7000 && time1[T2] < 8500) {
-			autoGyroPIDControl(1860);
+		if (time1[T2] > 11000 && time1[T2] < 12000) {
+			autoGyroPIDControl(1900);
+			motor[roller] = -127;
 			clearDriveEnc();
 		}
 
-		if (time1[T2] > 8500) {
+		if (time1[T2] > 12000) {
 			autoLiftPIDControl(700);
-			motor[roller] = -127
-			autoDriveGyroPIDControl(1860, 900);
+			motor[roller] = -100;
 			//Move mobile goal lifter out
 			if (!mobileGoalIsOut) {
 				moveMobileGoalOut();
@@ -2173,13 +2187,17 @@ void skillsFirstMobileGoal() {
 				motor[mobileGoal] = -50;
 			}
 		}
+
+		if (time1[T2] > 12700) {
+			autoDriveGyroPIDControl(1900, 550);
+		}
 	}
 }
 
 void skillsSecondMobileGoal() {
 	while (time1[T2] < 5000) {
 
-		if (time1[T2] < 1000 {
+		if (time1[T2] < 1000) {
 			autoDriveGyroPIDControl(0, -1000);
 		}
 
