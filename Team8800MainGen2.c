@@ -130,6 +130,8 @@ void autoLoader();
 void scoreConeOnStationaryGoal();
 void stationaryBlock();
 void skillsFirstMobileGoal();
+void skillsSecondMobileGoal();
+void skillsThirdMobileGoal();
 
 void autoStackStep(int liftPos);
 
@@ -406,6 +408,8 @@ task autonomousRoutines()
 			clearDriveEnc();
 
 			loaderPlacement();
+
+			drive(0, 0);
 		}
 
 		//////////////////////////////////////////////////////End of Mobile Goal 10/////////////////////////////////
@@ -490,10 +494,7 @@ task autonomousRoutines()
 	case AUTONOMOUS_MODE_BLOCK:
 		/////////////////////////////////////////////////////////////Block/////////////////////////////////////////////////////
 
-			clearDriveEnc();
-			clearTimer(T2);
 
-			skillsFirstMobileGoal();
 
 		if (allianceColor == BLUE_ALLIANCE) {
 			theaterChaseTask(0, 0, 127, 50, 15000);
@@ -506,14 +507,21 @@ task autonomousRoutines()
 
 	case AUTONOMOUS_MODE_SKILLS:
 		/////////////////////////////////////////////////////////////////////////////Skills////////////////////////////////
-		if (allianceSide == RIGHT) {
 
-			clearDriveEnc();
-			clearTimer(T2);
+		clearDriveEnc();
+		clearTimer(T2);
 
-			skillsFirstMobileGoal();
+		skillsFirstMobileGoal();
 
-		}
+		clearDriveEnc();
+		clearTimer(T2);
+
+		skillsSecondMobileGoal();
+
+		clearDriveEnc();
+		clearTimer(T2);
+
+		skillsThirdMobileGoal();
 
 
 		if (allianceColor == BLUE_ALLIANCE) {
@@ -930,13 +938,13 @@ void selectTeamAlliance()
 			break;
 
 		case 5:
-			scrolledAutoType = AUTONOMOUS_MODE_SKILLS;
+			scrolledAutoType = AUTONOMOUS_MODE_BLOCK;
 			displayLCDString(1, 0, " 5 10 20 ST[B]S ");
 			wait1Msec(200);
 			break;
 
 		case 6:
-			scrolledAutoType = AUTONOMOUS_MODE_BLOCK;
+			scrolledAutoType = AUTONOMOUS_MODE_SKILLS;
 			displayLCDString(1, 0, " 5 10 20 ST B[S]");
 			wait1Msec(200);
 			break;
@@ -1819,7 +1827,7 @@ void collectMobileGoal() {
 			}
 			} else {
 			if (time1[T2] > 900) {
-				autoDriveGyroPIDControl(0, 1850);
+				autoDriveGyroPIDControl(0, 1900);
 			}
 		}
 	}
@@ -1906,7 +1914,7 @@ void intakeMobileGoalAndStackFirstCone() {
 		}
 
 		if (time1[T2] > 2000) {
-			autoDriveGyroPIDControl(0, 440);
+			autoDriveGyroPIDControl(0, 480);
 		}
 
 		if (autonomousConeNumber != CONE_NUMBER_2) {
@@ -2273,12 +2281,12 @@ void autoLoader () {
 		}
 		if (time1[T2] > 4500 && time1[T2] < 5100) {
 			moveArmIn();
-			liftPIDControl(975);
+			liftPIDControl(900);
 			motor[roller] = 40;
 		}
 		if (time1[T2] > 5100 && time1[T2] < 5300) {
 			motor[roller] = -127;
-			liftPIDControl(975);
+			liftPIDControl(1100);
 		}
 
 		//Cone #6
@@ -2292,7 +2300,7 @@ void autoLoader () {
 			timeReq = 7200;
 			if (time1[T2] > 5800 && time1[T2] < 6500) {
 				moveArmIn();
-				liftPIDControl(1200);
+				liftPIDControl(1150);
 				motor[roller] = 40;
 			}
 			if (time1[T2] > 6500 && time1[T2] < 6700) {
@@ -2376,8 +2384,8 @@ void stationaryBlock() {
 }
 
 void skillsFirstMobileGoal() {
-	while (time1[T2] < 14000) {
-		if (time1[T2] < 11000) {
+	while (time1[T2] < 14500) {
+		if (time1[T2] < 7400) {
 			motor[roller] = 40;
 		}
 		if (time1[T2] < 2000) {
@@ -2393,11 +2401,11 @@ void skillsFirstMobileGoal() {
 			autoLiftPIDControl(600);
 		}
 
-		if (time1[T2] > 800 && time1[T2] < 4000) {
+		if (time1[T2] > 800 && time1[T2] < 3500) {
 			autoDriveGyroPIDControl(0, 1000);
 		}
 
-		if (time1[T2] > 4000) {
+		if (time1[T2] > 3500 && time1[T2] < 12000) {
 			//Move mobile goal lifter in
 			if (mobileGoalIsOut) {
 				moveMobileGoalIn();
@@ -2406,13 +2414,18 @@ void skillsFirstMobileGoal() {
 			}
 		}
 
-		if (time1[T2] > 5000 && time1[T2] < 7500) {
+
+		if (time1[T2] > 4500 && time1[T2] < 7000) {
 			autoGyroPIDControl(1800);
 			clearDriveEnc();
 		}
 
-		if (time1[T2] > 7500 && time1[T2] < 9000) {
-			autoDriveGyroPIDControl(1800, 900);
+		if (time1[T2] > 7500 && time1[T2] < 8800) {
+			autoDriveGyroPIDControl(1800, 970);
+		}
+
+		if (time1[T2] > 8800 && time1[T2] < 9200) {
+			motor[roller] = -127;
 		}
 
 		if (time1[T2] > 9000 && time1[T2] < 10000) {
@@ -2421,16 +2434,15 @@ void skillsFirstMobileGoal() {
 		}
 
 		if (time1[T2] > 10000 && time1[T2] < 11000) {
-			autoDriveGyroPIDControl(1000, 500);
+			autoDriveGyroPIDControl(1000, 370);
 		}
 
 		if (time1[T2] > 11000 && time1[T2] < 12000) {
 			autoGyroPIDControl(1900);
-			motor[roller] = -127;
 			clearDriveEnc();
 		}
 
-		if (time1[T2] > 12000) {
+		if (time1[T2] > 12300) {
 			autoLiftPIDControl(700);
 			motor[roller] = -100;
 			//Move mobile goal lifter out
@@ -2441,18 +2453,175 @@ void skillsFirstMobileGoal() {
 			}
 		}
 
-		if (time1[T2] > 12700) {
-			autoDriveGyroPIDControl(1900, 550);
+		if (time1[T2] > 12000) {
+			autoDriveGyroPIDControl(1900, 800);
 		}
 	}
 }
 
 void skillsSecondMobileGoal() {
-	while (time1[T2] < 5000) {
+	while (time1[T2] < 14000) {
 
 		if (time1[T2] < 1000) {
-			autoDriveGyroPIDControl(0, -1000);
+			autoDriveGyroPIDControl(1900, -800);
 		}
+
+		if (time1[T2] > 1000 && time1[T2] < 2500) {
+			autoGyroPIDControl(1000);
+			clearDriveEnc();
+			//Move mobile goal lifter in
+			if (mobileGoalIsOut) {
+				moveMobileGoalIn();
+				} else {
+				motor[mobileGoal] = 40;
+			}
+		}
+
+		if (time1[T2] > 2500 && time1[T2] < 3500) {
+			autoDriveGyroPIDControl(1000, 600);
+			//Move mobile goal lifter in
+			if (mobileGoalIsOut) {
+				moveMobileGoalIn();
+				} else {
+				motor[mobileGoal] = 40;
+			}
+		}
+
+		if (time1[T2] > 3500 && time1[T2] < 6000) {
+			autoGyroPIDControl(0);
+			clearDriveEnc();
+			//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+			} else {
+				motor[mobileGoal] = -50;
+			}
+		}
+
+		if (time1[T2] > 6000 && time1[T2] < 9000) {
+			autoDriveGyroPIDControl(0, 720);
+		}
+
+		if (time1[T2] > 7000 && time1[T2] < 9000) {
+			//Move mobile goal lifter in
+			if (mobileGoalIsOut) {
+				moveMobileGoalIn();
+				} else {
+				motor[mobileGoal] = 40;
+			}
+		}
+
+		if (time1[T2] > 9000 && time1[T2] < 11000) {
+			autoGyroPIDControl(2000);
+			clearDriveEnc();
+		}
+
+		if (time1[T2] > 11000 && time1[T2] < 13500) {
+			autoDriveGyroPIDControl(2000, 1000);
+
+			//Move mobile goal lifter out
+			if (!mobileGoalIsOut) {
+				moveMobileGoalOut();
+			} else {
+				motor[mobileGoal] = -50;
+			}
+		}
+	}
+}
+
+void skillsThirdMobileGoal() {
+	while (time1[T2] < 190000) {
+			if (time1[T2] < 3000) {
+				autoDriveGyroPIDControl(1900, -1000);
+			}
+
+			if (time1[T2] > 1000 && time1[T2] < 5000) {
+				//Move mobile goal lifter in
+				if (mobileGoalIsOut) {
+					moveMobileGoalIn();
+				} else {
+					motor[mobileGoal] = 40;
+				}
+			}
+
+			if (time1[T2] > 3000 && time1[T2] < 5000) {
+				autoGyroPIDControl(-10);
+				clearDriveEnc();
+			}
+
+
+			if (time1[T2] > 5000 && time1[T2] < 7000) {
+				autoDriveGyroPIDControl(-10, 1000);
+			}
+
+			if (time1[T2] > 7010 && time1[T2] < 9000) {
+				autoDriveGyroPIDControl(-10, 400);
+			}
+
+			if (time1[T2] > 7000 && time1[T2] < 9000) {
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+				} else {
+					motor[mobileGoal] = -50;
+				}
+			}
+
+			if (time1[T2] > 9000 && time1[T2] < 9010) {
+				clearDriveEnc();
+			}
+
+			if (time1[T2] > 9010 && time1[T2] < 11000) {
+				autoDriveGyroPIDControl(-10, 600);
+			}
+
+			if (time1[T2] > 10000 && time1[T2] < 14000) {
+				//Move mobile goal lifter in
+				if (mobileGoalIsOut) {
+					moveMobileGoalIn();
+				} else {
+					motor[mobileGoal] = 40;
+				}
+			}
+
+			if (time1[T2] > 11000 && time1[T2] < 11010) {
+				clearDriveEnc();
+			}
+
+			if (time1[T2] > 11010 && time1[T2] < 12000) {
+				autoDriveGyroPIDControl(-10, 1400);
+			}
+
+			if (time1[T2] > 12000 && time1[T2] < 13000) {
+				autoGyroPIDControl(-700);
+				clearDriveEnc();
+			}
+
+			if (time1[T2] > 13000 && time1[T2] < 14000) {
+				autoDriveGyroPIDControl(-700, 600);
+			}
+
+			if (time1[T2] > 14000 && time1[T2] < 15000) {
+				autoGyroPIDControl(-20);
+				clearDriveEnc();
+			}
+
+			if (time1[T2] > 15000 && time1[T2] < 18000) {
+				autoDriveGyroPIDControl(-20, 900);
+			}
+
+			if (time1[T2] > 15000) {
+				//Move mobile goal lifter out
+				if (!mobileGoalIsOut) {
+					moveMobileGoalOut();
+				} else {
+					motor[mobileGoal] = -50;
+				}
+			}
+
+			if (time1[T2] > 18000) {
+				autoDriveGyroPIDControl(-20, -100);
+			}
 	}
 }
 
