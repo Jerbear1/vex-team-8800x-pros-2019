@@ -727,13 +727,13 @@ task ProcessController() {
 		//writeDebugStreamLine("               roller Enc, %d", SensorValue[rollerEnc]);
 		//writeDebugStreamLine("arm pot,                                                    %d", SensorValue[armPot]);
 		//writeDebugStreamLine("arm power,                                                    %d", armPower );
-		//writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
-		//writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
+		writeDebugStreamLine("left pot, %d", SensorValue[liftLeftPot]);
+		writeDebugStreamLine("right pot,                    %d", SensorValue[liftRightPot]);
 		//writeDebugStreamLine("Increase Stack level,                    %d", increaseStackLvl);
 
 
-		writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
-		writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
+		//writeDebugStreamLine("right drive enc                    %d", SensorValue[rightDriveEnc]);
+		//writeDebugStreamLine("left drive enc        %d", SensorValue[leftDriveEnc]);
 
 		//writeDebugStreamLine("Gyro Values,      %d", SensorValue(driveGyro));
 		//writeDebugStreamLine("Lift right pot,      %d", SensorValue(liftRightPot));
@@ -2023,10 +2023,10 @@ void autoAlignWithZones() {
 				}
 				} else if (autonomousConeNumber == CONE_NUMBER_3) {
 				if (time1[T2] < 600) {
-					autoLiftPIDControl(740);
+					autoLiftPIDControl(760);
 				}
 				if (time1[T2] > 600 && time1[T2] < 1600) {
-					autoLiftPIDControl(740);
+					autoLiftPIDControl(760);
 					moveArmIn();
 				}
 				if (time1[T2] > 1600) {
@@ -2065,7 +2065,7 @@ void autoAlignWithZones() {
 			}
 
 			if (time1[T2] > 4100) {
-				autoGyroPIDControl(-1580);
+				autoGyroPIDControl(-1540);
 			}
 			} else if (allianceSide == LEFT) {
 			if (time1[T2] > 2300 && time1[T2] < 3000) {
@@ -2078,7 +2078,7 @@ void autoAlignWithZones() {
 			}
 
 			if (time1[T2] > 4100) {
-				autoGyroPIDControl(1475);
+				autoGyroPIDControl(1435);
 			}
 		}
 	}
